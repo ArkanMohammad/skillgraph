@@ -1,3 +1,4 @@
+// Landing page shown when the user first enters SkillGraph
 function LandingPage() {
   return <h1>Landing Page</h1>
 }
