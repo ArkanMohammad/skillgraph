@@ -1,10 +1,11 @@
 /**
  * أنواع TypeScript المطابقة لجداول PostgreSQL
+ * TypeScript types matching the PostgreSQL tables
  */
 export type UserRole = 'USER' | 'ADMIN';
 export type UserGoalStatus = 'ACTIVE' | 'PAUSED' | 'COMPLETED';
 
-/** حساب مستخدم مع كلمة مرور مشفّرة ودور */
+/** User account with hashed password and role / حساب مستخدم مع كلمة مرور مشفّرة ودور */
 export interface User {
   id: string;
   name: string;
@@ -15,7 +16,7 @@ export interface User {
   updated_at: Date;
 }
 
-/** هدف مهني من الأهداف السبعة */
+/** One of the seven career goals / هدف مهني من الأهداف السبعة */
 export interface Goal {
   id: number;
   name: string;
@@ -23,7 +24,7 @@ export interface Goal {
   created_at: Date;
 }
 
-/** مهارة عامة مشتركة */
+/** Shared skill used across goals / مهارة عامة مشتركة */
 export interface Skill {
   id: number;
   name: string;
@@ -32,7 +33,7 @@ export interface Skill {
   created_at: Date;
 }
 
-/** ربط مهارة بهدف مع شروط التمكن والأهمية والساعات */
+/** Links a skill to a goal: mastery, importance, hours / ربط مهارة بهدف */
 export interface GoalSkill {
   goal_id: number;
   skill_id: number;
@@ -41,13 +42,13 @@ export interface GoalSkill {
   estimated_hours: number;
 }
 
-/** علاقة متطلب سابق في المخطط البياني الموجّه */
+/** Directed graph edge: skill requires a prerequisite / متطلب سابق */
 export interface SkillDependency {
   skill_id: number;
   prerequisite_skill_id: number;
 }
 
-/** مسار المستخدم الحالي نحو هدف */
+/** User's current path toward a goal / مسار المستخدم الحالي نحو هدف */
 export interface UserGoal {
   user_id: string;
   goal_id: number;
@@ -57,7 +58,7 @@ export interface UserGoal {
   completed_at: Date | null;
 }
 
-/** مستوى التمكين والثقة لاستخدام الخوارزمية */
+/** Actual proficiency and confidence for the algorithm / مستوى التمكين والثقة */
 export interface UserSkill {
   user_id: string;
   skill_id: number;

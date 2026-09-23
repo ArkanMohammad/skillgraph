@@ -1,16 +1,17 @@
+-- SkillGraph database schema
 -- مخطط قاعدة بيانات SkillGraph
--- يُنفَّذ مرة واحدة لإنشاء الجداول والقيود الأساسية
+-- Run once to create tables and constraints / يُنفَّذ مرة واحدة لإنشاء الجداول والقيود
 
--- توليد معرفات UUID للمستخدمين
+-- Generate UUIDs for users / توليد معرفات UUID للمستخدمين
 CREATE EXTENSION IF NOT EXISTS pgcrypto;
 
--- أدوار الحسابات
+-- Account roles / أدوار الحسابات
 CREATE TYPE user_role AS ENUM ('USER', 'ADMIN');
 
--- حالة مسار المستخدم نحو هدف مهني
+-- User path status toward a career goal / حالة مسار المستخدم نحو هدف مهني
 CREATE TYPE user_goal_status AS ENUM ('ACTIVE', 'PAUSED', 'COMPLETED');
 
--- الحسابات: البريد فريد وكلمة المرور تُحفظ مشفّرة
+-- Accounts: unique email, hashed password / الحسابات: البريد فريد وكلمة المرور مشفّرة
 CREATE TABLE users (
   id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
   name VARCHAR(100) NOT NULL,
@@ -21,7 +22,7 @@ CREATE TABLE users (
   updated_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
 );
 
--- الأهداف المهنية السبعة للنظام
+-- The system's seven career goals / الأهداف المهنية السبعة للنظام
 CREATE TABLE goals (
   id SERIAL PRIMARY KEY,
   name VARCHAR(150) NOT NULL UNIQUE,
@@ -29,7 +30,7 @@ CREATE TABLE goals (
   created_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
 );
 
--- المهارات العامة المشتركة بين الأهداف
+-- Shared skills used across goals / المهارات العامة المشتركة بين الأهداف
 CREATE TABLE skills (
   id SERIAL PRIMARY KEY,
   name VARCHAR(150) NOT NULL UNIQUE,
@@ -38,6 +39,7 @@ CREATE TABLE skills (
   created_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
 );
 
+-- Goal-skill link: mastery threshold, importance, estimated hours
 -- ربط المهارة بالهدف: شرط التمكن، الأهمية، والساعات المقدّرة
 CREATE TABLE goal_skills (
   goal_id INTEGER NOT NULL REFERENCES goals(id) ON DELETE CASCADE,
@@ -51,7 +53,8 @@ CREATE TABLE goal_skills (
   PRIMARY KEY (goal_id, skill_id)
 );
 
--- مخطط بياني موجّه: المهارة تتطلب متطلباً سابقاً (Prerequisite)
+-- Directed graph: skill requires a prerequisite
+-- مخطط بياني موجّه: المهارة تتطلب متطلباً سابقاً
 CREATE TABLE skill_dependencies (
   skill_id INTEGER NOT NULL REFERENCES skills(id) ON DELETE CASCADE,
   prerequisite_skill_id INTEGER NOT NULL REFERENCES skills(id) ON DELETE CASCADE,
@@ -59,7 +62,7 @@ CREATE TABLE skill_dependencies (
   CHECK (skill_id <> prerequisite_skill_id)
 );
 
--- المسار الحالي للمستخدم نحو هدف معيّن
+-- User's current path toward a specific goal / المسار الحالي للمستخدم نحو هدف معيّن
 CREATE TABLE user_goals (
   user_id UUID NOT NULL REFERENCES users(id) ON DELETE CASCADE,
   goal_id INTEGER NOT NULL REFERENCES goals(id) ON DELETE CASCADE,
@@ -70,6 +73,7 @@ CREATE TABLE user_goals (
   PRIMARY KEY (user_id, goal_id)
 );
 
+-- User proficiency and confidence per skill (algorithm input)
 -- مستوى التمكين الفعلي والثقة لكل مستخدم في كل مهارة (مدخل الخوارزمية)
 CREATE TABLE user_skills (
   user_id UUID NOT NULL REFERENCES users(id) ON DELETE CASCADE,
@@ -82,11 +86,12 @@ CREATE TABLE user_skills (
   PRIMARY KEY (user_id, skill_id)
 );
 
--- هدف حالي واحد فقط لكل مستخدم
+-- Only one current goal per user / هدف حالي واحد فقط لكل مستخدم
 CREATE UNIQUE INDEX one_current_goal_per_user
   ON user_goals (user_id)
   WHERE is_current = TRUE;
 
+-- Indexes to speed up graph and recommendation queries
 -- فهارس لتسريع استعلامات الرسم البياني والترشيح
 CREATE INDEX idx_goal_skills_skill ON goal_skills (skill_id);
 CREATE INDEX idx_skill_deps_prereq ON skill_dependencies (prerequisite_skill_id);

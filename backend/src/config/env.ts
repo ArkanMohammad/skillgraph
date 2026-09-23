@@ -1,5 +1,6 @@
 /**
  * تحميل متغيرات البيئة والتحقق من وجود القيم الإلزامية
+ * Load env vars and fail if required values are missing
  */
 import dotenv from 'dotenv';
 
