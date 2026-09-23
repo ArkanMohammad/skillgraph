@@ -1,5 +1,6 @@
 /**
  * الرد على المسارات غير المعرّفة
+ * Handles unknown routes
  */
 import { Request, Response } from 'express';
 

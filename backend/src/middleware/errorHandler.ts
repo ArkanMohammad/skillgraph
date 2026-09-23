@@ -1,5 +1,6 @@
 /**
  * معالج الأخطاء العام — يُسجَّل في نهاية سلسلة الـ Middlewares
+ * Global error handler — register last in the middleware chain
  */
 import { Request, Response, NextFunction } from 'express';
 
