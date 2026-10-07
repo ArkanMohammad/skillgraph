@@ -6,6 +6,7 @@ import express from 'express';
 import cors from 'cors';
 import { env } from './config/env';
 import routes from './routes';
+import authRoutes from './routes/authRoutes';
 import { errorHandler, notFound } from './middleware';
 
 const app = express();
@@ -13,6 +14,7 @@ const app = express();
 app.use(cors()); // Allow frontend requests / السماح للواجهة الأمامية بالوصول
 app.use(express.json()); // Parse JSON request body / قراءة جسم الطلب كـ JSON
 
+app.use('/api/auth', authRoutes); // Auth: /register and /login / مسارات التوثيق
 app.use(routes);
 
 app.use(notFound);
