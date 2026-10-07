@@ -4,3 +4,4 @@
  */
 export { errorHandler } from './errorHandler';
 export { notFound } from './notFound';
+export { authenticateJWT, requireRole } from './authMiddleware';

@@ -5,6 +5,13 @@
 export type UserRole = 'USER' | 'ADMIN';
 export type UserGoalStatus = 'ACTIVE' | 'PAUSED' | 'COMPLETED';
 
+/** JWT payload after login / بيانات التوكن بعد تسجيل الدخول */
+export interface AuthPayload {
+  id: string;
+  email: string;
+  role: UserRole;
+}
+
 /** User account with hashed password and role / حساب مستخدم مع كلمة مرور مشفّرة ودور */
 export interface User {
   id: string;
