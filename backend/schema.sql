@@ -11,6 +11,9 @@ CREATE TYPE user_role AS ENUM ('USER', 'ADMIN');
 -- User path status toward a career goal / حالة مسار المستخدم نحو هدف مهني
 CREATE TYPE user_goal_status AS ENUM ('ACTIVE', 'PAUSED', 'COMPLETED');
 
+-- Skill learning state after assessments / حالة المهارة بعد التقييم
+CREATE TYPE skill_state AS ENUM ('LOCKED', 'READY', 'LEARNING', 'PRACTICING', 'MASTERED');
+
 -- Accounts: unique email, hashed password / الحسابات: البريد فريد وكلمة المرور مشفّرة
 CREATE TABLE users (
   id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
@@ -82,6 +85,7 @@ CREATE TABLE user_skills (
     CHECK (proficiency_level BETWEEN 0 AND 1),
   confidence NUMERIC(3, 2) NOT NULL DEFAULT 0
     CHECK (confidence BETWEEN 0 AND 1),
+  state skill_state NOT NULL DEFAULT 'READY',
   updated_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
   PRIMARY KEY (user_id, skill_id)
 );
@@ -97,3 +101,49 @@ CREATE INDEX idx_goal_skills_skill ON goal_skills (skill_id);
 CREATE INDEX idx_skill_deps_prereq ON skill_dependencies (prerequisite_skill_id);
 CREATE INDEX idx_user_skills_skill ON user_skills (skill_id);
 CREATE INDEX idx_user_goals_goal ON user_goals (goal_id);
+
+-- Assessment module (Day 6 & 7) / نظام التقييم والتمكين
+CREATE TABLE assessments (
+  id SERIAL PRIMARY KEY,
+  user_id UUID NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+  skill_id INTEGER NOT NULL REFERENCES skills(id) ON DELETE CASCADE,
+  started_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+  completed_at TIMESTAMPTZ,
+  final_score NUMERIC(5, 2) CHECK (final_score IS NULL OR final_score BETWEEN 0 AND 100)
+);
+
+CREATE TABLE questions (
+  id SERIAL PRIMARY KEY,
+  skill_id INTEGER NOT NULL REFERENCES skills(id) ON DELETE CASCADE,
+  prompt TEXT NOT NULL
+);
+
+CREATE TABLE question_options (
+  id SERIAL PRIMARY KEY,
+  question_id INTEGER NOT NULL REFERENCES questions(id) ON DELETE CASCADE,
+  option_text TEXT NOT NULL,
+  is_correct BOOLEAN NOT NULL DEFAULT FALSE
+);
+
+CREATE TABLE assessment_answers (
+  assessment_id INTEGER NOT NULL REFERENCES assessments(id) ON DELETE CASCADE,
+  question_id INTEGER NOT NULL REFERENCES questions(id) ON DELETE CASCADE,
+  selected_option_id INTEGER NOT NULL REFERENCES question_options(id),
+  is_correct BOOLEAN NOT NULL,
+  answered_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+  PRIMARY KEY (assessment_id, question_id)
+);
+
+CREATE TABLE skill_events (
+  id SERIAL PRIMARY KEY,
+  user_id UUID NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+  skill_id INTEGER NOT NULL REFERENCES skills(id) ON DELETE CASCADE,
+  assessment_id INTEGER REFERENCES assessments(id) ON DELETE SET NULL,
+  event_type VARCHAR(50) NOT NULL,
+  payload JSONB,
+  created_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
+);
+
+CREATE INDEX idx_questions_skill ON questions (skill_id);
+CREATE INDEX idx_assessments_user ON assessments (user_id);
+CREATE INDEX idx_skill_events_user_skill ON skill_events (user_id, skill_id);
