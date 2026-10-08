@@ -4,6 +4,7 @@
  */
 export type UserRole = 'USER' | 'ADMIN';
 export type UserGoalStatus = 'ACTIVE' | 'PAUSED' | 'COMPLETED';
+export type SkillState = 'LOCKED' | 'READY' | 'LEARNING' | 'PRACTICING' | 'MASTERED';
 
 /** JWT payload after login / بيانات التوكن بعد تسجيل الدخول */
 export interface AuthPayload {
@@ -71,5 +72,51 @@ export interface UserSkill {
   skill_id: number;
   proficiency_level: number;
   confidence: number;
+  state: SkillState;
   updated_at: Date;
+}
+
+/** Assessment session / جلسة تقييم لمهارة */
+export interface Assessment {
+  id: number;
+  user_id: string;
+  skill_id: number;
+  started_at: Date;
+  completed_at: Date | null;
+  final_score: number | null;
+}
+
+/** Question belonging to a skill / سؤال تابع لمهارة */
+export interface Question {
+  id: number;
+  skill_id: number;
+  prompt: string;
+}
+
+/** Answer choice; is_correct stays server-side / خيار إجابة — الصحيح يبقى في السيرفر */
+export interface QuestionOption {
+  id: number;
+  question_id: number;
+  option_text: string;
+  is_correct: boolean;
+}
+
+/** Saved answer for one question / إجابة محفوظة لسؤال */
+export interface AssessmentAnswer {
+  assessment_id: number;
+  question_id: number;
+  selected_option_id: number;
+  is_correct: boolean;
+  answered_at: Date;
+}
+
+/** Audit log for mastery changes / سجل أحداث التمكن */
+export interface SkillEvent {
+  id: number;
+  user_id: string;
+  skill_id: number;
+  assessment_id: number | null;
+  event_type: string;
+  payload: Record<string, unknown> | null;
+  created_at: Date;
 }
