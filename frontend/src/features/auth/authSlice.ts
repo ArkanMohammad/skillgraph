@@ -1,12 +1,5 @@
 import { createSlice, type PayloadAction } from '@reduxjs/toolkit'
-
-// Represents the authenticated user's basic information
-type User = {
-  id: number
-  name: string
-  email: string
-  role: 'user' | 'admin'
-}
+import type { User } from '../../types/api'
 
 // Defines the authentication state stored in Redux
 type AuthState = {
