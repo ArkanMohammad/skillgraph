@@ -1,11 +1,5 @@
 import { createSlice, type PayloadAction } from '@reduxjs/toolkit'
-
-// Represents a learning goal available in SkillGraph
-type Goal = {
-  id: number
-  name: string
-  description: string
-}
+import type { Goal } from '../../types/api'
 
 // Defines the goal-related state stored in Redux
 type GoalState = {
