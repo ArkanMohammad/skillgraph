@@ -1,58 +1,74 @@
-import { createSlice, type PayloadAction } from '@reduxjs/toolkit'
+import { createAsyncThunk, createSlice, type PayloadAction } from '@reduxjs/toolkit'
 import type { Goal } from '../../types/api'
+import { getCurrentGoal } from '../../services/goalService'
+import { ApiError } from '../../services/apiClient'
 
-// Defines the goal-related state stored in Redux
+// idle = not asked the server yet, loading = request running,
+// ready = we know the answer (goal or null), error = request failed
+type GoalStatus = 'idle' | 'loading' | 'ready' | 'error'
+
 type GoalState = {
   selectedGoal: Goal | null
+  status: GoalStatus
+  error: string | null
 }
 
-// Key used to store the selected goal in the browser
-const STORAGE_KEY = 'skillgraph_goal'
-
-// Reads the saved goal (if any) when the app starts
-function loadGoal(): Goal | null {
-  try {
-    const saved = localStorage.getItem(STORAGE_KEY)
-    return saved ? (JSON.parse(saved) as Goal) : null
-  } catch {
-    return null // Ignore corrupted or blocked storage
-  }
-}
-
-// Initial state: restored goal if it exists, otherwise none
 const initialState: GoalState = {
-  selectedGoal: loadGoal(),
+  selectedGoal: null,
+  status: 'idle',
+  error: null,
 }
+
+// Asks the backend (PostgreSQL) which goal the logged-in user selected
+export const fetchCurrentGoal = createAsyncThunk<Goal | null, void, { rejectValue: string }>(
+  'goal/fetchCurrent',
+  async (_, { rejectWithValue }) => {
+    try {
+      const data = await getCurrentGoal()
+      return data.goal
+    } catch (err) {
+      return rejectWithValue(err instanceof ApiError ? err.message : 'Cannot reach the server')
+    }
+  }
+)
 
 const goalSlice = createSlice({
   name: 'goal',
   initialState,
 
   reducers: {
-    // Stores the goal selected by the user and persists it
+    // Called after the goal was saved on the server
     selectGoal: (state, action: PayloadAction<Goal>) => {
       state.selectedGoal = action.payload
-      try {
-        localStorage.setItem(STORAGE_KEY, JSON.stringify(action.payload))
-      } catch {
-        // Storage may be unavailable; the goal just won't persist
-      }
+      state.status = 'ready'
+      state.error = null
     },
 
-    // Removes the currently selected goal (also used on logout)
+    // Resets everything (used on logout) so the next user starts clean
     clearGoal: (state) => {
       state.selectedGoal = null
-      try {
-        localStorage.removeItem(STORAGE_KEY)
-      } catch {
-        // Ignore storage errors
-      }
+      state.status = 'idle'
+      state.error = null
     },
+  },
+
+  extraReducers: (builder) => {
+    builder
+      .addCase(fetchCurrentGoal.pending, (state) => {
+        state.status = 'loading'
+        state.error = null
+      })
+      .addCase(fetchCurrentGoal.fulfilled, (state, action) => {
+        state.selectedGoal = action.payload
+        state.status = 'ready'
+      })
+      .addCase(fetchCurrentGoal.rejected, (state, action) => {
+        state.status = 'error'
+        state.error = action.payload ?? 'Something went wrong'
+      })
   },
 })
 
-// Export actions so they can be dispatched from components
 export const { selectGoal, clearGoal } = goalSlice.actions
 
-// Export the reducer to register it in the Redux store
 export default goalSlice.reducer
