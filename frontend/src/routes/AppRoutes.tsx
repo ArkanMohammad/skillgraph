@@ -7,10 +7,12 @@ import SelectGoalPage from '../pages/SelectGoalPage'
 import AssessmentPage from '../pages/AssessmentPage'
 import AssessmentResultsPage from '../pages/AssessmentResultsPage'
 import DashboardPage from '../pages/DashboardPage'
+import MyGoalPage from '../pages/MyGoalPage'
 import SkillGraphPage from '../pages/SkillGraphPage'
 import ProgressPage from '../pages/ProgressPage'
 import ProfilePage from '../pages/ProfilePage'
 
+import AppLayout from '../components/AppLayout'
 import ProtectedRoute from './ProtectedRoute'
 
 function AppRoutes() {
@@ -23,13 +25,19 @@ function AppRoutes() {
 
       {/* Protected routes - require authentication */}
       <Route element={<ProtectedRoute />}>
+        {/* Pages without the sidebar */}
         <Route path="/select-goal" element={<SelectGoalPage />} />
         <Route path="/assessment" element={<AssessmentPage />} />
-        <Route path="/assessment/results" element={<AssessmentResultsPage />}/>
-        <Route path="/dashboard" element={<DashboardPage />} />
-        <Route path="/skill-graph" element={<SkillGraphPage />} />
-        <Route path="/progress" element={<ProgressPage />} />
-        <Route path="/profile" element={<ProfilePage />} />
+        <Route path="/assessment/results" element={<AssessmentResultsPage />} />
+
+        {/* Pages with the sidebar */}
+        <Route element={<AppLayout />}>
+          <Route path="/dashboard" element={<DashboardPage />} />
+          <Route path="/my-goal" element={<MyGoalPage />} />
+          <Route path="/skill-graph" element={<SkillGraphPage />} />
+          <Route path="/progress" element={<ProgressPage />} />
+          <Route path="/profile" element={<ProfilePage />} />
+        </Route>
       </Route>
     </Routes>
   )
