@@ -19,6 +19,21 @@ export type SubmitAnswerResult = {
   question: AssessmentQuestion | null // null when the assessment is finished
 }
 
+// Result of one concept (a sub-skill) inside the assessment
+export type ConceptResult = {
+  conceptId: number | null
+  name: string
+  weight: number // 0-100, share of the whole skill
+  correct: number
+  total: number
+  score: number // 0-100, harder questions count more
+}
+
+// POST /assessments/:id/complete: the old fields plus the result per concept
+export type AssessmentResult = CompleteAssessmentResponse & {
+  concepts: ConceptResult[] // weakest concept first
+}
+
 // Creates (or resumes) an assessment for a skill and returns the first question
 export function startAssessment(skillId: number) {
   return apiRequest<StartAssessmentResult>('/assessments/start', {
@@ -37,7 +52,7 @@ export function submitAnswer(assessmentId: number, questionId: number, selectedO
 
 // Finishes the assessment: the server scores it and updates the mastery
 export function completeAssessment(assessmentId: number) {
-  return apiRequest<CompleteAssessmentResponse>(`/assessments/${assessmentId}/complete`, {
+  return apiRequest<AssessmentResult>(`/assessments/${assessmentId}/complete`, {
     method: 'POST',
   })
 }

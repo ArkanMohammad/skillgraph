@@ -10,9 +10,15 @@ import {
   pickNextQuestion,
   totalQuestionsFor,
 } from './algorithm/adaptiveService';
+import {
+  ConceptInfo,
+  ConceptResult,
+  computeConfidence,
+  decideState,
+  scoreAssessment,
+} from './algorithm/scoringService';
 
-const MIN_CONFIDENCE = 0.7; // Minimum confidence after the first test / أدنى ثقة بعد أول تقييم
-const DEFAULT_REQUIRED = 0.7; // Fallback mastery threshold / حد التمكن الافتراضي
+const DEFAULT_REQUIRED = 0.7; // Fallback mastery threshold
 
 /** An error that carries the HTTP status code the route should answer with */
 export class AssessmentError extends Error {
@@ -55,6 +61,7 @@ export interface CompleteResult {
   requiredMastery: number;
   confidence: number;
   state: SkillState;
+  concepts: ConceptResult[]; // Result per concept, weakest first
 }
 
 interface OpenAssessmentRow {
@@ -102,7 +109,16 @@ const loadAnswered = async (assessmentId: number): Promise<AnsweredQuestion[]> =
   }));
 };
 
-/** Question text and options WITHOUT the correct flag / نص السؤال وخياراته بدون الإجابة الصحيحة */
+/** The concepts of a skill with their weights */
+const loadConcepts = async (skillId: number): Promise<ConceptInfo[]> => {
+  const result = await query<{ id: number; name: string; weight: string | number }>(
+    'SELECT id, name, weight FROM concepts WHERE skill_id = $1 ORDER BY id',
+    [skillId]
+  );
+  return result.rows.map((row) => ({ id: row.id, name: row.name, weight: toNum(row.weight) }));
+};
+
+/** Question text and options WITHOUT the correct flag */
 const loadQuestionPayload = async (questionId: number): Promise<QuestionPayload> => {
   const question = await query<{ id: number; prompt: string }>(
     'SELECT id, prompt FROM questions WHERE id = $1',
@@ -152,7 +168,7 @@ export const startAssessment = async (userId: string, skillId: number): Promise<
 
   let assessmentId: number;
   if (open.rowCount && open.rowCount > 0) {
-    assessmentId = open.rows[0].id; // Resume / استكمال
+    assessmentId = open.rows[0].id; // Resume
   } else {
     const created = await query<{ id: number }>(
       'INSERT INTO assessments (user_id, skill_id) VALUES ($1, $2) RETURNING id',
@@ -195,7 +211,7 @@ export const submitAnswer = async (
     throw new AssessmentError(409, 'Question already answered');
   }
 
-  // Only the question the algorithm chose can be answered / فقط السؤال الذي اختارته الخوارزمية
+  // Only the question the algorithm chose can be answered
   const expected = pickNextQuestion(questionPool, answered);
   if (!expected || expected.id !== questionId) {
     throw new AssessmentError(400, 'This is not the current question');
@@ -230,8 +246,7 @@ export const submitAnswer = async (
 
 /**
  * Scores the assessment, updates the user's mastery and logs the event.
- * NOTE: the score is still the plain percentage of correct answers.
- * The weighted score (difficulty + concept weights) replaces it in the next step.
+ * Score: difficulty weighted per concept, then combined with the concept weights.
  */
 export const completeAssessment = async (
   userId: string,
@@ -245,9 +260,11 @@ export const completeAssessment = async (
     throw new AssessmentError(409, 'Assessment is not finished yet');
   }
 
-  const correctAnswers = answered.filter((item) => item.isCorrect).length;
-  const totalQuestions = answered.length;
-  const finalScore = Math.round((correctAnswers / totalQuestions) * 100); // 0-100
+  const concepts = await loadConcepts(session.skill_id);
+  const scored = scoreAssessment(answered, concepts);
+  const finalScore = scored.finalScore; // 0-100
+  const newMastery = finalScore / 100;
+  const newConfidence = computeConfidence(answered, finalScore, scored.coverage);
 
   const requiredRow = await query<{ required_proficiency: string | number }>(
     `SELECT gs.required_proficiency
@@ -269,17 +286,13 @@ export const completeAssessment = async (
   const prevMastery = prev ? toNum(prev.proficiency_level) : 0;
   const prevConfidence = prev ? toNum(prev.confidence) : 0;
 
-  const mastery = Math.max(prevMastery, finalScore / 100); // Keep the best mastery / أعلى تمكن
-  const confidence = Math.max(prevConfidence, MIN_CONFIDENCE);
+  // A weaker attempt never lowers what the user already proved:
+  // mastery and its confidence are kept together from the best attempt.
+  const improved = newMastery >= prevMastery;
+  const mastery = improved ? newMastery : prevMastery;
+  const confidence = improved ? newConfidence : prevConfidence;
 
-  let state: SkillState;
-  if (mastery >= requiredMastery && confidence >= MIN_CONFIDENCE) {
-    state = 'MASTERED';
-  } else if (prev) {
-    state = 'PRACTICING';
-  } else {
-    state = 'LEARNING';
-  }
+  const state = decideState(mastery, requiredMastery, confidence);
 
   const payload = {
     finalScore,
@@ -287,9 +300,10 @@ export const completeAssessment = async (
     requiredMastery: Math.round(requiredMastery * 100),
     confidence,
     state,
+    concepts: scored.concepts,
   };
 
-  // One transaction: either everything is saved or nothing / معاملة واحدة: كله أو لا شيء
+  // One transaction: either everything is saved or nothing
   const client = await pool.connect();
   try {
     await client.query('BEGIN');
@@ -336,11 +350,12 @@ export const completeAssessment = async (
   return {
     assessmentId,
     finalScore,
-    correctAnswers,
-    totalQuestions,
+    correctAnswers: scored.correctAnswers,
+    totalQuestions: scored.totalQuestions,
     mastery: payload.mastery,
     requiredMastery: payload.requiredMastery,
     confidence,
     state,
+    concepts: scored.concepts,
   };
 };
