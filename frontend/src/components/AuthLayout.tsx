@@ -1,10 +1,12 @@
 import type { ReactNode } from 'react'
+import { Link } from 'react-router-dom'
+import { ArrowLeft } from 'lucide-react'
 import Logo from './Logo'
 import ThemeToggle from './ThemeToggle'
 
 import './AuthLayout.css'
 
-// Shared layout for Login and Register: dark side panel + centered content
+// Shared layout for Login and Register: image on the left half + centered content
 function AuthLayout({ children }: { children: ReactNode }) {
   return (
     <div className="auth-page">
@@ -29,9 +31,17 @@ function AuthLayout({ children }: { children: ReactNode }) {
       </aside>
 
       <main className="auth-main">
+        {/* Top left corner of the right half: goes back to the landing page */}
+        <Link to="/" className="auth-back">
+          <ArrowLeft size={18} />
+          Back
+        </Link>
+
+        {/* Top right corner of the right half */}
         <div className="auth-theme">
           <ThemeToggle showLabel={false} />
         </div>
+
         {children}
       </main>
     </div>
