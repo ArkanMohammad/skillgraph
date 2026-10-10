@@ -6,6 +6,7 @@ import RegisterPage from '../pages/RegisterPage'
 import SelectGoalPage from '../pages/SelectGoalPage'
 import AssessmentPage from '../pages/AssessmentPage'
 import AssessmentResultsPage from '../pages/AssessmentResultsPage'
+import AssessmentQuizPage from '../pages/AssessmentQuizPage'
 import DashboardPage from '../pages/DashboardPage'
 import MyGoalPage from '../pages/MyGoalPage'
 import SkillGraphPage from '../pages/SkillGraphPage'
@@ -27,7 +28,7 @@ function AppRoutes() {
       <Route element={<ProtectedRoute />}>
         {/* Pages without the sidebar */}
         <Route path="/select-goal" element={<SelectGoalPage />} />
-        <Route path="/assessment" element={<AssessmentPage />} />
+        <Route path="/assessment/skill/:skillId" element={<AssessmentQuizPage />} />
         <Route path="/assessment/results" element={<AssessmentResultsPage />} />
 
         {/* Pages with the sidebar */}
@@ -35,6 +36,7 @@ function AppRoutes() {
           <Route path="/dashboard" element={<DashboardPage />} />
           <Route path="/my-goal" element={<MyGoalPage />} />
           <Route path="/skill-graph" element={<SkillGraphPage />} />
+          <Route path="/assessment" element={<AssessmentPage />} />
           <Route path="/progress" element={<ProgressPage />} />
           <Route path="/profile" element={<ProfilePage />} />
         </Route>
