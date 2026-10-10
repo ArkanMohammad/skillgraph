@@ -1,4 +1,4 @@
-import { Navigate } from 'react-router-dom'
+import { Link, Navigate } from 'react-router-dom'
 import { useGoalGraph } from '../hooks/useGoalGraph'
 import StatusBadge from '../components/StatusBadge'
 import ProgressBar from '../components/ProgressBar'
@@ -47,6 +47,7 @@ function MyGoalPage() {
                 <th>Your mastery</th>
                 <th>Gap</th>
                 <th>Status</th>
+                <th></th>
               </tr>
             </thead>
             <tbody>
@@ -74,6 +75,17 @@ function MyGoalPage() {
                     </td>
                     <td>
                       <StatusBadge status={skill.userState} />
+                    </td>
+                    <td>
+                      {/* Locked skills cannot be tested yet */}
+                      {skill.userState !== 'LOCKED' && (
+                        <Link
+                          className="btn btn-outline btn-sm"
+                          to={`/assessment/skill/${skill.id}`}
+                        >
+                          {skill.userState === 'MASTERED' ? 'Retake' : 'Take test'}
+                        </Link>
+                      )}
                     </td>
                   </tr>
                 )
