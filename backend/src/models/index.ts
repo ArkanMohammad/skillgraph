@@ -4,7 +4,17 @@
  */
 export type UserRole = 'USER' | 'ADMIN';
 export type UserGoalStatus = 'ACTIVE' | 'PAUSED' | 'COMPLETED';
-export type SkillState = 'LOCKED' | 'READY' | 'LEARNING' | 'PRACTICING' | 'MASTERED';
+export type SkillState =
+  | 'LOCKED'
+  | 'READY'
+  | 'LEARNING'
+  | 'PRACTICING'
+  | 'ASSESSING'
+  | 'MASTERED'
+  | 'NEEDS_VERIFICATION';
+
+/** 1 = easy, 2 = medium, 3 = hard / 1 سهل، 2 متوسط، 3 صعب */
+export type Difficulty = 1 | 2 | 3;
 
 /** JWT payload after login / بيانات التوكن بعد تسجيل الدخول */
 export interface AuthPayload {
@@ -73,6 +83,7 @@ export interface UserSkill {
   proficiency_level: number;
   confidence: number;
   state: SkillState;
+  last_assessed_at: Date | null;
   updated_at: Date;
 }
 
@@ -86,10 +97,20 @@ export interface Assessment {
   final_score: number | null;
 }
 
-/** Question belonging to a skill / سؤال تابع لمهارة */
+/** Sub-skill of a skill with a weight in the score / مفهوم فرعي له وزن في النتيجة */
+export interface Concept {
+  id: number;
+  skill_id: number;
+  name: string;
+  weight: number;
+}
+
+/** Question belonging to a skill and a concept / سؤال تابع لمهارة ومفهوم */
 export interface Question {
   id: number;
   skill_id: number;
+  concept_id: number | null;
+  difficulty: Difficulty;
   prompt: string;
 }
 

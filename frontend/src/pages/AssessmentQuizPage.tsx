@@ -5,18 +5,26 @@ import { ApiError } from '../services/apiClient'
 import { useGoalGraph } from '../hooks/useGoalGraph'
 import ProgressBar from '../components/ProgressBar'
 import ThemeToggle from '../components/ThemeToggle'
-import type { StartAssessmentResponse } from '../types/api'
+import type { AssessmentQuestion } from '../types/api'
 import '../styles/pages.css'
 
 const LETTERS = ['A', 'B', 'C', 'D', 'E', 'F']
+
+// What we keep about the running assessment (the server decides every question)
+type Session = {
+  assessmentId: number
+  skillId: number
+  totalQuestions: number
+}
 
 function AssessmentQuizPage() {
   const { skillId } = useParams()
   const navigate = useNavigate()
   const { graph } = useGoalGraph() // only used to show the skill name
 
-  const [session, setSession] = useState<StartAssessmentResponse | null>(null)
-  const [index, setIndex] = useState(0) // current question
+  const [session, setSession] = useState<Session | null>(null)
+  const [question, setQuestion] = useState<AssessmentQuestion | null>(null) // question on screen
+  const [answeredCount, setAnsweredCount] = useState(0) // how many questions are already answered
   const [selected, setSelected] = useState<number | null>(null) // chosen option id
   const [loading, setLoading] = useState(true)
   const [submitting, setSubmitting] = useState(false)
@@ -25,13 +33,33 @@ function AssessmentQuizPage() {
   // React dev mode runs effects twice; this ref makes sure we start only ONE assessment
   const startedRef = useRef(false)
 
+  // Scores the assessment and opens the results page
+  async function finish(assessmentId: number) {
+    const result = await completeAssessment(assessmentId)
+    // Pass the result to the results page through router state
+    navigate('/assessment/results', { state: result, replace: true })
+  }
+
   useEffect(() => {
     if (startedRef.current) return
     startedRef.current = true
 
     async function start() {
       try {
-        setSession(await startAssessment(Number(skillId)))
+        const started = await startAssessment(Number(skillId))
+        setSession({
+          assessmentId: started.assessmentId,
+          skillId: started.skillId,
+          totalQuestions: started.totalQuestions,
+        })
+        setQuestion(started.question)
+        setAnsweredCount(started.answeredCount)
+
+        // A resumed assessment may already have all answers: just score it
+        if (started.finished) {
+          const result = await completeAssessment(started.assessmentId)
+          navigate('/assessment/results', { state: result, replace: true })
+        }
       } catch (err) {
         setError(err instanceof ApiError ? err.message : 'Cannot reach the server')
       } finally {
@@ -39,25 +67,23 @@ function AssessmentQuizPage() {
       }
     }
     start()
-  }, [skillId])
+  }, [skillId, navigate])
 
-  // Save the answer, then go to the next question or finish the assessment
+  // Save the answer, then show the next question the server chose (or finish)
   async function handleSubmit() {
-    if (!session || selected === null) return
-    const question = session.questions[index]
+    if (!session || !question || selected === null) return
 
     setSubmitting(true)
     setError(null)
     try {
-      await submitAnswer(session.assessmentId, question.id, selected)
+      const next = await submitAnswer(session.assessmentId, question.id, selected)
 
-      if (index < session.questions.length - 1) {
-        setIndex(index + 1)
-        setSelected(null)
+      if (next.finished || !next.question) {
+        await finish(session.assessmentId)
       } else {
-        const result = await completeAssessment(session.assessmentId)
-        // Pass the result to the results page through router state
-        navigate('/assessment/results', { state: result, replace: true })
+        setQuestion(next.question)
+        setAnsweredCount(next.answeredCount)
+        setSelected(null)
       }
     } catch (err) {
       setError(err instanceof ApiError ? err.message : 'Cannot reach the server')
@@ -68,7 +94,7 @@ function AssessmentQuizPage() {
 
   if (loading) return <p className="muted quiz-page">Preparing your assessment...</p>
 
-  if (!session) {
+  if (!session || !question) {
     return (
       <div className="quiz-page">
         <p className="form-error">{error ?? 'Could not start the assessment'}</p>
@@ -77,8 +103,8 @@ function AssessmentQuizPage() {
     )
   }
 
-  const total = session.questions.length
-  const question = session.questions[index]
+  const total = session.totalQuestions
+  const current = answeredCount + 1 // number of the question on screen
   const skillName = graph?.nodes.find((n) => n.id === session.skillId)?.name ?? 'Skill'
 
   return (
@@ -92,12 +118,12 @@ function AssessmentQuizPage() {
           <ThemeToggle showLabel={false} />
           <span className="muted">Question</span>
           <strong>
-            {index + 1} / {total}
+            {current} / {total}
           </strong>
         </div>
       </div>
 
-      <ProgressBar value={((index + 1) / total) * 100} />
+      <ProgressBar value={(current / total) * 100} />
 
       <div className="card quiz-card">
         <h2>{question.prompt}</h2>
@@ -119,7 +145,7 @@ function AssessmentQuizPage() {
 
       <div className="quiz-actions">
         <button className="btn btn-primary" onClick={handleSubmit} disabled={selected === null || submitting}>
-          {submitting ? 'Saving...' : index === total - 1 ? 'Finish' : 'Submit Answer'}
+          {submitting ? 'Saving...' : current === total ? 'Finish' : 'Submit Answer'}
         </button>
       </div>
     </div>
