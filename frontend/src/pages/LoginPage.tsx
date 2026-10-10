@@ -25,7 +25,9 @@ function LoginPage() {
       const data = await login(email, password)
       // Save user + token in Redux (this also makes ProtectedRoute pass)
       dispatch(loginSuccess({ user: data.user, token: data.token }))
-      navigate('/select-goal')
+      // Always go to the dashboard. RequireGoal sends the user to
+      // /select-goal automatically if no goal is selected yet.
+      navigate('/dashboard')
     } catch (err) {
       // Show the backend message (e.g. wrong password) or a network error
       setError(err instanceof ApiError ? err.message : 'Cannot reach the server')
