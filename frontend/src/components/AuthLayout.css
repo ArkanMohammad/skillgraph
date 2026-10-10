@@ -88,3 +88,11 @@
     display: none;
   }
 }
+.auth-main {
+  position: relative;
+}
+.auth-theme {
+  position: absolute;
+  top: 24px;
+  right: 24px;
+}
