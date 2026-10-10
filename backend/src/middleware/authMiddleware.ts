@@ -7,20 +7,31 @@ import jwt from 'jsonwebtoken';
 import { env } from '../config/env';
 import { AuthPayload, UserRole } from '../models';
 
-/** Verify Bearer JWT and attach user to req / التحقق من التوكن وإرفاق المستخدم */
+/** Name of the cookie that holds the JWT / اسم الكوكي الحاملة للتوكن */
+export const AUTH_COOKIE = 'token';
+
+/** Read the token from the Bearer header or from the cookie / قراءة التوكن من الهيدر أو الكوكي */
+const extractToken = (req: Request): string | null => {
+  const header = req.headers.authorization; // Expected: "Bearer <token>" / الشكل المتوقع
+  if (header && header.startsWith('Bearer ')) {
+    return header.slice(7); // Strip "Bearer " / إزالة البادئة
+  }
+  const fromCookie = req.cookies?.[AUTH_COOKIE];
+  return typeof fromCookie === 'string' && fromCookie ? fromCookie : null;
+};
+
+/** Verify JWT and attach user to req / التحقق من التوكن وإرفاق المستخدم */
 export const authenticateJWT = (
   req: Request,
   res: Response,
   next: NextFunction
 ): void => {
-  const header = req.headers.authorization; // Expected: "Bearer <token>" / الشكل المتوقع
+  const token = extractToken(req);
 
-  if (!header || !header.startsWith('Bearer ')) {
+  if (!token) {
     res.status(401).json({ message: 'Missing or invalid token / التوكن مفقود أو غير صالح' });
     return;
   }
-
-  const token = header.slice(7); // Strip "Bearer " / إزالة البادئة
 
   try {
     const decoded = jwt.verify(token, env.jwtSecret) as AuthPayload;
