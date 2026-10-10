@@ -1,34 +1,22 @@
-import { useEffect, useMemo, useState } from 'react'
-import { Link, Navigate } from 'react-router-dom'
+import { useMemo } from 'react'
+import { Navigate } from 'react-router-dom'
 import { ReactFlow, Background, Controls } from '@xyflow/react'
 import '@xyflow/react/dist/style.css'
-import { useAppSelector } from '../hooks/reduxHooks'
-import { getGraph } from '../services/graphService'
-import { ApiError } from '../services/apiClient'
+import { useGoalGraph } from '../hooks/useGoalGraph'
+import { useTheme } from '../hooks/useTheme'
 import { buildFlowElements } from '../utils/graphLayout'
-import type { GraphResponse } from '../types/api'
+import '../styles/pages.css'
+
+const LEGEND = [
+  { label: 'Mastered', color: 'var(--mastered)' },
+  { label: 'Learning', color: 'var(--learning)' },
+  { label: 'Ready', color: 'var(--ready)' },
+  { label: 'Locked', color: 'var(--locked)' },
+]
 
 function SkillGraphPage() {
-  const goal = useAppSelector((state) => state.goal.selectedGoal)
-
-  const [graph, setGraph] = useState<GraphResponse | null>(null)
-  const [loading, setLoading] = useState(true)
-  const [error, setError] = useState<string | null>(null)
-
-  // Load the graph of the selected goal
-  useEffect(() => {
-    if (!goal) return
-    async function loadGraph(goalId: number) {
-      try {
-        setGraph(await getGraph(goalId))
-      } catch (err) {
-        setError(err instanceof ApiError ? err.message : 'Cannot reach the server')
-      } finally {
-        setLoading(false)
-      }
-    }
-    loadGraph(goal.id)
-  }, [goal])
+  const { goal, graph, loading, error } = useGoalGraph()
+  const { theme } = useTheme()
 
   // Recompute the layout only when the graph data changes
   const elements = useMemo(
@@ -37,19 +25,29 @@ function SkillGraphPage() {
   )
 
   if (!goal) return <Navigate to="/select-goal" replace />
-  if (loading) return <p>Loading graph...</p>
-  if (error) return <p>{error}</p>
+  if (loading) return <p className="muted">Loading graph...</p>
+  if (error) return <p className="form-error">{error}</p>
 
   return (
     <div>
-      <h1>Skill Graph - {goal.name}</h1>
-      <Link to="/dashboard">Back to dashboard</Link>
+      <p className="page-eyebrow">Skill Graph</p>
+      <h1 className="page-title">{goal.name}</h1>
+
+      <div className="legend">
+        {LEGEND.map((item) => (
+          <span key={item.label}>
+            <span className="legend-dot" style={{ background: item.color }} />
+            {item.label}
+          </span>
+        ))}
+      </div>
 
       {/* React Flow needs a container with a fixed height */}
-      <div style={{ height: '75vh', border: '1px solid #ccc' }}>
+      <div className="graph-box">
         <ReactFlow
           nodes={elements.nodes}
           edges={elements.edges}
+          colorMode={theme}
           nodesDraggable={false}
           fitView
         >

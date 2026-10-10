@@ -1,0 +1,98 @@
+.auth-page {
+  display: grid;
+  grid-template-columns: minmax(320px, 2fr) 3fr;
+  min-height: 100vh;
+}
+
+/* Dark left panel */
+.auth-aside {
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  padding: 64px;
+  background: var(--dark);
+  color: #fff;
+}
+
+.auth-quote {
+  margin: 0;
+  font: 500 24px/1.5 var(--font-heading);
+  color: #e5e7eb;
+}
+
+.auth-author {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  margin-top: 28px;
+}
+
+.auth-avatar {
+  display: grid;
+  place-items: center;
+  width: 56px;
+  height: 56px;
+  border-radius: 50%;
+  background: #2a2d57;
+  color: #8b8ff5;
+  font-weight: 600;
+}
+
+.auth-role,
+.auth-copy {
+  color: #6b7280;
+}
+
+.auth-role {
+  font-size: 14px;
+}
+
+/* Right side with the form card */
+.auth-main {
+  display: grid;
+  place-items: center;
+  padding: 32px;
+}
+
+.auth-card {
+  width: 100%;
+  max-width: 460px;
+  padding: 48px 44px;
+  border: 1px solid var(--border);
+  border-radius: 24px;
+  background: var(--surface);
+  box-shadow: 0 8px 30px rgba(15, 18, 25, 0.06);
+}
+
+.auth-card h1 {
+  font-size: 32px;
+}
+
+.auth-sub {
+  margin: 8px 0 32px;
+  color: var(--text-muted);
+}
+
+.auth-footer {
+  margin: 24px 0 0;
+  text-align: center;
+  color: var(--text-muted);
+}
+
+/* On small screens hide the dark panel */
+@media (max-width: 900px) {
+  .auth-page {
+    grid-template-columns: 1fr;
+  }
+  .auth-aside {
+    display: none;
+  }
+}
+.auth-main {
+  position: relative;
+}
+.auth-theme {
+  position: absolute;
+  top: 24px;
+  right: 24px;
+}

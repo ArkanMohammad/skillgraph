@@ -8,8 +8,8 @@ const NODE_HEIGHT = 50
 // Background color of each node by the user's skill state
 const STATE_COLORS: Record<SkillStatus, string> = {
   LOCKED: '#9ca3af',
-  READY: '#3b82f6',
-  LEARNING: '#f59e0b',
+  READY: '#f59e0b',
+  LEARNING: '#6366f1',
   PRACTICING: '#8b5cf6',
   ASSESSING: '#ec4899',
   MASTERED: '#22c55e',

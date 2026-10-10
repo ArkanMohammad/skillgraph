@@ -1,9 +1,10 @@
 import { useState, type FormEvent } from 'react'
-import { useNavigate } from 'react-router-dom'
+import { Link, useNavigate } from 'react-router-dom'
 import { useAppDispatch } from '../hooks/reduxHooks'
 import { loginSuccess } from '../features/auth/authSlice'
 import { login } from '../services/authService'
 import { ApiError } from '../services/apiClient'
+import AuthLayout from '../components/AuthLayout'
 
 function LoginPage() {
   const dispatch = useAppDispatch()
@@ -34,31 +35,46 @@ function LoginPage() {
   }
 
   return (
-    <form onSubmit={handleSubmit}>
-      <h1>Login</h1>
+    <AuthLayout>
+      <form className="auth-card" onSubmit={handleSubmit}>
+        <h1>Welcome back</h1>
+        <p className="auth-sub">Sign in to continue your learning journey.</p>
 
-      <input
-        type="email"
-        placeholder="Email"
-        value={email}
-        onChange={(e) => setEmail(e.target.value)}
-        required
-      />
+        <label className="field">
+          <span>Email</span>
+          <input
+            className="input"
+            type="email"
+            placeholder="you@example.com"
+            value={email}
+            onChange={(e) => setEmail(e.target.value)}
+            required
+          />
+        </label>
 
-      <input
-        type="password"
-        placeholder="Password"
-        value={password}
-        onChange={(e) => setPassword(e.target.value)}
-        required
-      />
+        <label className="field">
+          <span>Password</span>
+          <input
+            className="input"
+            type="password"
+            placeholder="••••••••"
+            value={password}
+            onChange={(e) => setPassword(e.target.value)}
+            required
+          />
+        </label>
 
-      {error && <p>{error}</p>}
+        {error && <p className="form-error">{error}</p>}
 
-      <button type="submit" disabled={loading}>
-        {loading ? 'Logging in...' : 'Login'}
-      </button>
-    </form>
+        <button className="btn btn-primary btn-block" type="submit" disabled={loading}>
+          {loading ? 'Signing in...' : 'Sign In'}
+        </button>
+
+        <p className="auth-footer">
+          Don't have an account? <Link to="/register">Create one</Link>
+        </p>
+      </form>
+    </AuthLayout>
   )
 }
 
