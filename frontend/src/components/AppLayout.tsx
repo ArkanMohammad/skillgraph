@@ -8,6 +8,7 @@ import {
   PanelLeftClose,
   PanelLeftOpen,
   Share2,
+  Star,
   Target,
   User,
   type LucideIcon,
@@ -22,6 +23,7 @@ const NAV_ITEMS: { to: string; label: string; icon: LucideIcon }[] = [
   { to: '/my-goal', label: 'My Goal', icon: Target },
   { to: '/skill-graph', label: 'Skill Graph', icon: Share2 },
   { to: '/assessment', label: 'Assessments', icon: ClipboardList },
+  { to: '/my-skills', label: 'My Skills', icon: Star },
   { to: '/progress', label: 'Progress', icon: Activity },
   { to: '/profile', label: 'Profile', icon: User },
 ]
