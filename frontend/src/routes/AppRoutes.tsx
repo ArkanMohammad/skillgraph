@@ -1,25 +1,25 @@
-import { Route, Routes } from 'react-router-dom';
-import LandingPage from '../pages/LandingPage';
-import LoginPage from '../pages/LoginPage';
-import RegisterPage from '../pages/RegisterPage';
-import SelectGoalPage from '../pages/SelectGoalPage';
-import AssessmentPage from '../pages/AssessmentPage';
-import AssessmentQuizPage from '../pages/AssessmentQuizPage';
-import AssessmentResultsPage from '../pages/AssessmentResultsPage';
-import DashboardPage from '../pages/DashboardPage';
-import MyGoalPage from '../pages/MyGoalPage';
-import MySkillsPage from '../pages/MySkillsPage';
-import SkillGraphPage from '../pages/SkillGraphPage';
-import ProgressPage from '../pages/ProgressPage';
-import ProfilePage from '../pages/ProfilePage';
-import AppLayout from '../components/AppLayout';
-import ProtectedRoute from './ProtectedRoute';
-import RequireGoal from './RequireGoal';
+import { Navigate, Route, Routes } from 'react-router-dom'
+import LandingPage from '../pages/LandingPage'
+import LoginPage from '../pages/LoginPage'
+import RegisterPage from '../pages/RegisterPage'
+import SelectGoalPage from '../pages/SelectGoalPage'
+import AssessmentPage from '../pages/AssessmentPage'
+import AssessmentQuizPage from '../pages/AssessmentQuizPage'
+import AssessmentResultsPage from '../pages/AssessmentResultsPage'
+import DashboardPage from '../pages/DashboardPage'
+import MyGoalPage from '../pages/MyGoalPage'
+import MySkillsPage from '../pages/MySkillsPage'
+import SkillGraphPage from '../pages/SkillGraphPage'
+import ProgressPage from '../pages/ProgressPage'
+import ProfilePage from '../pages/ProfilePage'
+import AppLayout from '../components/AppLayout'
+import ProtectedRoute from './ProtectedRoute'
+import RequireGoal from './RequireGoal'
 
 export default function AppRoutes() {
   return (
     <Routes>
-      {/* Public */}
+      {/* Public: the landing page is the first page of the site */}
       <Route path="/" element={<LandingPage />} />
       <Route path="/login" element={<LoginPage />} />
       <Route path="/register" element={<RegisterPage />} />
@@ -45,6 +45,9 @@ export default function AppRoutes() {
           </Route>
         </Route>
       </Route>
+
+      {/* Any unknown address goes back to the landing page */}
+      <Route path="*" element={<Navigate to="/" replace />} />
     </Routes>
-  );
+  )
 }

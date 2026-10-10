@@ -1,0 +1,363 @@
+.land {
+  min-height: 100vh;
+  background: var(--surface);
+  color: var(--text);
+}
+
+/* ---------- Top bar ---------- */
+.land-nav {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 20px 48px;
+  border-bottom: 1px solid var(--border);
+  background: var(--surface);
+}
+
+.land-nav-actions {
+  display: flex;
+  align-items: center;
+  gap: 24px;
+}
+
+.land-signin {
+  color: var(--text-muted);
+  font-size: 17px;
+  font-weight: 500;
+  white-space: nowrap;
+}
+
+.land-nav-btn {
+  padding: 12px 24px;
+  font-size: 17px;
+  white-space: nowrap;
+}
+
+/* ---------- Hero ---------- */
+.land-hero {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 64px;
+  align-items: center;
+  max-width: 1400px;
+  margin: 0 auto;
+  padding: 96px 48px 110px;
+}
+
+.land-pill {
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+  padding: 12px 18px;
+  border-radius: 999px;
+  background: var(--primary-soft);
+  color: var(--primary);
+  font-size: 15px;
+  font-weight: 600;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+}
+
+.land-pill-dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: var(--primary);
+}
+
+.land-title {
+  margin: 28px 0 28px;
+  font-size: 76px;
+  line-height: 1.1;
+  letter-spacing: -0.02em;
+}
+
+.land-title-accent {
+  display: block;
+  color: var(--primary);
+}
+
+.land-lead {
+  max-width: 640px;
+  margin: 0 0 40px;
+  font-size: 24px;
+  line-height: 1.6;
+  color: var(--text-muted);
+}
+
+.land-cta {
+  display: flex;
+  gap: 18px;
+  flex-wrap: wrap;
+}
+
+.land-btn-lg {
+  padding: 22px 36px;
+  font-size: 22px;
+  font-weight: 500;
+  border-radius: 14px;
+}
+
+.land-stats {
+  display: flex;
+  gap: 48px;
+  margin-top: 56px;
+}
+
+.land-stat-value {
+  font: 700 36px var(--font-heading);
+}
+
+.land-stat-label {
+  margin-top: 4px;
+  font-size: 17px;
+  color: var(--text-muted);
+}
+
+/* ---------- Hero graph ---------- */
+.land-graph {
+  padding: 36px 32px 28px;
+  border: 1px solid var(--border);
+  border-radius: 32px;
+  background: #f5f6fb; /* stays light in dark mode, like the cards */
+  box-shadow: 0 16px 50px rgba(15, 18, 25, 0.1);
+}
+
+:root[data-theme='dark'] .land-graph {
+  --surface: #ffffff;
+  --border: #e5e7eb;
+  --locked: #9ca3af;
+  --mastered: #22c55e;
+  --learning: #6366f1;
+  --ready: #f59e0b;
+  --primary: #6366f1;
+}
+
+.land-node-text {
+  font: 700 12px var(--font-body);
+}
+
+.land-legend {
+  display: flex;
+  justify-content: center;
+  gap: 32px;
+  margin-top: 12px;
+  font-size: 14px;
+  color: #6b7280;
+}
+
+.land-legend span {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.land-legend i {
+  width: 14px;
+  height: 14px;
+  border-radius: 50%;
+  display: inline-block;
+}
+
+/* ---------- Sections ---------- */
+.land-section {
+  padding: 96px 0;
+}
+
+.land-section-tint {
+  background: var(--bg);
+}
+
+.land-container {
+  max-width: 1400px;
+  margin: 0 auto;
+  padding: 0 48px;
+}
+
+.land-h2 {
+  text-align: center;
+  font-size: 48px;
+  letter-spacing: -0.01em;
+}
+
+.land-sub {
+  margin: 16px 0 64px;
+  text-align: center;
+  font-size: 22px;
+  color: var(--text-muted);
+}
+
+/* ---------- Steps ---------- */
+.land-steps {
+  display: grid;
+  grid-template-columns: repeat(5, 1fr);
+  gap: 36px;
+}
+
+.land-step {
+  position: relative;
+  padding: 28px;
+  border-radius: 28px;
+}
+
+.land-step-number {
+  font: 500 17px var(--font-mono);
+  color: var(--primary);
+}
+
+.land-step h3 {
+  margin: 28px 0 12px;
+  font-size: 22px;
+}
+
+.land-step p {
+  margin: 0;
+  font-size: 17px;
+  line-height: 1.6;
+  color: var(--text-muted);
+}
+
+.land-arrow {
+  position: absolute;
+  right: -30px;
+  top: 50%;
+  transform: translateY(-50%);
+  color: var(--border);
+  font-size: 22px;
+}
+
+/* ---------- Goals ---------- */
+.land-goals {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 24px;
+}
+
+.land-goal {
+  display: block;
+  padding: 30px;
+  border-radius: 28px;
+  transition: border-color 0.15s, box-shadow 0.15s;
+}
+
+.land-goal:hover {
+  border-color: var(--primary);
+  box-shadow: 0 8px 24px rgba(99, 102, 241, 0.15);
+}
+
+.land-goal:hover h3 {
+  color: var(--primary);
+}
+
+.land-goal-icon {
+  display: inline-grid;
+  place-items: center;
+  width: 60px;
+  height: 60px;
+  border-radius: 16px;
+  font-size: 26px;
+}
+
+.land-goal h3 {
+  margin: 28px 0 8px;
+  font-size: 22px;
+  color: var(--text);
+}
+
+.land-goal p {
+  margin: 0;
+  font-size: 17px;
+  color: var(--text-muted);
+}
+
+/* Purple "Begin your journey" card */
+.land-goal-cta {
+  display: flex;
+  flex-direction: column;
+  justify-content: flex-end;
+  gap: 8px;
+  border: none;
+  background: var(--primary);
+  color: #fff;
+  box-shadow: none;
+}
+
+.land-goal-cta:hover {
+  background: var(--primary-hover);
+  box-shadow: none;
+}
+
+.land-goal-cta small {
+  font-size: 17px;
+  opacity: 0.8;
+}
+
+.land-goal-cta strong {
+  font-size: 22px;
+}
+
+/* ---------- Footer ---------- */
+.land-footer {
+  padding: 40px 24px;
+  border-top: 1px solid var(--border);
+  text-align: center;
+  font-size: 17px;
+  color: var(--text-muted);
+}
+
+/* ---------- Responsive ---------- */
+@media (max-width: 1200px) {
+  .land-steps {
+    grid-template-columns: repeat(3, 1fr);
+  }
+  .land-arrow {
+    display: none;
+  }
+  .land-goals {
+    grid-template-columns: repeat(3, 1fr);
+  }
+}
+
+@media (max-width: 900px) {
+  .land-nav {
+    padding: 16px 20px;
+  }
+  .land-hero {
+    grid-template-columns: 1fr;
+    padding: 48px 20px 64px;
+    gap: 40px;
+  }
+  .land-title {
+    font-size: 44px;
+  }
+  .land-lead {
+    font-size: 19px;
+  }
+  .land-btn-lg {
+    font-size: 18px;
+    padding: 16px 24px;
+  }
+  .land-stats {
+    gap: 28px;
+  }
+  .land-container {
+    padding: 0 20px;
+  }
+  .land-section {
+    padding: 64px 0;
+  }
+  .land-h2 {
+    font-size: 34px;
+  }
+  .land-steps,
+  .land-goals {
+    grid-template-columns: 1fr 1fr;
+  }
+}
+
+@media (max-width: 560px) {
+  .land-steps,
+  .land-goals {
+    grid-template-columns: 1fr;
+  }
+}
