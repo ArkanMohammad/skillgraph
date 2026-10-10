@@ -1,8 +1,11 @@
-/* Fonts: DM Sans for headings, Inter for text, JetBrains Mono for small labels */
 @import url('https://fonts.googleapis.com/css2?family=DM+Sans:wght@500;600;700&family=Inter:wght@400;500;600&family=JetBrains+Mono:wght@400;500&display=swap');
 
-/* Design tokens: change a color here and it changes everywhere */
-:root {
+/* Design tokens: change a color here and it changes everywhere.
+   The same light values are re-applied inside .card / .auth-card,
+   so cards stay white even when the page is in dark mode (like the Figma). */
+:root,
+:root[data-theme='dark'] .card,
+:root[data-theme='dark'] .auth-card {
   --primary: #6366f1;
   --primary-hover: #5558e6;
   --primary-soft: #eef0ff;
@@ -11,6 +14,7 @@
   --surface: #ffffff;
   --text: #0f1219;
   --text-muted: #6b7280;
+  --muted: var(--text-muted); /* alias used by pages.css */
   --border: #e5e7eb;
 
   --sidebar-bg: #ffffff;
@@ -123,6 +127,7 @@ a {
   display: inline-flex;
   align-items: center;
   justify-content: center;
+  gap: 8px;
   padding: 14px 20px;
   border: none;
   border-radius: 12px;
@@ -147,6 +152,12 @@ a {
 
 .btn-block {
   width: 100%;
+}
+
+.btn-outline {
+  background: var(--surface);
+  color: var(--text);
+  border: 1px solid var(--border);
 }
 
 /* ---------- Forms ---------- */
@@ -181,7 +192,7 @@ a {
   margin: 0 0 16px;
   padding: 10px 14px;
   border-radius: 10px;
-  background: #fef2f2;
+  background: var(--danger-soft);
   color: var(--danger);
   font-size: 14px;
 }
@@ -206,6 +217,7 @@ a {
   border: 1px solid var(--border);
   border-radius: 20px;
   background: var(--surface);
+  color: var(--text);
   box-shadow: var(--shadow);
 }
 
@@ -239,10 +251,4 @@ a {
 }
 .bar-mastered > span {
   background: var(--mastered);
-}
-
-.btn-outline {
-  background: var(--surface);
-  color: var(--text);
-  border: 1px solid var(--border);
 }
