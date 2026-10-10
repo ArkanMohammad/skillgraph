@@ -1,23 +1,37 @@
+/* Two equal halves */
 .auth-page {
   display: grid;
-  grid-template-columns: minmax(320px, 2fr) 3fr;
+  grid-template-columns: 1fr 1fr;
   min-height: 100vh;
 }
 
-/* Dark left panel */
+/* Left half: drawing from /public/auth-bg.svg with a dark overlay on top.
+   Logo on top, quote in the middle, copyright at the bottom. */
 .auth-aside {
   display: flex;
   flex-direction: column;
   justify-content: space-between;
   padding: 64px;
-  background: var(--dark);
+  background-color: #060b16;
+  background-image:
+    linear-gradient(
+      to bottom,
+      rgba(5, 8, 16, 0.2) 0%,
+      rgba(5, 8, 16, 0.6) 50%,
+      rgba(5, 8, 16, 0.2) 100%
+    ),
+    url('/auth-bg.svg');
+  background-size: cover;
+  background-position: center;
+  background-repeat: no-repeat;
   color: #fff;
 }
 
 .auth-quote {
   margin: 0;
-  font: 500 24px/1.5 var(--font-heading);
-  color: #e5e7eb;
+  font: 600 26px/1.5 var(--font-heading);
+  color: #fff;
+  text-shadow: 0 2px 14px rgba(0, 0, 0, 0.7);
 }
 
 .auth-author {
@@ -27,41 +41,88 @@
   margin-top: 28px;
 }
 
+.auth-author strong {
+  color: #fff;
+  text-shadow: 0 1px 8px rgba(0, 0, 0, 0.7);
+}
+
 .auth-avatar {
   display: grid;
   place-items: center;
   width: 56px;
   height: 56px;
   border-radius: 50%;
-  background: #2a2d57;
-  color: #8b8ff5;
+  background: rgba(255, 255, 255, 0.18);
+  color: #fff;
   font-weight: 600;
 }
 
 .auth-role,
 .auth-copy {
-  color: #6b7280;
+  color: rgba(255, 255, 255, 0.8);
+  text-shadow: 0 1px 8px rgba(0, 0, 0, 0.7);
 }
 
 .auth-role {
   font-size: 14px;
 }
 
-/* Right side with the form card */
+/* Right half: same background as the landing page, card centered */
 .auth-main {
+  position: relative;
   display: grid;
   place-items: center;
   padding: 32px;
+  background: var(--surface);
 }
 
+/* Dark mode: same deep blue as the image, with a soft glow in the corner */
+:root[data-theme='dark'] .auth-main {
+  background-color: #0a111f;
+  background-image:
+    radial-gradient(circle at 85% 8%, rgba(34, 211, 238, 0.12), transparent 45%),
+    radial-gradient(circle at 10% 95%, rgba(99, 102, 241, 0.14), transparent 50%);
+}
+
+/* "Back" button: top left corner of the right half */
+.auth-back {
+  position: absolute;
+  top: 24px;
+  left: 0px;
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 8px 12px;
+  border-radius: 10px;
+  color: var(--text-muted);
+  font-size: 16px;
+  font-weight: 500;
+}
+
+.auth-back:hover {
+  color: var(--primary);
+}
+
+/* Theme toggle: top right corner of the right half */
+.auth-theme {
+  position: absolute;
+  top: 24px;
+  right: 24px;
+}
+
+/* The card keeps the light colors in dark mode, so its text color
+   must be set here too (otherwise it inherits the light page text) */
 .auth-card {
   width: 100%;
   max-width: 460px;
+  margin-top: 20px;
+  margin-left: 15px;
   padding: 48px 44px;
   border: 1px solid var(--border);
   border-radius: 24px;
   background: var(--surface);
-  box-shadow: 0 8px 30px rgba(15, 18, 25, 0.06);
+  color: var(--text);
+  box-shadow: 0 12px 40px rgba(15, 18, 25, 0.1);
 }
 
 .auth-card h1 {
@@ -79,7 +140,7 @@
   color: var(--text-muted);
 }
 
-/* On small screens hide the dark panel */
+/* On small screens hide the left half */
 @media (max-width: 900px) {
   .auth-page {
     grid-template-columns: 1fr;
@@ -87,12 +148,4 @@
   .auth-aside {
     display: none;
   }
-}
-.auth-main {
-  position: relative;
-}
-.auth-theme {
-  position: absolute;
-  top: 24px;
-  right: 24px;
 }
