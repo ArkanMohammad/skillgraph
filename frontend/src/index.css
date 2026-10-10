@@ -50,19 +50,20 @@
   --font-mono: 'JetBrains Mono', monospace;
 }
 
-/* Dark theme: only the values that change */
+/* Dark theme: only the values that change.
+   The page background is a deep night blue (same as the login/register right side). */
 :root[data-theme='dark'] {
   color-scheme: dark;
 
   --primary-soft: #23264d;
 
-  --bg: #0f1117;
-  --surface: #171a26;
+  --bg: #0a111f;
+  --surface: #0a111f;
   --text: #f3f4f6;
   --text-muted: #9ca3af;
-  --border: #262a3b;
+  --border: #1e2a40;
 
-  --sidebar-bg: #151826;
+  --sidebar-bg: #0d1526;
   --sidebar-text: #cbd0dc;
   --sidebar-active-bg: #23264d;
   --sidebar-active-text: #8b8ff5;
@@ -73,7 +74,7 @@
   --learning-text: #8b8ff5;
   --ready-soft: #3a2d0c;
   --ready-text: #fbbf24;
-  --locked-soft: #262a3b;
+  --locked-soft: #1b2438;
   --locked-text: #9ca3af;
 
   --danger-soft: #3b1414;
@@ -90,6 +91,24 @@ body {
   background: var(--bg);
   color: var(--text);
   -webkit-font-smoothing: antialiased;
+}
+
+/* Dark mode: soft glows on the page background (fixed while scrolling) */
+:root[data-theme='dark'] body {
+  background-color: #0a111f;
+  background-image:
+    radial-gradient(circle at 85% 8%, rgba(34, 211, 238, 0.12), transparent 45%),
+    radial-gradient(circle at 10% 95%, rgba(99, 102, 241, 0.14), transparent 50%);
+  background-attachment: fixed;
+}
+
+/* Dark mode: page wrappers must not hide the glows */
+:root[data-theme='dark'] .land,
+:root[data-theme='dark'] .land-nav,
+:root[data-theme='dark'] .land-section-tint,
+:root[data-theme='dark'] .app-shell,
+:root[data-theme='dark'] .goal-page {
+  background: transparent;
 }
 
 h1, h2, h3 {
