@@ -1,6 +1,6 @@
 -- SkillGraph database schema
 -- مخطط قاعدة بيانات SkillGraph
--- Run once to create tables and constraints / يُنفَّذ مرة واحدة لإنشاء الجداول والقيود
+-- Run once to create tables and constraints / يُنفَّذ مرة واحدة لإنشاء الجداول والقيود
 
 -- Generate UUIDs for users / توليد معرفات UUID للمستخدمين
 CREATE EXTENSION IF NOT EXISTS pgcrypto;
@@ -12,7 +12,9 @@ CREATE TYPE user_role AS ENUM ('USER', 'ADMIN');
 CREATE TYPE user_goal_status AS ENUM ('ACTIVE', 'PAUSED', 'COMPLETED');
 
 -- Skill learning state after assessments / حالة المهارة بعد التقييم
-CREATE TYPE skill_state AS ENUM ('LOCKED', 'READY', 'LEARNING', 'PRACTICING', 'MASTERED');
+CREATE TYPE skill_state AS ENUM (
+  'LOCKED', 'READY', 'LEARNING', 'PRACTICING', 'ASSESSING', 'MASTERED', 'NEEDS_VERIFICATION'
+);
 
 -- Accounts: unique email, hashed password / الحسابات: البريد فريد وكلمة المرور مشفّرة
 CREATE TABLE users (
@@ -86,6 +88,7 @@ CREATE TABLE user_skills (
   confidence NUMERIC(3, 2) NOT NULL DEFAULT 0
     CHECK (confidence BETWEEN 0 AND 1),
   state skill_state NOT NULL DEFAULT 'READY',
+  last_assessed_at TIMESTAMPTZ,
   updated_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
   PRIMARY KEY (user_id, skill_id)
 );
@@ -112,10 +115,24 @@ CREATE TABLE assessments (
   final_score NUMERIC(5, 2) CHECK (final_score IS NULL OR final_score BETWEEN 0 AND 100)
 );
 
+-- Sub-skills of a skill: used for the per-concept score and its weight
+-- مفاهيم فرعية داخل المهارة: لكل مفهوم نتيجة ووزن
+CREATE TABLE concepts (
+  id SERIAL PRIMARY KEY,
+  skill_id INTEGER NOT NULL REFERENCES skills(id) ON DELETE CASCADE,
+  name VARCHAR(150) NOT NULL,
+  weight NUMERIC(3, 2) NOT NULL DEFAULT 1.00 CHECK (weight > 0 AND weight <= 1),
+  UNIQUE (skill_id, name)
+);
+
+-- difficulty: 1 = easy, 2 = medium, 3 = hard / الصعوبة: 1 سهل، 2 متوسط، 3 صعب
 CREATE TABLE questions (
   id SERIAL PRIMARY KEY,
   skill_id INTEGER NOT NULL REFERENCES skills(id) ON DELETE CASCADE,
-  prompt TEXT NOT NULL
+  concept_id INTEGER REFERENCES concepts(id) ON DELETE SET NULL,
+  difficulty SMALLINT NOT NULL DEFAULT 2 CHECK (difficulty BETWEEN 1 AND 3),
+  prompt TEXT NOT NULL,
+  UNIQUE (skill_id, prompt)
 );
 
 CREATE TABLE question_options (
@@ -145,5 +162,7 @@ CREATE TABLE skill_events (
 );
 
 CREATE INDEX idx_questions_skill ON questions (skill_id);
+CREATE INDEX idx_questions_skill_difficulty ON questions (skill_id, difficulty);
+CREATE INDEX idx_concepts_skill ON concepts (skill_id);
 CREATE INDEX idx_assessments_user ON assessments (user_id);
 CREATE INDEX idx_skill_events_user_skill ON skill_events (user_id, skill_id);
