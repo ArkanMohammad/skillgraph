@@ -1,0 +1,39 @@
+/* Assessment results page: result per concept */
+.result-confidence {
+  font-size: 14px;
+}
+.result-concepts {
+  width: 100%;
+  max-width: 520px;
+  margin-top: 24px;
+  text-align: left;
+}
+.result-concepts h3 {
+  margin: 0 0 12px;
+  font-size: 16px;
+}
+.concept-row {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  padding: 12px 0;
+  border-top: 1px solid var(--border);
+}
+.concept-head {
+  display: flex;
+  justify-content: space-between;
+  align-items: baseline;
+  gap: 12px;
+}
+.concept-name {
+  font-weight: 600;
+}
+.concept-score {
+  font-weight: 700;
+}
+.concept-weak {
+  color: var(--danger, #dc2626);
+}
+.concept-meta {
+  font-size: 13px;
+}
