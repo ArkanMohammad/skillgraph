@@ -1,5 +1,7 @@
 import type { ReactNode } from 'react'
 import Logo from './Logo'
+import ThemeToggle from './ThemeToggle'
+
 import './AuthLayout.css'
 
 // Shared layout for Login and Register: dark side panel + centered content
@@ -26,7 +28,12 @@ function AuthLayout({ children }: { children: ReactNode }) {
         <small className="auth-copy">© 2026 SkillGraph</small>
       </aside>
 
-      <main className="auth-main">{children}</main>
+      <main className="auth-main">
+        <div className="auth-theme">
+          <ThemeToggle showLabel={false} />
+        </div>
+        {children}
+      </main>
     </div>
   )
 }
