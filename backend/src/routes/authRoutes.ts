@@ -1,17 +1,26 @@
 /**
  * مسارات التسجيل وتسجيل الدخول
- * Register and login routes
+ * Register, login, current user and logout routes
  */
-import { Router, Request, Response } from 'express';
+import { Router, Request, Response, CookieOptions } from 'express';
 import bcrypt from 'bcrypt';
 import jwt from 'jsonwebtoken';
 import { query } from '../config/db';
 import { env } from '../config/env';
 import { User } from '../models';
+import { authenticateJWT, AUTH_COOKIE } from '../middleware/authMiddleware';
 
 const router = Router();
 const SALT_ROUNDS = 10; // bcrypt cost / تكلفة التشفير
 const TOKEN_EXPIRES_IN = '24h'; // JWT lifetime / صلاحية التوكن
+const COOKIE_MAX_AGE_MS = 24 * 60 * 60 * 1000; // Same 24 hours / نفس المدة
+
+/** Cookie settings: JavaScript cannot read it (httpOnly) / الجافاسكربت لا تستطيع قراءتها */
+const cookieOptions: CookieOptions = {
+  httpOnly: true,
+  sameSite: 'lax',
+  secure: env.isProduction, // HTTPS only in production / HTTPS فقط في الإنتاج
+};
 
 /** Public user fields (no password_hash) / بيانات المستخدم بدون كلمة المرور */
 type PublicUser = Omit<User, 'password_hash'>;
@@ -67,7 +76,7 @@ router.post('/register', async (req: Request, res: Response): Promise<void> => {
   }
 });
 
-/** POST /login — verify credentials and issue JWT / التحقق وإصدار توكن */
+/** POST /login — verify credentials, issue JWT and set the cookie / التحقق وإصدار توكن */
 router.post('/login', async (req: Request, res: Response): Promise<void> => {
   try {
     const email = typeof req.body.email === 'string' ? req.body.email.trim().toLowerCase() : '';
@@ -99,15 +108,45 @@ router.post('/login', async (req: Request, res: Response): Promise<void> => {
       { expiresIn: TOKEN_EXPIRES_IN }
     );
 
+    // The browser keeps the cookie and sends it automatically / المتصفح يحفظ الكوكي ويرسلها تلقائياً
+    res.cookie(AUTH_COOKIE, token, { ...cookieOptions, maxAge: COOKIE_MAX_AGE_MS });
+
     res.status(200).json({
       message: 'Login successful / تم تسجيل الدخول',
-      token,
+      token, // Still returned so Bearer clients (Postman) keep working / للتوافق مع Postman
       user: toPublicUser(user),
     });
   } catch (err) {
     console.error(err);
     res.status(500).json({ message: 'Server error / حدث خطأ في الخادم' });
   }
+});
+
+/** GET /me — who is logged in? Used by the frontend after a page refresh / من المسجّل حالياً؟ */
+router.get('/me', authenticateJWT, async (req: Request, res: Response): Promise<void> => {
+  try {
+    const found = await query<User>(
+      'SELECT id, name, email, role, created_at, updated_at FROM users WHERE id = $1',
+      [req.user?.id]
+    );
+    const user = found.rows[0];
+
+    if (!user) {
+      res.status(401).json({ message: 'User not found / المستخدم غير موجود' });
+      return;
+    }
+
+    res.status(200).json({ user });
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ message: 'Server error / حدث خطأ في الخادم' });
+  }
+});
+
+/** POST /logout — remove the cookie / حذف الكوكي */
+router.post('/logout', (_req: Request, res: Response): void => {
+  res.clearCookie(AUTH_COOKIE, cookieOptions);
+  res.status(200).json({ message: 'Logged out / تم تسجيل الخروج' });
 });
 
 export default router;

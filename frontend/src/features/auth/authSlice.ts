@@ -1,71 +1,61 @@
-import { createSlice, type PayloadAction } from '@reduxjs/toolkit'
+import { createAsyncThunk, createSlice, type PayloadAction } from '@reduxjs/toolkit'
 import type { User } from '../../types/api'
+import { getMe } from '../../services/authService'
 
-// Defines the authentication state stored in Redux
+// Defines the authentication state stored in Redux (memory only).
+// The real login proof is the httpOnly cookie managed by the browser.
 type AuthState = {
   user: User | null
-  token: string | null
   isAuthenticated: boolean
+  // false until we asked the backend "who is logged in?" once after page load
+  sessionChecked: boolean
 }
 
-// Key used to store the session in the browser
-const STORAGE_KEY = 'skillgraph_auth'
-
-// Reads a saved session from localStorage (if any) when the app starts
-function loadAuth(): AuthState {
-  try {
-    const saved = localStorage.getItem(STORAGE_KEY)
-    if (saved) {
-      const { user, token } = JSON.parse(saved)
-      if (user && token) return { user, token, isAuthenticated: true }
-    }
-  } catch {
-    // Ignore corrupted or blocked storage
-  }
-  return { user: null, token: null, isAuthenticated: false }
+const initialState: AuthState = {
+  user: null,
+  isAuthenticated: false,
+  sessionChecked: false,
 }
 
-// Initial state: restored session if it exists, otherwise logged out
-const initialState: AuthState = loadAuth()
+// After a page refresh: ask the backend if the cookie is still valid
+export const restoreSession = createAsyncThunk('auth/restoreSession', async () => {
+  const data = await getMe()
+  return data.user
+})
 
 const authSlice = createSlice({
   name: 'auth',
   initialState,
 
   reducers: {
-    // Stores the user and JWT token after a successful login
-    loginSuccess: (
-      state,
-      action: PayloadAction<{ user: User; token: string }>
-    ) => {
+    // Stores the user after a successful login (a token in the payload is ignored)
+    loginSuccess: (state, action: PayloadAction<{ user: User; token?: string }>) => {
       state.user = action.payload.user
-      state.token = action.payload.token
       state.isAuthenticated = true
-
-      // Persist the session so a page refresh keeps the user logged in
-      try {
-        localStorage.setItem(
-          STORAGE_KEY,
-          JSON.stringify({ user: action.payload.user, token: action.payload.token })
-        )
-      } catch {
-        // Storage may be unavailable (private mode); the session just won't persist
-      }
+      state.sessionChecked = true
     },
 
-    // Clears authentication data when the user logs out
+    // Clears the user when logging out (sessionChecked stays true: we know the answer)
     logout: (state) => {
       state.user = null
-      state.token = null
       state.isAuthenticated = false
-
-      // Remove the saved session
-      try {
-        localStorage.removeItem(STORAGE_KEY)
-      } catch {
-        // Ignore storage errors
-      }
+      state.sessionChecked = true
     },
+  },
+
+  extraReducers: (builder) => {
+    builder
+      .addCase(restoreSession.fulfilled, (state, action) => {
+        state.user = action.payload
+        state.isAuthenticated = true
+        state.sessionChecked = true
+      })
+      // 401 or network error: simply not logged in
+      .addCase(restoreSession.rejected, (state) => {
+        state.user = null
+        state.isAuthenticated = false
+        state.sessionChecked = true
+      })
   },
 })
 

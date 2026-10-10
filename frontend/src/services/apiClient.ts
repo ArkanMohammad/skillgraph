@@ -1,5 +1,3 @@
-import { store } from '../store/store'
-
 // Base URL of the backend API, read from the Vite environment
 const API_URL = import.meta.env.VITE_API_URL as string
 
@@ -13,20 +11,18 @@ export class ApiError extends Error {
   }
 }
 
-// Sends a JSON request to the backend and returns the parsed response
+// Sends a JSON request to the backend and returns the parsed response.
+// The login token lives in an httpOnly cookie, so the browser sends it
+// automatically as long as credentials: 'include' is set.
 export async function apiRequest<T>(
   path: string,
   options: RequestInit = {}
 ): Promise<T> {
-  // Read the JWT from the Redux store (null if the user is logged out)
-  const token = store.getState().auth.token
-
   const response = await fetch(`${API_URL}${path}`, {
     ...options,
+    credentials: 'include',
     headers: {
       'Content-Type': 'application/json',
-      // Attach the token only when it exists
-      ...(token ? { Authorization: `Bearer ${token}` } : {}),
       ...options.headers,
     },
   })
