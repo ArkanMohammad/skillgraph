@@ -166,6 +166,8 @@
 
 .land-section-tint {
   background: var(--bg);
+  border-top: 1.5px solid var(--border);
+  border-bottom: 1.5px solid var(--border);
 }
 
 .land-container {
