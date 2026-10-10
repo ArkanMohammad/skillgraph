@@ -63,3 +63,30 @@ export type GraphResponse = {
   nodes: GraphNode[]
   edges: GraphEdge[]
 }
+// ---- Assessments ----
+export type AssessmentOption = { id: number; text: string }
+
+export type AssessmentQuestion = {
+  id: number
+  prompt: string
+  options: AssessmentOption[]
+}
+
+// POST /assessments/start
+export type StartAssessmentResponse = {
+  assessmentId: number
+  skillId: number
+  questions: AssessmentQuestion[]
+}
+
+// POST /assessments/:id/complete (mastery values are 0-100, confidence is 0-1)
+export type CompleteAssessmentResponse = {
+  assessmentId: number
+  finalScore: number
+  correctAnswers: number
+  totalQuestions: number
+  mastery: number
+  requiredMastery: number
+  confidence: number
+  state: SkillStatus
+}
