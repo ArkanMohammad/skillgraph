@@ -2,6 +2,7 @@ import { useState, type FormEvent } from 'react'
 import { Link, useNavigate } from 'react-router-dom'
 import { register } from '../services/authService'
 import { ApiError } from '../services/apiClient'
+import AuthLayout from '../components/AuthLayout'
 
 function RegisterPage() {
   const navigate = useNavigate()
@@ -31,42 +32,57 @@ function RegisterPage() {
   }
 
   return (
-    <form onSubmit={handleSubmit}>
-      <h1>Register</h1>
+    <AuthLayout>
+      <form className="auth-card" onSubmit={handleSubmit}>
+        <h1>Create your account</h1>
+        <p className="auth-sub">Start mapping your path to your career goal.</p>
 
-      <input
-        placeholder="Name"
-        value={name}
-        onChange={(e) => setName(e.target.value)}
-        required
-      />
+        <label className="field">
+          <span>Name</span>
+          <input
+            className="input"
+            placeholder="Your name"
+            value={name}
+            onChange={(e) => setName(e.target.value)}
+            required
+          />
+        </label>
 
-      <input
-        type="email"
-        placeholder="Email"
-        value={email}
-        onChange={(e) => setEmail(e.target.value)}
-        required
-      />
+        <label className="field">
+          <span>Email</span>
+          <input
+            className="input"
+            type="email"
+            placeholder="you@example.com"
+            value={email}
+            onChange={(e) => setEmail(e.target.value)}
+            required
+          />
+        </label>
 
-      <input
-        type="password"
-        placeholder="Password"
-        value={password}
-        onChange={(e) => setPassword(e.target.value)}
-        required
-      />
+        <label className="field">
+          <span>Password</span>
+          <input
+            className="input"
+            type="password"
+            placeholder="••••••••"
+            value={password}
+            onChange={(e) => setPassword(e.target.value)}
+            required
+          />
+        </label>
 
-      {error && <p>{error}</p>}
+        {error && <p className="form-error">{error}</p>}
 
-      <button type="submit" disabled={loading}>
-        {loading ? 'Creating account...' : 'Register'}
-      </button>
+        <button className="btn btn-primary btn-block" type="submit" disabled={loading}>
+          {loading ? 'Creating account...' : 'Create account'}
+        </button>
 
-      <p>
-        Already have an account? <Link to="/login">Login</Link>
-      </p>
-    </form>
+        <p className="auth-footer">
+          Already have an account? <Link to="/login">Sign in</Link>
+        </p>
+      </form>
+    </AuthLayout>
   )
 }
 

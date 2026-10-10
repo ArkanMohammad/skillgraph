@@ -1,15 +1,19 @@
 import { useEffect, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { useAppDispatch } from '../hooks/reduxHooks'
+import { useSignOut } from '../hooks/useSignOut'
 import { selectGoal } from '../features/goal/goalSlice'
 import { getGoals, saveSelectedGoal } from '../services/goalService'
 import { ApiError } from '../services/apiClient'
 import type { Goal } from '../types/api'
-import LogoutButton from '../components/LogoutButton'
+import Logo from '../components/Logo'
+import ThemeToggle from '../components/ThemeToggle'
+import '../styles/pages.css'
 
 function SelectGoalPage() {
   const dispatch = useAppDispatch()
   const navigate = useNavigate()
+  const signOut = useSignOut()
 
   const [goals, setGoals] = useState<Goal[]>([])
   const [loading, setLoading] = useState(true)
@@ -42,24 +46,33 @@ function SelectGoalPage() {
     }
   }
 
-  if (loading) return <p>Loading goals...</p>
-
   return (
-    <div>
-      <h1>Select your career goal</h1>
-      <LogoutButton />
+    <div className="goal-page">
+      <div className="goal-top">
+        <Logo />
+        <div className="goal-top-actions">
+          <ThemeToggle showLabel={false} />
+          <button className="btn btn-outline" onClick={signOut}>
+            Sign out
+          </button>
+        </div>
+      </div>
 
-      {error && <p>{error}</p>}
+      <h1>Choose your career goal</h1>
+      <p className="muted">SkillGraph maps exactly what you need to learn for each path.</p>
 
-      <ul>
+      {error && <p className="form-error">{error}</p>}
+      {loading && <p className="muted">Loading goals...</p>}
+
+      <div className="goal-grid">
         {goals.map((goal) => (
-          <li key={goal.id}>
+          <button key={goal.id} className="card goal-card" onClick={() => handleSelect(goal)}>
+            <div className="goal-icon">{goal.name.charAt(0)}</div>
             <h3>{goal.name}</h3>
-            <p>{goal.description}</p>
-            <button onClick={() => handleSelect(goal)}>Select</button>
-          </li>
+            <p className="muted">{goal.description}</p>
+          </button>
         ))}
-      </ul>
+      </div>
     </div>
   )
 }
