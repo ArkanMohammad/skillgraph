@@ -22,6 +22,31 @@ router.get('/', async (_req: Request, res: Response): Promise<void> => {
   }
 });
 
+/** GET /current — the user's current goal, or null / الهدف الحالي للمستخدم أو null */
+router.get('/current', async (req: Request, res: Response): Promise<void> => {
+  const userId = req.user?.id;
+
+  if (!userId) {
+    res.status(401).json({ message: 'Unauthorized / غير مصرّح' });
+    return;
+  }
+
+  try {
+    const result = await query<Goal>(
+      `SELECT g.id, g.name, g.description, g.created_at
+       FROM user_goals ug
+       JOIN goals g ON g.id = ug.goal_id
+       WHERE ug.user_id = $1 AND ug.is_current = TRUE
+       LIMIT 1`,
+      [userId]
+    );
+    res.status(200).json({ goal: result.rows[0] ?? null });
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ message: 'Server error / حدث خطأ في الخادم' });
+  }
+});
+
 /** PUT /select — set the user's current goal / حفظ أو تفعيل الهدف الحالي */
 router.put('/select', async (req: Request, res: Response): Promise<void> => {
   const userId = req.user?.id;
