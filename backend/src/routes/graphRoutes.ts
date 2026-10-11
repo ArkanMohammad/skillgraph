@@ -1,23 +1,23 @@
 /**
- * Graph API: مهارات وروابط المتطلبات لـ React Flow
- * Graph API: skill nodes and prerequisite edges for React Flow
+ * Graph API: skill nodes and prerequisite edges for React Flow.
+ * The state of every node (MASTERED / READY / LOCKED) comes from the recommendation engine,
+ * so the graph and the Next Best Skill always agree.
  */
 import { Router, Request, Response } from 'express';
-import { query } from '../config/db';
 import { authenticateJWT } from '../middleware/authMiddleware';
+import { getSkillStates } from '../services/algorithm/recommendationEngine';
+import { loadGoalGraphData } from '../services/recommendationService';
 
 const router = Router();
 
-router.use(authenticateJWT); // Protect graph routes / حماية مسارات المخطط
-
-type UserState = 'LOCKED' | 'READY' | 'MASTERED';
+router.use(authenticateJWT); // Protect graph routes
 
 interface GraphNode {
   id: number;
   name: string;
   category: string | null;
   requiredMastery: number;
-  userState: UserState;
+  userState: 'LOCKED' | 'READY' | 'MASTERED';
   mastery: number;
   confidence: number;
 }
@@ -28,132 +28,57 @@ interface GraphEdge {
   requiredMastery: number;
 }
 
-interface SkillNodeRow {
-  id: number;
-  name: string;
-  category: string | null;
-  required_proficiency: string | number;
-  mastery: string | number;
-  confidence: string | number;
-}
+const toPercent = (value: number): number => Math.round(value * 100); // 0-1 -> 0-100
 
-interface SkillEdgeRow {
-  source: number;
-  target: number;
-  required_proficiency: string | number;
-}
-
-const toPercent = (value: string | number): number => Math.round(Number(value) * 100); // DB 0-1 → API 0-100
-
-/** GET /:goalId — nodes and edges for one career goal / عقد وروابط هدف واحد */
+/** GET /:goalId - nodes and edges for one career goal */
 router.get('/:goalId', async (req: Request, res: Response): Promise<void> => {
   const userId = req.user?.id;
   const goalId = Number(req.params.goalId);
 
   if (!userId) {
-    res.status(401).json({ message: 'Unauthorized / غير مصرّح' });
+    res.status(401).json({ message: 'Unauthorized' });
     return;
   }
 
   if (!Number.isInteger(goalId) || goalId <= 0) {
-    res.status(400).json({ message: 'Valid goalId is required / معرّف الهدف مطلوب' });
+    res.status(400).json({ message: 'Valid goalId is required' });
     return;
   }
 
   try {
-    const goal = await query('SELECT id FROM goals WHERE id = $1', [goalId]);
-    if (goal.rowCount === 0) {
-      res.status(404).json({ message: 'Goal not found / الهدف غير موجود' });
+    const data = await loadGoalGraphData(userId, goalId);
+    if (!data) {
+      res.status(404).json({ message: 'Goal not found' });
       return;
     }
 
-    // Skills of this goal + user mastery/confidence / مهارات الهدف وحالة المستخدم
-    const nodeResult = await query<SkillNodeRow>(
-      `SELECT
-         s.id,
-         s.name,
-         s.category,
-         gs.required_proficiency,
-         COALESCE(us.proficiency_level, 0) AS mastery,
-         COALESCE(us.confidence, 0) AS confidence
-       FROM goal_skills gs
-       JOIN skills s ON s.id = gs.skill_id
-       LEFT JOIN user_skills us
-         ON us.skill_id = s.id AND us.user_id = $1
-       WHERE gs.goal_id = $2
-       ORDER BY s.id`,
-      [userId, goalId]
-    );
+    const states = getSkillStates(data);
+    const requiredBySkill = new Map(data.skills.map((skill) => [skill.skillId, skill.requiredMastery]));
 
-    // Prerequisite edges inside this goal / روابط المتطلبات داخل الهدف
-    const edgeResult = await query<SkillEdgeRow>(
-      `SELECT
-         sd.prerequisite_skill_id AS source,
-         sd.skill_id AS target,
-         prereq_gs.required_proficiency
-       FROM skill_dependencies sd
-       JOIN goal_skills prereq_gs
-         ON prereq_gs.skill_id = sd.prerequisite_skill_id AND prereq_gs.goal_id = $1
-       WHERE sd.skill_id IN (SELECT skill_id FROM goal_skills WHERE goal_id = $1)
-         AND sd.prerequisite_skill_id IN (SELECT skill_id FROM goal_skills WHERE goal_id = $1)`,
-      [goalId]
-    );
-
-    const edges: GraphEdge[] = edgeResult.rows.map((row) => ({
-      source: row.source,
-      target: row.target,
-      requiredMastery: toPercent(row.required_proficiency),
-    }));
-
-    const prereqsBySkill = new Map<number, number[]>(); // target → sources / المهارة → متطلباتها
-    for (const edge of edges) {
-      const list = prereqsBySkill.get(edge.target) ?? [];
-      list.push(edge.source);
-      prereqsBySkill.set(edge.target, list);
-    }
-
-    const masteryById = new Map<number, { mastery: number; requiredMastery: number }>();
-    for (const row of nodeResult.rows) {
-      masteryById.set(row.id, {
-        mastery: toPercent(row.mastery),
-        requiredMastery: toPercent(row.required_proficiency),
-      });
-    }
-
-    const isMastered = (skillId: number): boolean => {
-      const data = masteryById.get(skillId);
-      return !!data && data.mastery >= data.requiredMastery;
-    };
-
-    const nodes: GraphNode[] = nodeResult.rows.map((row) => {
-      const mastery = toPercent(row.mastery);
-      const requiredMastery = toPercent(row.required_proficiency);
-      let userState: UserState;
-
-      if (mastery >= requiredMastery) {
-        userState = 'MASTERED';
-      } else {
-        const prereqs = prereqsBySkill.get(row.id) ?? [];
-        // READY if no prereqs or all mastered / جاهزة إن اكتملت المتطلبات
-        const unlocked = prereqs.every((prereqId) => isMastered(prereqId));
-        userState = unlocked ? 'READY' : 'LOCKED';
-      }
-
+    const nodes: GraphNode[] = data.skills.map((skill) => {
+      const progress = data.progress.get(skill.skillId);
       return {
-        id: row.id,
-        name: row.name,
-        category: row.category,
-        requiredMastery,
-        userState,
-        mastery,
-        confidence: toPercent(row.confidence),
+        id: skill.skillId,
+        name: skill.name,
+        category: skill.category,
+        requiredMastery: toPercent(skill.requiredMastery),
+        userState: states.get(skill.skillId) ?? 'LOCKED',
+        mastery: toPercent(progress?.mastery ?? 0),
+        confidence: toPercent(progress?.confidence ?? 0),
       };
     });
+
+    // Edge value = the mastery the goal requires from the prerequisite
+    const edges: GraphEdge[] = data.edges.map((edge) => ({
+      source: edge.prerequisiteId,
+      target: edge.skillId,
+      requiredMastery: toPercent(requiredBySkill.get(edge.prerequisiteId) ?? 0),
+    }));
 
     res.status(200).json({ nodes, edges });
   } catch (err) {
     console.error(err);
-    res.status(500).json({ message: 'Server error / حدث خطأ في الخادم' });
+    res.status(500).json({ message: 'Server error' });
   }
 });
 
