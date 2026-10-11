@@ -3,9 +3,10 @@ import { Navigate, Outlet } from 'react-router-dom'
 import { useAppDispatch, useAppSelector } from '../hooks/reduxHooks'
 import { fetchCurrentGoal } from '../features/goal/goalSlice'
 import { useSignOut } from '../hooks/useSignOut'
+import { PATHS } from './paths'
 
 // Loads the user's goal from the server, then decides where to go:
-// goal found -> show the page, no goal -> /select-goal
+// goal found -> show the page, no goal -> the goal selection page
 function RequireGoal() {
   const dispatch = useAppDispatch()
   const signOut = useSignOut()
@@ -35,7 +36,7 @@ function RequireGoal() {
   }
 
   if (!selectedGoal) {
-    return <Navigate to="/select-goal" replace />
+    return <Navigate to={PATHS.selectGoal} replace />
   }
 
   return <Outlet />

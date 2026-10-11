@@ -24,24 +24,28 @@ export default function AppRoutes() {
       <Route path="/login" element={<LoginPage />} />
       <Route path="/register" element={<RegisterPage />} />
 
-      <Route element={<ProtectedRoute />}>
+      {/* Everything for a logged-in user lives under /user (see paths.ts) */}
+      <Route path="/user" element={<ProtectedRoute />}>
+        {/* /user opens the dashboard */}
+        <Route index element={<Navigate to="dashboard" replace />} />
+
         {/* Logged in, goal selection (no sidebar) */}
-        <Route path="/select-goal" element={<SelectGoalPage />} />
+        <Route path="select-goal" element={<SelectGoalPage />} />
 
         {/* Logged in AND has a goal */}
         <Route element={<RequireGoal />}>
-          <Route path="/assessment/skill/:skillId" element={<AssessmentQuizPage />} />
-          <Route path="/assessment/results" element={<AssessmentResultsPage />} />
+          <Route path="assessment/skill/:skillId" element={<AssessmentQuizPage />} />
+          <Route path="assessment/results" element={<AssessmentResultsPage />} />
 
           {/* With sidebar */}
           <Route element={<AppLayout />}>
-            <Route path="/dashboard" element={<DashboardPage />} />
-            <Route path="/my-goal" element={<MyGoalPage />} />
-            <Route path="/skill-graph" element={<SkillGraphPage />} />
-            <Route path="/assessment" element={<AssessmentPage />} />
-            <Route path="/my-skills" element={<MySkillsPage />} />
-            <Route path="/progress" element={<ProgressPage />} />
-            <Route path="/profile" element={<ProfilePage />} />
+            <Route path="dashboard" element={<DashboardPage />} />
+            <Route path="my-goal" element={<MyGoalPage />} />
+            <Route path="skill-graph" element={<SkillGraphPage />} />
+            <Route path="assessment" element={<AssessmentPage />} />
+            <Route path="my-skills" element={<MySkillsPage />} />
+            <Route path="progress" element={<ProgressPage />} />
+            <Route path="profile" element={<ProfilePage />} />
           </Route>
         </Route>
       </Route>

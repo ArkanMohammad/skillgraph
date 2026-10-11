@@ -6,6 +6,7 @@ import ThemeToggle from '../components/ThemeToggle'
 import type { AssessmentResult } from '../services/assessmentService'
 import '../styles/pages.css'
 import '../styles/results.css'
+import { PATHS } from '../routes/paths'
 
 // Concepts below this score are shown as weak
 const WEAK_SCORE = 60
@@ -28,7 +29,7 @@ function buildMessage(result: AssessmentResult, weakNames: string[]) {
 function AssessmentResultsPage() {
   // The quiz page sends the result here; without it (e.g. direct URL) go back
   const result = useLocation().state as AssessmentResult | null
-  if (!result) return <Navigate to="/assessment" replace />
+  if (!result) return <Navigate to={PATHS.assessments} replace />
 
   const concepts = result.concepts ?? []
   const weakNames = concepts.filter((c) => c.score < WEAK_SCORE).map((c) => c.name)
@@ -74,10 +75,10 @@ function AssessmentResultsPage() {
         )}
 
         <div className="result-actions">
-          <Link className="btn btn-primary" to="/skill-graph">
+          <Link className="btn btn-primary" to={PATHS.skillGraph}>
             View Skill Graph
           </Link>
-          <Link className="btn btn-outline" to="/assessment">
+          <Link className="btn btn-outline" to={PATHS.assessments}>
             More assessments
           </Link>
         </div>

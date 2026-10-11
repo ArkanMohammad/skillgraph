@@ -9,6 +9,7 @@ import type { Goal } from '../types/api'
 import Logo from '../components/Logo'
 import ThemeToggle from '../components/ThemeToggle'
 import '../styles/pages.css'
+import { PATHS } from '../routes/paths'
 
 function SelectGoalPage() {
   const dispatch = useAppDispatch()
@@ -40,7 +41,7 @@ function SelectGoalPage() {
     try {
       await saveSelectedGoal(goal.id)
       dispatch(selectGoal(goal))
-      navigate('/dashboard')
+      navigate(PATHS.dashboard)
     } catch (err) {
       setError(err instanceof ApiError ? err.message : 'Cannot reach the server')
     }

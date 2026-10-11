@@ -3,11 +3,12 @@ import { useGoalGraph } from '../hooks/useGoalGraph'
 import StatusBadge from '../components/StatusBadge'
 import ProgressBar from '../components/ProgressBar'
 import '../styles/pages.css'
+import { PATHS } from '../routes/paths'
 
 function AssessmentPage() {
   const { goal, graph, loading, error } = useGoalGraph()
 
-  if (!goal) return <Navigate to="/select-goal" replace />
+  if (!goal) return <Navigate to={PATHS.selectGoal} replace />
   if (loading) return <p className="muted">Loading skills...</p>
   if (error) return <p className="form-error">{error}</p>
 
@@ -33,7 +34,7 @@ function AssessmentPage() {
             <p className="muted">
               {skill.mastery}% of required {skill.requiredMastery}%
             </p>
-            <Link className="btn btn-primary" to={`/assessment/skill/${skill.id}`}>
+            <Link className="btn btn-primary" to={PATHS.assessmentQuiz(skill.id)}>
               {skill.userState === 'MASTERED' ? 'Retake test' : 'Start test'}
             </Link>
           </div>

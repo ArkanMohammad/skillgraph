@@ -7,6 +7,7 @@ import ProgressBar from '../components/ProgressBar'
 import ThemeToggle from '../components/ThemeToggle'
 import type { AssessmentQuestion } from '../types/api'
 import '../styles/pages.css'
+import { PATHS } from '../routes/paths'
 
 const LETTERS = ['A', 'B', 'C', 'D', 'E', 'F']
 
@@ -37,7 +38,7 @@ function AssessmentQuizPage() {
   async function finish(assessmentId: number) {
     const result = await completeAssessment(assessmentId)
     // Pass the result to the results page through router state
-    navigate('/assessment/results', { state: result, replace: true })
+    navigate(PATHS.assessmentResults, { state: result, replace: true })
   }
 
   useEffect(() => {
@@ -58,7 +59,7 @@ function AssessmentQuizPage() {
         // A resumed assessment may already have all answers: just score it
         if (started.finished) {
           const result = await completeAssessment(started.assessmentId)
-          navigate('/assessment/results', { state: result, replace: true })
+          navigate(PATHS.assessmentResults, { state: result, replace: true })
         }
       } catch (err) {
         setError(err instanceof ApiError ? err.message : 'Cannot reach the server')
@@ -98,7 +99,7 @@ function AssessmentQuizPage() {
     return (
       <div className="quiz-page">
         <p className="form-error">{error ?? 'Could not start the assessment'}</p>
-        <Link to="/assessment">Back to assessments</Link>
+        <Link to={PATHS.assessments}>Back to assessments</Link>
       </div>
     )
   }

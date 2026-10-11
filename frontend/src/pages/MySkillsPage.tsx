@@ -5,6 +5,7 @@ import StatusBadge from '../components/StatusBadge'
 import ProgressBar from '../components/ProgressBar'
 import type { SkillStatus } from '../types/api'
 import '../styles/pages.css'
+import { PATHS } from '../routes/paths'
 
 type Filter = 'ALL' | 'MASTERED' | 'LEARNING' | 'READY' | 'LOCKED'
 
@@ -29,7 +30,7 @@ function MySkillsPage() {
   const { goal, graph, loading, error } = useGoalGraph()
   const [filter, setFilter] = useState<Filter>('ALL')
 
-  if (!goal) return <Navigate to="/select-goal" replace />
+  if (!goal) return <Navigate to={PATHS.selectGoal} replace />
   if (loading) return <p className="muted">Loading skills...</p>
   if (error) return <p className="form-error">{error}</p>
 
@@ -83,7 +84,7 @@ function MySkillsPage() {
                 </td>
                 <td>
                   {skill.userState !== 'LOCKED' && (
-                    <Link to={`/assessment/skill/${skill.id}`}>Take test →</Link>
+                    <Link to={PATHS.assessmentQuiz(skill.id)}>Take test →</Link>
                   )}
                 </td>
               </tr>
