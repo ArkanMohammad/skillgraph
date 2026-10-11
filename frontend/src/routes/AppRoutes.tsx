@@ -11,7 +11,7 @@ import MyGoalPage from '../pages/MyGoalPage'
 import MySkillsPage from '../pages/MySkillsPage'
 import SkillGraphPage from '../pages/SkillGraphPage'
 import ProgressPage from '../pages/ProgressPage'
-import ProfilePage from '../pages/ProfilePage'
+import MyProfilePage from '../pages/MyProfilePage'
 import AppLayout from '../components/AppLayout'
 import ProtectedRoute from './ProtectedRoute'
 import RequireGoal from './RequireGoal'
@@ -24,9 +24,8 @@ export default function AppRoutes() {
       <Route path="/login" element={<LoginPage />} />
       <Route path="/register" element={<RegisterPage />} />
 
-      {/* Everything for a logged-in user lives under /user (see paths.ts) */}
+      {/* Everything for logged-in users lives under /user */}
       <Route path="/user" element={<ProtectedRoute />}>
-        {/* /user opens the dashboard */}
         <Route index element={<Navigate to="dashboard" replace />} />
 
         {/* Logged in, goal selection (no sidebar) */}
@@ -45,7 +44,7 @@ export default function AppRoutes() {
             <Route path="assessment" element={<AssessmentPage />} />
             <Route path="my-skills" element={<MySkillsPage />} />
             <Route path="progress" element={<ProgressPage />} />
-            <Route path="profile" element={<ProfilePage />} />
+            <Route path="my-profile" element={<MyProfilePage />} />
           </Route>
         </Route>
       </Route>
