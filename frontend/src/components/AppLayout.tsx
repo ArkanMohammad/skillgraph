@@ -26,7 +26,7 @@ const NAV_ITEMS: { to: string; label: string; icon: LucideIcon }[] = [
   { to: PATHS.assessments, label: 'Assessments', icon: ClipboardList },
   { to: PATHS.mySkills, label: 'My Skills', icon: Star },
   { to: PATHS.progress, label: 'Progress', icon: Activity },
-  { to: PATHS.profile, label: 'Profile', icon: User },
+  { to: PATHS.myProfile, label: 'My Profile', icon: User },
 ]
 
 // Layout for the logged-in app: sidebar on the left, current page on the right

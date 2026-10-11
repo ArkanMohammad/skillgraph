@@ -1,5 +1,5 @@
 // Every address of the app in one place.
-// Pages for a logged-in user live under /user, public pages stay at the top.
+// Logged-in pages live under /user, public pages stay at the root.
 const USER = '/user'
 
 export const PATHS = {
@@ -15,8 +15,7 @@ export const PATHS = {
   assessmentResults: `${USER}/assessment/results`,
   mySkills: `${USER}/my-skills`,
   progress: `${USER}/progress`,
-  profile: `${USER}/profile`,
+  myProfile: `${USER}/my-profile`,
 
-  // Address of the quiz for one skill
   assessmentQuiz: (skillId: number | string) => `${USER}/assessment/skill/${skillId}`,
 }
