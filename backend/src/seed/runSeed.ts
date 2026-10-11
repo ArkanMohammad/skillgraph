@@ -1,6 +1,5 @@
 /**
  * Fills the database with skills, goals, prerequisites, concepts and questions.
- * يملأ قاعدة البيانات بالمهارات والأهداف والاعتماديات والمفاهيم والأسئلة.
  *
  * Run from the backend folder:  npx ts-node --transpile-only src/seed/runSeed.ts
  * It is safe to run many times (nothing is duplicated).
@@ -23,7 +22,7 @@ const hashText = (text: string): number => {
   return hash >>> 0;
 };
 
-/** Places the correct option at a stable "random" position / يضع الإجابة الصحيحة بمكان ثابت */
+/** Places the correct option at a stable "random" position */
 const buildOptions = (
   prompt: string,
   correct: string,
@@ -35,14 +34,14 @@ const buildOptions = (
 };
 
 async function main(): Promise<void> {
-  // 1) Validate the data first / تحقق من البيانات أولاً
+  // 1) Validate the data first
   const problems = validateSeedData();
   if (problems.length > 0) {
     console.error('Seed data has problems, nothing was written:\n- ' + problems.join('\n- '));
     process.exit(1);
   }
 
-  // 2) Make sure tables and the 7 goals exist / تأكد من وجود الجداول والأهداف
+  // 2) Make sure tables and the 7 goals exist
   await ensureAssessmentSchema();
   await seedGoals();
 
@@ -50,7 +49,7 @@ async function main(): Promise<void> {
   try {
     await client.query('BEGIN');
 
-    // 3) Skills / المهارات
+    // 3) Skills
     const skillIds = new Map<string, number>();
     for (const skill of SKILLS) {
       const result = await client.query<{ id: number }>(
@@ -64,7 +63,7 @@ async function main(): Promise<void> {
       skillIds.set(skill.name, result.rows[0].id);
     }
 
-    // 4) Prerequisites / الاعتماديات
+    // 4) Prerequisites
     for (const [skill, prerequisite] of DEPENDENCIES) {
       await client.query(
         `INSERT INTO skill_dependencies (skill_id, prerequisite_skill_id)
@@ -74,7 +73,23 @@ async function main(): Promise<void> {
       );
     }
 
-    // 5) Goals and their skills / مهارات كل هدف
+    // Remove old prerequisites that are not in the catalog any more (stale data from older seeds)
+    const wantedDependencies = new Set(
+      DEPENDENCIES.map(([skill, prerequisite]) => `${skillIds.get(skill)}:${skillIds.get(prerequisite)}`)
+    );
+    const storedDependencies = await client.query<{ skill_id: number; prerequisite_skill_id: number }>(
+      'SELECT skill_id, prerequisite_skill_id FROM skill_dependencies'
+    );
+    for (const row of storedDependencies.rows) {
+      if (!wantedDependencies.has(`${row.skill_id}:${row.prerequisite_skill_id}`)) {
+        await client.query(
+          'DELETE FROM skill_dependencies WHERE skill_id = $1 AND prerequisite_skill_id = $2',
+          [row.skill_id, row.prerequisite_skill_id]
+        );
+      }
+    }
+
+    // 5) Goals and their skills
     const hoursBySkill = new Map(SKILLS.map((s) => [s.name, s.hours]));
     for (const [goalName, list] of Object.entries(GOAL_SKILLS)) {
       const goal = await client.query<{ id: number }>('SELECT id FROM goals WHERE name = $1', [goalName]);
@@ -92,7 +107,19 @@ async function main(): Promise<void> {
       }
     }
 
-    // 6) Concepts and questions / المفاهيم والأسئلة
+    // Remove old goal skills that are not in the catalog any more
+    for (const [goalName, list] of Object.entries(GOAL_SKILLS)) {
+      const keepIds = list.map(([skill]) => skillIds.get(skill) as number);
+      const placeholders = keepIds.map((_, index) => `$${index + 2}`).join(', ');
+      await client.query(
+        `DELETE FROM goal_skills
+         WHERE goal_id = (SELECT id FROM goals WHERE name = $1)
+           AND skill_id NOT IN (${placeholders})`,
+        [goalName, ...keepIds]
+      );
+    }
+
+    // 6) Concepts and questions
     let questionCount = 0;
     for (const item of allQuestions) {
       const skillId = skillIds.get(item.skill);
