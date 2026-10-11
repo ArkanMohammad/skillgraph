@@ -27,3 +27,19 @@ export function getMe() {
 export function logoutRequest() {
   return apiRequest<{ message: string }>('/auth/logout', { method: 'POST' })
 }
+
+// Changes the password of the logged-in user (the current password is checked on the server)
+export function changePassword(currentPassword: string, newPassword: string) {
+  return apiRequest<{ message: string }>('/account/password', {
+    method: 'PUT',
+    body: JSON.stringify({ currentPassword, newPassword }),
+  })
+}
+
+// Deletes the account of the logged-in user (the password is checked on the server)
+export function deleteAccount(password: string) {
+  return apiRequest<{ message: string }>('/account', {
+    method: 'DELETE',
+    body: JSON.stringify({ password }),
+  })
+}

@@ -67,3 +67,45 @@
 .profile-card h3 {
   margin-bottom: 16px;
 }
+
+.profile-form {
+  display: grid;
+  gap: 12px;
+  max-width: 420px;
+  margin-top: 14px;
+}
+
+.profile-input {
+  padding: 10px 14px;
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  background: var(--surface);
+  color: var(--text);
+  font: 400 15px var(--font-body);
+}
+
+.profile-input:focus {
+  outline: 2px solid var(--primary);
+  outline-offset: 1px;
+}
+
+.profile-actions {
+  display: flex;
+  gap: 10px;
+}
+
+.profile-success {
+  margin-bottom: 14px;
+  color: var(--mastered-text);
+  font-weight: 500;
+}
+
+.profile-btn-danger {
+  background: #dc2626;
+  color: #fff;
+  border: none;
+}
+
+.profile-btn-danger:hover:not(:disabled) {
+  background: #b91c1c;
+}

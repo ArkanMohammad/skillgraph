@@ -7,6 +7,7 @@ import cookieParser from 'cookie-parser';
 import { env } from './config/env';
 import { seedGoals } from './config/seedData';
 import authRoutes from './routes/authRoutes';
+import accountRoutes from './routes/accountRoutes';
 import goalRoutes from './routes/goalRoutes';
 import graphRoutes from './routes/graphRoutes';
 import assessmentRoutes from './routes/assessmentRoutes';
@@ -35,6 +36,7 @@ app.use(express.json()); // Parse JSON request body
 app.use(cookieParser()); // Read cookies (the login token)
 
 app.use('/api/auth', authRoutes); // Auth: /register /login /me /logout
+app.use('/api/account', accountRoutes); // Change password, delete account
 app.use('/api/goals', goalRoutes); // Protected career goals
 app.use('/api/graph', graphRoutes); // Skill graph for React Flow
 app.use('/api/assessments', assessmentRoutes); // Assessment and mastery
