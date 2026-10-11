@@ -16,16 +16,17 @@ import {
 import Logo from './Logo'
 import ThemeToggle from './ThemeToggle'
 import { useSignOut } from '../hooks/useSignOut'
+import { PATHS } from '../routes/paths'
 import './AppLayout.css'
 
 const NAV_ITEMS: { to: string; label: string; icon: LucideIcon }[] = [
-  { to: '/dashboard', label: 'Dashboard', icon: LayoutGrid },
-  { to: '/my-goal', label: 'My Goal', icon: Target },
-  { to: '/skill-graph', label: 'Skill Graph', icon: Share2 },
-  { to: '/assessment', label: 'Assessments', icon: ClipboardList },
-  { to: '/my-skills', label: 'My Skills', icon: Star },
-  { to: '/progress', label: 'Progress', icon: Activity },
-  { to: '/profile', label: 'Profile', icon: User },
+  { to: PATHS.dashboard, label: 'Dashboard', icon: LayoutGrid },
+  { to: PATHS.myGoal, label: 'My Goal', icon: Target },
+  { to: PATHS.skillGraph, label: 'Skill Graph', icon: Share2 },
+  { to: PATHS.assessments, label: 'Assessments', icon: ClipboardList },
+  { to: PATHS.mySkills, label: 'My Skills', icon: Star },
+  { to: PATHS.progress, label: 'Progress', icon: Activity },
+  { to: PATHS.profile, label: 'Profile', icon: User },
 ]
 
 // Layout for the logged-in app: sidebar on the left, current page on the right

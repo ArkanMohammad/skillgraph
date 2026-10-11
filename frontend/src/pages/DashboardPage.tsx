@@ -7,6 +7,7 @@ import StatusBadge from '../components/StatusBadge'
 import ProgressBar from '../components/ProgressBar'
 import DonutChart from '../components/DonutChart'
 import '../styles/pages.css'
+import { PATHS } from '../routes/paths'
 
 // Small card: icon tile, big value, label and a hint line
 function StatCard(props: {
@@ -34,7 +35,7 @@ function DashboardPage() {
   const { goal, graph, loading, error } = useGoalGraph()
 
   // No goal selected yet: send the user to choose one
-  if (!goal) return <Navigate to="/select-goal" replace />
+  if (!goal) return <Navigate to={PATHS.selectGoal} replace />
   if (loading) return <p className="muted">Loading dashboard...</p>
   if (error) return <p className="form-error">{error}</p>
 
@@ -64,7 +65,7 @@ function DashboardPage() {
             Career goal: <span className="chip">{goal.name}</span>
           </p>
         </div>
-        <Link className="btn btn-light" to="/skill-graph">
+        <Link className="btn btn-light" to={PATHS.skillGraph}>
           View Skill Graph →
         </Link>
       </div>
@@ -105,10 +106,10 @@ function DashboardPage() {
                 {next.name} is unlocked and ready. It is the next step toward your {goal.name} goal.
               </p>
               <div className="hero-actions">
-                <Link className="btn btn-white" to={`/assessment/skill/${next.id}`}>
+                <Link className="btn btn-white" to={PATHS.assessmentQuiz(next.id)}>
                   Start assessment
                 </Link>
-                <Link className="hero-link" to="/skill-graph">
+                <Link className="hero-link" to={PATHS.skillGraph}>
                   View in Graph
                 </Link>
               </div>

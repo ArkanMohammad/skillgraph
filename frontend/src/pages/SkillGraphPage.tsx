@@ -8,6 +8,7 @@ import { buildFlowElements } from '../utils/graphLayout'
 import { pickNextSkill } from '../utils/nextSkill'
 import SkillNode from '../components/SkillNode'
 import '../styles/pages.css'
+import { PATHS } from '../routes/paths'
 
 // Defined outside the component so React Flow does not re-create it on every render
 const nodeTypes = { skill: SkillNode }
@@ -30,7 +31,7 @@ function SkillGraphPage() {
     return buildFlowElements(graph, pickNextSkill(graph.nodes)?.id)
   }, [graph])
 
-  if (!goal) return <Navigate to="/select-goal" replace />
+  if (!goal) return <Navigate to={PATHS.selectGoal} replace />
   if (loading) return <p className="muted">Loading graph...</p>
   if (error) return <p className="form-error">{error}</p>
 

@@ -4,11 +4,12 @@ import StatusBadge from '../components/StatusBadge'
 import ProgressBar from '../components/ProgressBar'
 import type { GraphNode } from '../types/api'
 import '../styles/pages.css'
+import { PATHS } from '../routes/paths'
 
 function MyGoalPage() {
   const { goal, graph, loading, error } = useGoalGraph()
 
-  if (!goal) return <Navigate to="/select-goal" replace />
+  if (!goal) return <Navigate to={PATHS.selectGoal} replace />
   if (loading) return <p className="muted">Loading goal...</p>
   if (error) return <p className="form-error">{error}</p>
 
@@ -81,7 +82,7 @@ function MyGoalPage() {
                       {skill.userState !== 'LOCKED' && (
                         <Link
                           className="btn btn-outline btn-sm"
-                          to={`/assessment/skill/${skill.id}`}
+                          to={PATHS.assessmentQuiz(skill.id)}
                         >
                           {skill.userState === 'MASTERED' ? 'Retake' : 'Take test'}
                         </Link>

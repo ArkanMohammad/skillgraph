@@ -5,6 +5,7 @@ import { loginSuccess } from '../features/auth/authSlice'
 import { login } from '../services/authService'
 import { ApiError } from '../services/apiClient'
 import AuthLayout from '../components/AuthLayout'
+import { PATHS } from '../routes/paths'
 
 function LoginPage() {
   const dispatch = useAppDispatch()
@@ -26,8 +27,8 @@ function LoginPage() {
       // Save user + token in Redux (this also makes ProtectedRoute pass)
       dispatch(loginSuccess({ user: data.user, token: data.token }))
       // Always go to the dashboard. RequireGoal sends the user to
-      // /select-goal automatically if no goal is selected yet.
-      navigate('/dashboard')
+      // the goal selection page automatically if no goal is selected yet.
+      navigate(PATHS.dashboard)
     } catch (err) {
       // Show the backend message (e.g. wrong password) or a network error
       setError(err instanceof ApiError ? err.message : 'Cannot reach the server')
