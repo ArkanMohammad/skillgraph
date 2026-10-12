@@ -1,5 +1,6 @@
 import { apiRequest } from './apiClient'
 import type { AssessmentQuestion, CompleteAssessmentResponse } from '../types/api'
+import type { Recommendation } from './recommendationService'
 
 // POST /assessments/start: the server picks the questions one by one (adaptive)
 export type StartAssessmentResult = {
@@ -29,9 +30,11 @@ export type ConceptResult = {
   score: number // 0-100, harder questions count more
 }
 
-// POST /assessments/:id/complete: the old fields plus the result per concept
+// POST /assessments/:id/complete: the old fields, the result per concept
+// and the new plan (the recommendation is recalculated after the mastery changed)
 export type AssessmentResult = CompleteAssessmentResponse & {
   concepts: ConceptResult[] // weakest concept first
+  nextRecommendation: Recommendation | null // null if the plan could not be calculated
 }
 
 // Creates (or resumes) an assessment for a skill and returns the first question
