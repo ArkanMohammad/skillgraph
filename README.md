@@ -30,6 +30,9 @@ frontend/
     pages/ components/ hooks/ services/ features/ (Redux slices) routes/ styles/
 docs/
   algorithm.md          how the recommendation algorithm works
+  setup.md              step by step setup on a new computer
+  demo.md               demo accounts and the presentation scenarios
+  deployment.md         backend and frontend deployment, smoke test, troubleshooting
 ```
 
 ## Run it locally
@@ -45,7 +48,7 @@ cd backend
 npm install
 cp .env.example .env        # then edit DATABASE_URL and JWT_SECRET
 npm run migrate             # applies schema.sql once, then every file in migrations/
-npx ts-node --transpile-only src/seed/runSeed.ts   # goals, skills, edges, questions
+npm run seed                # goals, skills, edges, questions
 npm run dev                 # http://localhost:3000
 ```
 
@@ -65,6 +68,9 @@ npm run dev
 The dev server forwards `/api` to the backend (`VITE_API_URL=/api`).
 If you use the `http://skillgraph` dev domain, add `127.0.0.1 skillgraph` to the hosts file
 and set `CLIENT_URL=http://skillgraph` in `backend/.env`.
+
+More detail: [docs/setup.md](docs/setup.md). Demo accounts for a presentation: `npm run seed:demo`
+(see [docs/demo.md](docs/demo.md)).
 
 ## Roles and the first admin
 
@@ -99,14 +105,17 @@ What each group covers:
 
 The database and API tests create their own users (`d12test_*`, `apitest_*`) and remove them at the end.
 
-### Deployment check
+### Data and deployment checks
 
 ```bash
-npm run check:deploy
+npm run check:seed      # reads the database: catalog match, prerequisite cycles, 6 questions per skill, one correct option per question
+npm run check:deploy    # environment variables, database, migrations and seed
 API_URL=https://your-api.example.com/api npm run check:deploy   # also checks a running server
 ```
 
-It checks the environment variables (JWT secret, `CLIENT_URL`, `NODE_ENV`), the database connection, the applied migrations, the seed data, and, with `API_URL`, the health endpoint, CORS and the protection of the routes. It exits with an error when something fails.
+Full deployment guide: [docs/deployment.md](docs/deployment.md).
+
+`check:deploy` checks the environment variables (JWT secret, `CLIENT_URL`, `NODE_ENV`), the database connection, the applied migrations, the seed data, and, with `API_URL`, the health endpoint, CORS and the protection of the routes. It exits with an error when something fails.
 
 ## API overview
 
