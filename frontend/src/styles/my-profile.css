@@ -41,6 +41,7 @@
 }
 
 .profile-label {
+  display: block;
   font-size: 13px;
   color: var(--text-muted);
   margin-bottom: 2px;
@@ -92,6 +93,19 @@
 .profile-actions {
   display: flex;
   gap: 10px;
+}
+
+.profile-actions-top {
+  margin-top: 20px;
+}
+
+.profile-input-wide {
+  width: 100%;
+  max-width: 420px;
+}
+
+.profile-form .profile-label {
+  margin-bottom: -6px;
 }
 
 .profile-success {

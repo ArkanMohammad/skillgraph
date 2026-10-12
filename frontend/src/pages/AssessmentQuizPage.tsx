@@ -1,5 +1,11 @@
 import { useEffect, useRef, useState } from 'react'
 import { Link, useNavigate, useParams } from 'react-router-dom'
+import { useAppDispatch } from '../hooks/reduxHooks'
+import {
+  completeAssessment as markAssessmentCompleted,
+  resetAssessment,
+  submitAnswer as storeAnswer,
+} from '../features/assessment/assessmentSlice'
 import {
   completeAssessment,
   startAssessment,
@@ -27,6 +33,7 @@ type Session = {
 function AssessmentQuizPage() {
   const { skillId } = useParams()
   const navigate = useNavigate()
+  const dispatch = useAppDispatch()
   const { graph } = useGoalGraph() // only used to show the skill name
 
   const [session, setSession] = useState<Session | null>(null)
@@ -46,6 +53,7 @@ function AssessmentQuizPage() {
   // Scores the assessment and opens the results page
   async function finish(assessmentId: number) {
     const result = await completeAssessment(assessmentId)
+    dispatch(markAssessmentCompleted())
     // Pass the result to the results page through router state
     navigate(PATHS.assessmentResults, { state: result, replace: true })
   }
@@ -53,6 +61,7 @@ function AssessmentQuizPage() {
   useEffect(() => {
     if (startedRef.current) return
     startedRef.current = true
+    dispatch(resetAssessment()) // a new quiz always starts from a clean store
 
     async function start() {
       try {
@@ -68,6 +77,7 @@ function AssessmentQuizPage() {
         // A resumed assessment may already have all answers: just score it
         if (started.finished) {
           const result = await completeAssessment(started.assessmentId)
+          dispatch(markAssessmentCompleted())
           navigate(PATHS.assessmentResults, { state: result, replace: true })
         }
       } catch (err) {
@@ -77,7 +87,7 @@ function AssessmentQuizPage() {
       }
     }
     start()
-  }, [skillId, navigate])
+  }, [skillId, navigate, dispatch])
 
   // Save the answer and show if it was right (green) or wrong (red)
   async function handleSubmit() {
@@ -87,6 +97,7 @@ function AssessmentQuizPage() {
     setError(null)
     try {
       const result = await submitAnswer(session.assessmentId, question.id, selected)
+      dispatch(storeAnswer({ questionId: question.id, selectedAnswer: String(selected) }))
       setFeedback(result)
     } catch (err) {
       setError(err instanceof ApiError ? err.message : 'Cannot reach the server')

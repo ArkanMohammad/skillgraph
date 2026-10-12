@@ -6,6 +6,7 @@ import cors from 'cors';
 import cookieParser from 'cookie-parser';
 import { env } from './config/env';
 import { seedGoals } from './config/seedData';
+import apiRoutes from './routes';
 import authRoutes from './routes/authRoutes';
 import accountRoutes from './routes/accountRoutes';
 import goalRoutes from './routes/goalRoutes';
@@ -14,6 +15,7 @@ import assessmentRoutes from './routes/assessmentRoutes';
 import recommendationRoutes from './routes/recommendationRoutes';
 import { errorHandler, notFound } from './middleware';
 import { ensureAssessmentSchema } from './config/ensureSchema';
+import { runMigrations } from './config/migrate';
 
 const app = express();
 
@@ -35,6 +37,7 @@ app.use(
 app.use(express.json()); // Parse JSON request body
 app.use(cookieParser()); // Read cookies (the login token)
 
+app.use('/api', apiRoutes); // Health check: GET /api/health
 app.use('/api/auth', authRoutes); // Auth: /register /login /me /logout
 app.use('/api/account', accountRoutes); // Change password, delete account
 app.use('/api/goals', goalRoutes); // Protected career goals
@@ -48,6 +51,8 @@ app.use(errorHandler);
 /** Seed then listen */
 const start = async (): Promise<void> => {
   try {
+    const applied = await runMigrations(); // Pending SQL migrations (schema_migrations table)
+    if (applied.length > 0) console.log(`Migrations applied: ${applied.join(', ')}`);
     await ensureAssessmentSchema(); // Assessment tables if missing
     await seedGoals();
     app.listen(env.port, () => {
