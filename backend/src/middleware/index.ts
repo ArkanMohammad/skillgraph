@@ -4,4 +4,4 @@
 export { errorHandler } from './errorHandler';
 export { notFound } from './notFound';
 export { authenticateJWT, requireRole } from './authMiddleware';
-export { isPositiveInt, positiveIntBody, positiveIntParam } from './validate';
+export { isPositiveInt, isUuid, positiveIntBody, positiveIntParam, uuidParam } from './validate';

@@ -35,3 +35,20 @@ export const positiveIntBody =
     }
     next();
   };
+
+const UUID_PATTERN = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
+
+/** True for a UUID string such as the ids in the users table */
+export const isUuid = (value: unknown): boolean => typeof value === 'string' && UUID_PATTERN.test(value);
+
+/** Checks that route parameters such as :userId are UUIDs */
+export const uuidParam =
+  (...names: string[]): RequestHandler =>
+  (req: Request, res: Response, next: NextFunction): void => {
+    const bad = names.filter((name) => !isUuid(req.params[name]));
+    if (bad.length > 0) {
+      res.status(400).json({ message: `${bad.join(', ')} must be a valid id` });
+      return;
+    }
+    next();
+  };
