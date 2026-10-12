@@ -8,11 +8,17 @@
     "build": "tsc",
     "start": "node dist/server.js",
     "migrate": "ts-node --transpile-only src/config/migrate.ts",
+    "seed": "ts-node --transpile-only src/seed/runSeed.ts",
+    "seed:demo": "ts-node --transpile-only src/seed/demoUsers.ts",
+    "check:seed": "ts-node --transpile-only src/config/checkSeed.ts",
     "test:unit": "ts-node --transpile-only src/tests/recommendationEngine.test.ts && ts-node --transpile-only src/tests/recommendationExplainer.test.ts && ts-node --transpile-only src/tests/progressSummary.test.ts && ts-node --transpile-only src/tests/goalChange.test.ts",
     "test:db": "ts-node --transpile-only src/tests/recommendationDb.test.ts && ts-node --transpile-only src/tests/postgresConstraints.test.ts",
     "test:api": "ts-node --transpile-only src/tests/apiIntegration.test.ts",
     "test": "npm run test:unit && npm run test:db",
-    "check:deploy": "ts-node --transpile-only src/config/checkDeploy.ts"
+    "check:deploy": "ts-node --transpile-only src/config/checkDeploy.ts",
+    "migrate:prod": "node dist/config/migrate.js",
+    "seed:prod": "node dist/seed/runSeed.js",
+    "check:deploy:prod": "node dist/config/checkDeploy.js"
   },
   "keywords": [
     "skillgraph",
