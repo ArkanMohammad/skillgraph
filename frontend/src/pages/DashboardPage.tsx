@@ -6,6 +6,7 @@ import { useRecommendation } from '../hooks/useRecommendation'
 import StatusBadge from '../components/StatusBadge'
 import ProgressBar from '../components/ProgressBar'
 import DonutChart from '../components/DonutChart'
+import ErrorState from '../components/ErrorState'
 import '../styles/pages.css'
 import { PATHS } from '../routes/paths'
 
@@ -32,13 +33,29 @@ function StatCard(props: {
 
 function DashboardPage() {
   const user = useAppSelector((state) => state.auth.user)
-  const { goal, graph, loading, error } = useGoalGraph()
-  const { recommendation, loading: recommendationLoading } = useRecommendation()
+  const { goal, graph, loading, error, reload: reloadGraph } = useGoalGraph()
+  const {
+    recommendation,
+    loading: recommendationLoading,
+    error: recommendationError,
+    reload: reloadRecommendation,
+  } = useRecommendation()
 
   // No goal selected yet: send the user to choose one
   if (!goal) return <Navigate to={PATHS.selectGoal} replace />
   if (loading || recommendationLoading) return <p className="muted">Loading dashboard...</p>
-  if (error) return <p className="form-error">{error}</p>
+  if (error || recommendationError) {
+    return (
+      <ErrorState
+        title="Could not load your dashboard"
+        message={error ?? recommendationError ?? 'Something went wrong'}
+        onRetry={() => {
+          reloadGraph()
+          reloadRecommendation()
+        }}
+      />
+    )
+  }
 
   const skills = graph?.nodes ?? []
 

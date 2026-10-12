@@ -7,6 +7,7 @@ import { useRecommendation } from '../hooks/useRecommendation'
 import { useTheme } from '../hooks/useTheme'
 import { buildFlowElements } from '../utils/graphLayout'
 import SkillNode from '../components/SkillNode'
+import ErrorState from '../components/ErrorState'
 import '../styles/pages.css'
 import { PATHS } from '../routes/paths'
 
@@ -22,7 +23,7 @@ const LEGEND = [
 ]
 
 function SkillGraphPage() {
-  const { goal, graph, loading, error } = useGoalGraph()
+  const { goal, graph, loading, error, reload } = useGoalGraph()
   const { recommendation } = useRecommendation()
   const { theme } = useTheme()
   const recommendedId = recommendation?.next?.skillId
@@ -35,7 +36,7 @@ function SkillGraphPage() {
 
   if (!goal) return <Navigate to={PATHS.selectGoal} replace />
   if (loading) return <p className="muted">Loading graph...</p>
-  if (error) return <p className="form-error">{error}</p>
+  if (error) return <ErrorState title="Could not load the skill graph" message={error} onRetry={reload} />
 
   const skills = graph?.nodes ?? []
   const mastered = skills.filter((s) => s.userState === 'MASTERED').length

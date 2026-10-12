@@ -7,6 +7,7 @@ export function useProgress() {
   const [progress, setProgress] = useState<ProgressOverview | null>(null)
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
+  const [attempt, setAttempt] = useState(0) // bumped by reload() to fetch again
 
   useEffect(() => {
     let cancelled = false // ignore the result if the page was left meanwhile
@@ -28,7 +29,14 @@ export function useProgress() {
     return () => {
       cancelled = true
     }
-  }, [])
+  }, [attempt])
 
-  return { progress, loading, error }
+  // Try again after a failure (or refresh on demand)
+  function reload() {
+    setLoading(true)
+    setError(null)
+    setAttempt((n) => n + 1)
+  }
+
+  return { progress, loading, error, reload }
 }

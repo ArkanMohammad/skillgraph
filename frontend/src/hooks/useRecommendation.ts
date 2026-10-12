@@ -11,6 +11,7 @@ export function useRecommendation() {
   const [recommendation, setRecommendation] = useState<Recommendation | null>(null)
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
+  const [attempt, setAttempt] = useState(0) // bumped by reload() to fetch again
 
   useEffect(() => {
     let cancelled = false // ignore the result if the page was left meanwhile
@@ -47,7 +48,14 @@ export function useRecommendation() {
     return () => {
       cancelled = true
     }
-  }, [dispatch])
+  }, [dispatch, attempt])
 
-  return { recommendation, loading, error }
+  // Try again after a failure (or refresh on demand)
+  function reload() {
+    setLoading(true)
+    setError(null)
+    setAttempt((n) => n + 1)
+  }
+
+  return { recommendation, loading, error, reload }
 }
