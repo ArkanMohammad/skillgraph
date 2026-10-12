@@ -13,13 +13,13 @@ const STATE_COLORS: Record<SkillStatus, string> = {
 }
 
 // One skill drawn as a circle (custom React Flow node)
-function SkillNode({ data }: NodeProps<SkillFlowNode>) {
+function SkillNode({ data, selected }: NodeProps<SkillFlowNode>) {
   const color = data.recommended ? '#8b5cf6' : STATE_COLORS[data.state]
   const locked = data.state === 'LOCKED'
 
   return (
     <div
-      className={`skill-node ${data.recommended ? 'recommended' : ''}`}
+      className={`skill-node ${data.recommended ? 'recommended' : ''} ${selected ? 'selected' : ''}`}
       style={{ borderColor: color, color: locked ? '#b0b5c3' : color }}
     >
       {/* Invisible handles: React Flow needs them to attach the edges */}
