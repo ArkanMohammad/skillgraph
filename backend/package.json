@@ -7,7 +7,12 @@
     "dev": "ts-node-dev --respawn --transpile-only src/server.ts",
     "build": "tsc",
     "start": "node dist/server.js",
-    "migrate": "ts-node --transpile-only src/config/migrate.ts"
+    "migrate": "ts-node --transpile-only src/config/migrate.ts",
+    "test:unit": "ts-node --transpile-only src/tests/recommendationEngine.test.ts && ts-node --transpile-only src/tests/recommendationExplainer.test.ts && ts-node --transpile-only src/tests/progressSummary.test.ts && ts-node --transpile-only src/tests/goalChange.test.ts",
+    "test:db": "ts-node --transpile-only src/tests/recommendationDb.test.ts && ts-node --transpile-only src/tests/postgresConstraints.test.ts",
+    "test:api": "ts-node --transpile-only src/tests/apiIntegration.test.ts",
+    "test": "npm run test:unit && npm run test:db",
+    "check:deploy": "ts-node --transpile-only src/config/checkDeploy.ts"
   },
   "keywords": [
     "skillgraph",
