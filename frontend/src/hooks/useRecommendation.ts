@@ -1,10 +1,13 @@
 import { useEffect, useState } from 'react'
+import { useAppDispatch } from './reduxHooks'
+import { clearRecommendation, setNextBestSkill } from '../features/recommendation/recommendationSlice'
 import { getNextRecommendation, type Recommendation } from '../services/recommendationService'
 import { ApiError } from '../services/apiClient'
 
 // Loads the Next Best Skill of the current goal from the backend.
 // The page reloads it every time it opens, so a finished assessment is always reflected.
 export function useRecommendation() {
+  const dispatch = useAppDispatch()
   const [recommendation, setRecommendation] = useState<Recommendation | null>(null)
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
@@ -15,7 +18,22 @@ export function useRecommendation() {
     async function load() {
       try {
         const data = await getNextRecommendation()
-        if (!cancelled) setRecommendation(data)
+        if (!cancelled) {
+          setRecommendation(data)
+          // Keep the Next Best Skill in the store for the other screens
+          if (data.next) {
+            dispatch(
+              setNextBestSkill({
+                skillId: data.next.skillId,
+                name: data.next.skillName,
+                score: data.next.utilityScore,
+                explanation: data.next.explanation.summary,
+              })
+            )
+          } else {
+            dispatch(clearRecommendation())
+          }
+        }
       } catch (err) {
         if (!cancelled) {
           setError(err instanceof ApiError ? err.message : 'Cannot reach the server')
@@ -29,7 +47,7 @@ export function useRecommendation() {
     return () => {
       cancelled = true
     }
-  }, [])
+  }, [dispatch])
 
   return { recommendation, loading, error }
 }
