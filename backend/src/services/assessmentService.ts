@@ -46,6 +46,8 @@ export interface StartResult {
 }
 
 export interface AnswerResult {
+  isCorrect: boolean; // Was the selected option right?
+  correctOptionId: number | null; // The right option, shown to the user after answering
   finished: boolean;
   answeredCount: number;
   totalQuestions: number;
@@ -232,11 +234,19 @@ export const submitAnswer = async (
     [assessmentId, questionId, selectedOptionId, isCorrect]
   );
 
+  // The right option is revealed only now, after the answer is saved
+  const correct = await query<{ id: number }>(
+    'SELECT id FROM question_options WHERE question_id = $1 AND is_correct = TRUE LIMIT 1',
+    [questionId]
+  );
+
   const answeredNow: AnsweredQuestion[] = [...answered, { ...expected, isCorrect }];
   const finished = answeredNow.length >= totalQuestions;
   const next = finished ? null : pickNextQuestion(questionPool, answeredNow);
 
   return {
+    isCorrect,
+    correctOptionId: correct.rows[0]?.id ?? null,
     finished,
     answeredCount: answeredNow.length,
     totalQuestions,

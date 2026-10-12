@@ -1,12 +1,18 @@
 import { useEffect, useRef, useState } from 'react'
 import { Link, useNavigate, useParams } from 'react-router-dom'
-import { completeAssessment, startAssessment, submitAnswer } from '../services/assessmentService'
+import {
+  completeAssessment,
+  startAssessment,
+  submitAnswer,
+  type SubmitAnswerResult,
+} from '../services/assessmentService'
 import { ApiError } from '../services/apiClient'
 import { useGoalGraph } from '../hooks/useGoalGraph'
 import ProgressBar from '../components/ProgressBar'
 import ThemeToggle from '../components/ThemeToggle'
 import type { AssessmentQuestion } from '../types/api'
 import '../styles/pages.css'
+import '../styles/results.css'
 import { PATHS } from '../routes/paths'
 
 const LETTERS = ['A', 'B', 'C', 'D', 'E', 'F']
@@ -30,6 +36,9 @@ function AssessmentQuizPage() {
   const [loading, setLoading] = useState(true)
   const [submitting, setSubmitting] = useState(false)
   const [error, setError] = useState<string | null>(null)
+  const [confirmExit, setConfirmExit] = useState(false) // shows the "leave the assessment?" box
+  // After an answer is saved we show green/red first; the next question waits for "Next"
+  const [feedback, setFeedback] = useState<SubmitAnswerResult | null>(null)
 
   // React dev mode runs effects twice; this ref makes sure we start only ONE assessment
   const startedRef = useRef(false)
@@ -70,27 +79,52 @@ function AssessmentQuizPage() {
     start()
   }, [skillId, navigate])
 
-  // Save the answer, then show the next question the server chose (or finish)
+  // Save the answer and show if it was right (green) or wrong (red)
   async function handleSubmit() {
     if (!session || !question || selected === null) return
 
     setSubmitting(true)
     setError(null)
     try {
-      const next = await submitAnswer(session.assessmentId, question.id, selected)
-
-      if (next.finished || !next.question) {
-        await finish(session.assessmentId)
-      } else {
-        setQuestion(next.question)
-        setAnsweredCount(next.answeredCount)
-        setSelected(null)
-      }
+      const result = await submitAnswer(session.assessmentId, question.id, selected)
+      setFeedback(result)
     } catch (err) {
       setError(err instanceof ApiError ? err.message : 'Cannot reach the server')
     } finally {
       setSubmitting(false)
     }
+  }
+
+  // After the user saw the result: go to the next question the server chose (or finish)
+  async function handleNext() {
+    if (!session || !feedback) return
+
+    if (feedback.finished || !feedback.question) {
+      setSubmitting(true)
+      setError(null)
+      try {
+        await finish(session.assessmentId)
+      } catch (err) {
+        setError(err instanceof ApiError ? err.message : 'Cannot reach the server')
+        setSubmitting(false)
+      }
+      return
+    }
+
+    setQuestion(feedback.question)
+    setAnsweredCount(feedback.answeredCount)
+    setSelected(null)
+    setFeedback(null)
+  }
+
+  // CSS class of one option: green for the right one, red for a wrong choice
+  function optionClass(optionId: number) {
+    if (feedback) {
+      if (optionId === feedback.correctOptionId) return 'option option-correct'
+      if (optionId === selected) return 'option option-wrong'
+      return 'option option-dim'
+    }
+    return `option ${selected === optionId ? 'selected' : ''}`
   }
 
   if (loading) return <p className="muted quiz-page">Preparing your assessment...</p>
@@ -133,7 +167,8 @@ function AssessmentQuizPage() {
           <button
             key={option.id}
             type="button"
-            className={`option ${selected === option.id ? 'selected' : ''}`}
+            className={optionClass(option.id)}
+            disabled={feedback !== null}
             onClick={() => setSelected(option.id)}
           >
             <span className="option-letter">{LETTERS[i]}.</span>
@@ -142,12 +177,46 @@ function AssessmentQuizPage() {
         ))}
       </div>
 
+      {feedback && (
+        <p className={feedback.isCorrect ? 'quiz-feedback quiz-feedback-correct' : 'quiz-feedback quiz-feedback-wrong'}>
+          {feedback.isCorrect ? 'Correct!' : 'Not quite. The right answer is shown in green.'}
+        </p>
+      )}
+
       {error && <p className="form-error">{error}</p>}
 
-      <div className="quiz-actions">
-        <button className="btn btn-primary" onClick={handleSubmit} disabled={selected === null || submitting}>
-          {submitting ? 'Saving...' : current === total ? 'Finish' : 'Submit Answer'}
+      {confirmExit && (
+        <div className="quiz-exit-box">
+          <p>Leave this assessment? Your answers so far are saved, and you can continue later.</p>
+          <div className="quiz-exit-actions">
+            <button className="btn btn-outline" type="button" onClick={() => setConfirmExit(false)}>
+              Stay
+            </button>
+            <button className="btn btn-primary" type="button" onClick={() => navigate(PATHS.dashboard)}>
+              Leave
+            </button>
+          </div>
+        </div>
+      )}
+
+      <div className="quiz-actions quiz-actions-split">
+        <button
+          className="btn btn-outline"
+          type="button"
+          onClick={() => setConfirmExit(true)}
+          disabled={submitting}
+        >
+          Exit assessment
         </button>
+        {feedback ? (
+          <button className="btn btn-primary" onClick={handleNext} disabled={submitting}>
+            {feedback.finished ? 'See results' : 'Next question'}
+          </button>
+        ) : (
+          <button className="btn btn-primary" onClick={handleSubmit} disabled={selected === null || submitting}>
+            {submitting ? 'Saving...' : 'Submit Answer'}
+          </button>
+        )}
       </div>
     </div>
   )
