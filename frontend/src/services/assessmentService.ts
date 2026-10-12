@@ -14,6 +14,8 @@ export type StartAssessmentResult = {
 
 // POST /assessments/:id/answer: the answer is saved and the next question comes back
 export type SubmitAnswerResult = {
+  isCorrect: boolean // was the selected option right?
+  correctOptionId: number | null // the right option, to show it in green
   finished: boolean
   answeredCount: number
   totalQuestions: number
