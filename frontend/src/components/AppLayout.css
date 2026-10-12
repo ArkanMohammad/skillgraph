@@ -64,6 +64,27 @@
   color: var(--sidebar-active-text);
 }
 
+/* Admins have one more button, so everything is only a little tighter to fit without scrolling */
+.sidebar-compact {
+  padding-top: 16px;
+  padding-bottom: 16px;
+}
+.sidebar-compact .sidebar-top {
+  padding-bottom: 16px;
+  margin-bottom: 12px;
+}
+.sidebar-compact .sidebar-nav,
+.sidebar-compact .sidebar-bottom {
+  gap: 4px;
+}
+.sidebar-compact .sidebar-bottom {
+  padding-top: 12px;
+}
+.sidebar-compact .nav-item,
+.sidebar-compact .theme-toggle {
+  padding: 10px 14px;
+}
+
 .app-main {
   min-width: 0;
   padding: 40px 48px;

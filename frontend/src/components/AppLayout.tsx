@@ -43,7 +43,8 @@ function AppLayout() {
 
   return (
     <div className={`app ${collapsed ? 'app-collapsed' : ''}`}>
-      <aside className="sidebar">
+      {/* Admins have one more button, so the sidebar gets a slightly smaller size */}
+      <aside className={`sidebar ${isAdmin ? 'sidebar-compact' : ''}`}>
         <div>
           <div className="sidebar-top">
             <Logo />
