@@ -2,7 +2,7 @@ import { Link, Navigate } from 'react-router-dom'
 import { Activity, Check, Star, Target, type LucideIcon } from 'lucide-react'
 import { useAppSelector } from '../hooks/reduxHooks'
 import { useGoalGraph } from '../hooks/useGoalGraph'
-import { pickNextSkill } from '../utils/nextSkill'
+import { useRecommendation } from '../hooks/useRecommendation'
 import StatusBadge from '../components/StatusBadge'
 import ProgressBar from '../components/ProgressBar'
 import DonutChart from '../components/DonutChart'
@@ -33,10 +33,11 @@ function StatCard(props: {
 function DashboardPage() {
   const user = useAppSelector((state) => state.auth.user)
   const { goal, graph, loading, error } = useGoalGraph()
+  const { recommendation, loading: recommendationLoading } = useRecommendation()
 
   // No goal selected yet: send the user to choose one
   if (!goal) return <Navigate to={PATHS.selectGoal} replace />
-  if (loading) return <p className="muted">Loading dashboard...</p>
+  if (loading || recommendationLoading) return <p className="muted">Loading dashboard...</p>
   if (error) return <p className="form-error">{error}</p>
 
   const skills = graph?.nodes ?? []
@@ -49,7 +50,9 @@ function DashboardPage() {
   const inProgress = ['LEARNING', 'PRACTICING', 'ASSESSING']
   const current = skills.find((s) => inProgress.includes(s.userState))
   const inProgressCount = skills.filter((s) => inProgress.includes(s.userState)).length
-  const next = pickNextSkill(skills)
+  // The Next Best Skill comes from the backend (ranked by the utility formula)
+  const next = recommendation?.next ?? null
+  const goalComplete = recommendation?.goalComplete ?? false
 
   const recent = skills.filter((s) => s.userState !== 'LOCKED').slice(0, 5)
   const needsAttention = skills
@@ -100,13 +103,11 @@ function DashboardPage() {
           <p className="hero-eyebrow">Next best skill</p>
           {next ? (
             <>
-              <h2 className="hero-title">{next.name}</h2>
+              <h2 className="hero-title">{next.skillName}</h2>
               <span className="badge badge-ready">Ready</span>
-              <p className="hero-text">
-                {next.name} is unlocked and ready. It is the next step toward your {goal.name} goal.
-              </p>
+              <p className="hero-text">{next.explanation.summary}</p>
               <div className="hero-actions">
-                <Link className="btn btn-white" to={PATHS.assessmentQuiz(next.id)}>
+                <Link className="btn btn-white" to={PATHS.assessmentQuiz(next.skillId)}>
                   Start assessment
                 </Link>
                 <Link className="hero-link" to={PATHS.skillGraph}>
@@ -114,6 +115,10 @@ function DashboardPage() {
                 </Link>
               </div>
             </>
+          ) : goalComplete ? (
+            <p className="hero-text">
+              Congratulations! You mastered every skill of your {goal.name} goal.
+            </p>
           ) : (
             <p className="hero-text">
               No skill is ready right now. Master your current skills to unlock the next ones.

@@ -37,3 +37,23 @@
 .concept-meta {
   font-size: 13px;
 }
+
+/* "Your next step" card: the new recommendation after the assessment */
+.next-step {
+  width: 100%;
+  max-width: 520px;
+  margin-top: 24px;
+  padding: 20px;
+  border: 1px solid var(--border);
+  border-radius: 16px;
+  background: var(--primary-soft);
+  color: var(--text);
+  text-align: left;
+}
+.next-step h3 {
+  margin: 4px 0 8px;
+  font-size: 20px;
+}
+.next-step .btn {
+  margin-top: 12px;
+}
