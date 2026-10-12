@@ -3,6 +3,7 @@
  */
 import { Router, Request, Response } from 'express';
 import { authenticateJWT } from '../middleware/authMiddleware';
+import { recommendNextSkill } from '../services/recommendationService';
 import {
   AssessmentError,
   completeAssessment,
@@ -11,7 +12,7 @@ import {
 } from '../services/assessmentService';
 
 const router = Router();
-router.use(authenticateJWT); // Protect all assessment routes / حماية كل مسارات التقييم
+router.use(authenticateJWT); // Protect all assessment routes
 
 const isPositiveInt = (value: number): boolean => Number.isInteger(value) && value > 0;
 
@@ -69,7 +70,7 @@ router.post('/:assessmentId/answer', async (req: Request, res: Response): Promis
   }
 });
 
-/** POST /:assessmentId/complete: scores the assessment and updates the mastery */
+/** POST /:assessmentId/complete: scores the assessment, updates the mastery and replans */
 router.post('/:assessmentId/complete', async (req: Request, res: Response): Promise<void> => {
   const userId = req.user?.id;
   const assessmentId = Number(req.params.assessmentId);
@@ -84,7 +85,19 @@ router.post('/:assessmentId/complete', async (req: Request, res: Response): Prom
   }
 
   try {
-    res.status(200).json(await completeAssessment(userId, assessmentId));
+    const result = await completeAssessment(userId, assessmentId);
+
+    // Replanning: the mastery is already saved (the transaction is committed),
+    // so the recommendation below is built from the new data
+    let nextRecommendation = null;
+    try {
+      nextRecommendation = await recommendNextSkill(userId);
+    } catch (err) {
+      // The assessment itself succeeded, a failed recommendation must not hide the result
+      console.error('Replanning failed:', err);
+    }
+
+    res.status(200).json({ ...result, nextRecommendation });
   } catch (err) {
     sendError(res, err);
   }
