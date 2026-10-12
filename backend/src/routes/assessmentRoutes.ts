@@ -3,6 +3,7 @@
  */
 import { Router, Request, Response } from 'express';
 import { authenticateJWT } from '../middleware/authMiddleware';
+import { positiveIntBody, positiveIntParam } from '../middleware/validate';
 import { recommendNextSkill } from '../services/recommendationService';
 import {
   AssessmentError,
@@ -13,8 +14,6 @@ import {
 
 const router = Router();
 router.use(authenticateJWT); // Protect all assessment routes
-
-const isPositiveInt = (value: number): boolean => Number.isInteger(value) && value > 0;
 
 /** Turns a service error into the right HTTP answer */
 const sendError = (res: Response, err: unknown): void => {
@@ -27,80 +26,81 @@ const sendError = (res: Response, err: unknown): void => {
 };
 
 /** POST /start: starts (or resumes) an assessment and returns the first question */
-router.post('/start', async (req: Request, res: Response): Promise<void> => {
-  const userId = req.user?.id;
-  const skillId = Number(req.body.skillId);
+router.post(
+  '/start',
+  positiveIntBody('skillId'),
+  async (req: Request, res: Response): Promise<void> => {
+    const userId = req.user?.id;
+    const skillId = Number(req.body.skillId);
 
-  if (!userId) {
-    res.status(401).json({ message: 'Unauthorized' });
-    return;
-  }
-  if (!isPositiveInt(skillId)) {
-    res.status(400).json({ message: 'Valid skillId is required' });
-    return;
-  }
-
-  try {
-    res.status(201).json(await startAssessment(userId, skillId));
-  } catch (err) {
-    sendError(res, err);
-  }
-});
-
-/** POST /:assessmentId/answer: saves one answer and returns the next question */
-router.post('/:assessmentId/answer', async (req: Request, res: Response): Promise<void> => {
-  const userId = req.user?.id;
-  const assessmentId = Number(req.params.assessmentId);
-  const questionId = Number(req.body.questionId);
-  const selectedOptionId = Number(req.body.selectedOptionId);
-
-  if (!userId) {
-    res.status(401).json({ message: 'Unauthorized' });
-    return;
-  }
-  if (![assessmentId, questionId, selectedOptionId].every(isPositiveInt)) {
-    res.status(400).json({ message: 'assessmentId, questionId and selectedOptionId are required' });
-    return;
-  }
-
-  try {
-    res.status(200).json(await submitAnswer(userId, assessmentId, questionId, selectedOptionId));
-  } catch (err) {
-    sendError(res, err);
-  }
-});
-
-/** POST /:assessmentId/complete: scores the assessment, updates the mastery and replans */
-router.post('/:assessmentId/complete', async (req: Request, res: Response): Promise<void> => {
-  const userId = req.user?.id;
-  const assessmentId = Number(req.params.assessmentId);
-
-  if (!userId) {
-    res.status(401).json({ message: 'Unauthorized' });
-    return;
-  }
-  if (!isPositiveInt(assessmentId)) {
-    res.status(400).json({ message: 'Valid assessmentId is required' });
-    return;
-  }
-
-  try {
-    const result = await completeAssessment(userId, assessmentId);
-
-    // Replanning: the mastery is already saved (the transaction is committed),
-    // so the recommendation below is built from the new data
-    let nextRecommendation = null;
-    try {
-      nextRecommendation = await recommendNextSkill(userId);
-    } catch (err) {
-      // The assessment itself succeeded, a failed recommendation must not hide the result
-      console.error('Replanning failed:', err);
+    if (!userId) {
+      res.status(401).json({ message: 'Unauthorized' });
+      return;
     }
 
-    res.status(200).json({ ...result, nextRecommendation });
-  } catch (err) {
-    sendError(res, err);
+    try {
+      res.status(201).json(await startAssessment(userId, skillId));
+    } catch (err) {
+      sendError(res, err);
+    }
   }
-});
+);
+
+/** POST /:assessmentId/answer: saves one answer and returns the next question */
+router.post(
+  '/:assessmentId/answer',
+  positiveIntParam('assessmentId'),
+  positiveIntBody('questionId', 'selectedOptionId'),
+  async (req: Request, res: Response): Promise<void> => {
+    const userId = req.user?.id;
+    const assessmentId = Number(req.params.assessmentId);
+    const questionId = Number(req.body.questionId);
+    const selectedOptionId = Number(req.body.selectedOptionId);
+
+    if (!userId) {
+      res.status(401).json({ message: 'Unauthorized' });
+      return;
+    }
+
+    try {
+      res.status(200).json(await submitAnswer(userId, assessmentId, questionId, selectedOptionId));
+    } catch (err) {
+      sendError(res, err);
+    }
+  }
+);
+
+/** POST /:assessmentId/complete: scores the assessment, updates the mastery and replans */
+router.post(
+  '/:assessmentId/complete',
+  positiveIntParam('assessmentId'),
+  async (req: Request, res: Response): Promise<void> => {
+    const userId = req.user?.id;
+    const assessmentId = Number(req.params.assessmentId);
+
+    if (!userId) {
+      res.status(401).json({ message: 'Unauthorized' });
+      return;
+    }
+
+    try {
+      const result = await completeAssessment(userId, assessmentId);
+
+      // Replanning: the mastery is already saved (the transaction is committed),
+      // so the recommendation below is built from the new data
+      let nextRecommendation = null;
+      try {
+        nextRecommendation = await recommendNextSkill(userId);
+      } catch (err) {
+        // The assessment itself succeeded, a failed recommendation must not hide the result
+        console.error('Replanning failed:', err);
+      }
+
+      res.status(200).json({ ...result, nextRecommendation });
+    } catch (err) {
+      sendError(res, err);
+    }
+  }
+);
 
 export default router;

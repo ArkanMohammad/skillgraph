@@ -5,6 +5,7 @@
  */
 import { Router, Request, Response } from 'express';
 import { authenticateJWT } from '../middleware/authMiddleware';
+import { positiveIntParam } from '../middleware/validate';
 import { getSkillStates } from '../services/algorithm/recommendationEngine';
 import { loadGoalGraphData } from '../services/recommendationService';
 
@@ -31,17 +32,12 @@ interface GraphEdge {
 const toPercent = (value: number): number => Math.round(value * 100); // 0-1 -> 0-100
 
 /** GET /:goalId - nodes and edges for one career goal */
-router.get('/:goalId', async (req: Request, res: Response): Promise<void> => {
+router.get('/:goalId', positiveIntParam('goalId'), async (req: Request, res: Response): Promise<void> => {
   const userId = req.user?.id;
   const goalId = Number(req.params.goalId);
 
   if (!userId) {
     res.status(401).json({ message: 'Unauthorized' });
-    return;
-  }
-
-  if (!Number.isInteger(goalId) || goalId <= 0) {
-    res.status(400).json({ message: 'Valid goalId is required' });
     return;
   }
 
