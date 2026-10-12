@@ -43,3 +43,23 @@ export function deleteAccount(password: string) {
     body: JSON.stringify({ password }),
   })
 }
+
+// Learning preferences stored on the account
+export type Profile = {
+  name: string
+  email: string
+  weeklyHours: number
+}
+
+// Loads the profile of the logged-in user (includes the weekly learning hours)
+export function getProfile() {
+  return apiRequest<Profile>('/account/profile')
+}
+
+// Saves the name, the email and the weekly learning hours of the logged-in user
+export function updateProfile(name: string, email: string, weeklyHours: number) {
+  return apiRequest<Profile>('/account/profile', {
+    method: 'PUT',
+    body: JSON.stringify({ name, email, weeklyHours }),
+  })
+}
