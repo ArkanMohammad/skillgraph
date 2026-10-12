@@ -8,6 +8,7 @@ import {
   PanelLeftClose,
   PanelLeftOpen,
   Share2,
+  ShieldCheck,
   Star,
   Target,
   User,
@@ -16,6 +17,7 @@ import {
 import Logo from './Logo'
 import ThemeToggle from './ThemeToggle'
 import { useSignOut } from '../hooks/useSignOut'
+import { useAppSelector } from '../hooks/reduxHooks'
 import { PATHS } from '../routes/paths'
 import './AppLayout.css'
 
@@ -29,10 +31,15 @@ const NAV_ITEMS: { to: string; label: string; icon: LucideIcon }[] = [
   { to: PATHS.myProfile, label: 'My Profile', icon: User },
 ]
 
+// Only admins see this item (the server checks the role again on every request)
+const ADMIN_ITEM = { to: PATHS.admin, label: 'Admin', icon: ShieldCheck }
+
 // Layout for the logged-in app: sidebar on the left, current page on the right
 function AppLayout() {
   const [collapsed, setCollapsed] = useState(false)
   const signOut = useSignOut()
+  const isAdmin = useAppSelector((state) => state.auth.user?.role) === 'ADMIN'
+  const navItems = isAdmin ? [...NAV_ITEMS, ADMIN_ITEM] : NAV_ITEMS
 
   return (
     <div className={`app ${collapsed ? 'app-collapsed' : ''}`}>
@@ -43,7 +50,7 @@ function AppLayout() {
           </div>
 
           <nav className="sidebar-nav">
-            {NAV_ITEMS.map(({ to, label, icon: Icon }) => (
+            {navItems.map(({ to, label, icon: Icon }) => (
               <NavLink
                 key={to}
                 to={to}

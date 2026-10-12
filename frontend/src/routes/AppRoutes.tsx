@@ -12,9 +12,11 @@ import MySkillsPage from '../pages/MySkillsPage'
 import SkillGraphPage from '../pages/SkillGraphPage'
 import ProgressPage from '../pages/ProgressPage'
 import MyProfilePage from '../pages/MyProfilePage'
+import AdminPage from '../pages/AdminPage'
 import AppLayout from '../components/AppLayout'
 import ProtectedRoute from './ProtectedRoute'
 import RequireGoal from './RequireGoal'
+import RequireAdmin from './RequireAdmin'
 
 export default function AppRoutes() {
   return (
@@ -45,6 +47,11 @@ export default function AppRoutes() {
             <Route path="my-skills" element={<MySkillsPage />} />
             <Route path="progress" element={<ProgressPage />} />
             <Route path="my-profile" element={<MyProfilePage />} />
+
+            {/* Admins only: other users are sent back to the dashboard */}
+            <Route element={<RequireAdmin />}>
+              <Route path="admin" element={<AdminPage />} />
+            </Route>
           </Route>
         </Route>
       </Route>
