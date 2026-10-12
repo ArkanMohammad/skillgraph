@@ -26,8 +26,15 @@ function MyGoalPage() {
 
   return (
     <div>
-      <p className="page-eyebrow">My Goal</p>
-      <h1 className="page-title">{goal.name}</h1>
+      <div className="page-header">
+        <div>
+          <p className="page-eyebrow">My Goal</p>
+          <h1 className="page-title">{goal.name}</h1>
+        </div>
+        <Link className="btn btn-outline" to={PATHS.selectGoal}>
+          Change goal
+        </Link>
+      </div>
 
       <div className="overall">
         <ProgressBar value={percent} />
