@@ -13,6 +13,7 @@ export function useGoalGraph() {
   const [graph, setGraph] = useState<GraphResponse | null>(null)
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
+  const [attempt, setAttempt] = useState(0) // bumped by reload() to fetch again
 
   useEffect(() => {
     if (!goal) return
@@ -49,7 +50,14 @@ export function useGoalGraph() {
     return () => {
       cancelled = true
     }
-  }, [goal, dispatch])
+  }, [goal, dispatch, attempt])
 
-  return { goal, graph, loading, error }
+  // Try again after a failure (or refresh on demand)
+  function reload() {
+    setLoading(true)
+    setError(null)
+    setAttempt((n) => n + 1)
+  }
+
+  return { goal, graph, loading, error, reload }
 }

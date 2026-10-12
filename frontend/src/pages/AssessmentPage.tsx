@@ -2,15 +2,16 @@ import { Link, Navigate } from 'react-router-dom'
 import { useGoalGraph } from '../hooks/useGoalGraph'
 import StatusBadge from '../components/StatusBadge'
 import ProgressBar from '../components/ProgressBar'
+import ErrorState from '../components/ErrorState'
 import '../styles/pages.css'
 import { PATHS } from '../routes/paths'
 
 function AssessmentPage() {
-  const { goal, graph, loading, error } = useGoalGraph()
+  const { goal, graph, loading, error, reload } = useGoalGraph()
 
   if (!goal) return <Navigate to={PATHS.selectGoal} replace />
   if (loading) return <p className="muted">Loading skills...</p>
-  if (error) return <p className="form-error">{error}</p>
+  if (error) return <ErrorState title="Could not load the skills" message={error} onRetry={reload} />
 
   // Locked skills cannot be tested until their prerequisites are mastered
   const skills = (graph?.nodes ?? []).filter((s) => s.userState !== 'LOCKED')

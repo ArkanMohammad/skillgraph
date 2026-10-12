@@ -4,6 +4,7 @@ import { useAppSelector } from '../hooks/reduxHooks'
 import { useProgress } from '../hooks/useProgress'
 import DonutChart from '../components/DonutChart'
 import ProgressBar from '../components/ProgressBar'
+import ErrorState from '../components/ErrorState'
 import '../styles/pages.css'
 import '../styles/progress.css'
 import { PATHS } from '../routes/paths'
@@ -40,11 +41,19 @@ function formatDate(iso: string) {
 // Shows the overall learning progress of the current goal
 function ProgressPage() {
   const goal = useAppSelector((state) => state.goal.selectedGoal)
-  const { progress, loading, error } = useProgress()
+  const { progress, loading, error, reload } = useProgress()
 
   if (!goal) return <Navigate to={PATHS.selectGoal} replace />
   if (loading) return <p className="muted">Loading progress...</p>
-  if (error || !progress) return <p className="form-error">{error ?? 'No progress yet'}</p>
+  if (error || !progress) {
+    return (
+      <ErrorState
+        title="Could not load your progress"
+        message={error ?? 'No progress yet'}
+        onRetry={reload}
+      />
+    )
+  }
 
   const { summary, recentAssessments } = progress
 

@@ -6,7 +6,9 @@ import { useRecommendation } from '../hooks/useRecommendation'
 import StatusBadge from '../components/StatusBadge'
 import ProgressBar from '../components/ProgressBar'
 import DonutChart from '../components/DonutChart'
+import ErrorState from '../components/ErrorState'
 import '../styles/pages.css'
+import '../styles/skill-panel.css'
 import { PATHS } from '../routes/paths'
 
 // Small card: icon tile, big value, label and a hint line
@@ -32,13 +34,29 @@ function StatCard(props: {
 
 function DashboardPage() {
   const user = useAppSelector((state) => state.auth.user)
-  const { goal, graph, loading, error } = useGoalGraph()
-  const { recommendation, loading: recommendationLoading } = useRecommendation()
+  const { goal, graph, loading, error, reload: reloadGraph } = useGoalGraph()
+  const {
+    recommendation,
+    loading: recommendationLoading,
+    error: recommendationError,
+    reload: reloadRecommendation,
+  } = useRecommendation()
 
   // No goal selected yet: send the user to choose one
   if (!goal) return <Navigate to={PATHS.selectGoal} replace />
   if (loading || recommendationLoading) return <p className="muted">Loading dashboard...</p>
-  if (error) return <p className="form-error">{error}</p>
+  if (error || recommendationError) {
+    return (
+      <ErrorState
+        title="Could not load your dashboard"
+        message={error ?? recommendationError ?? 'Something went wrong'}
+        onRetry={() => {
+          reloadGraph()
+          reloadRecommendation()
+        }}
+      />
+    )
+  }
 
   const skills = graph?.nodes ?? []
 
@@ -53,6 +71,8 @@ function DashboardPage() {
   // The Next Best Skill comes from the backend (ranked by the utility formula)
   const next = recommendation?.next ?? null
   const goalComplete = recommendation?.goalComplete ?? false
+  // The next three best ready skills after the recommended one
+  const otherReady = (recommendation?.candidates ?? []).filter((item) => item.skillId !== next?.skillId).slice(0, 3)
 
   const recent = skills.filter((s) => s.userState !== 'LOCKED').slice(0, 5)
   const needsAttention = skills
@@ -106,6 +126,15 @@ function DashboardPage() {
               <h2 className="hero-title">{next.skillName}</h2>
               <span className="badge badge-ready">Ready</span>
               <p className="hero-text">{next.explanation.summary}</p>
+              <div className="hero-facts">
+                <span className="hero-fact">about {next.estimatedHours} h of study</span>
+                <span className="hero-fact">
+                  opens {next.explanation.unlocksCount} more {next.explanation.unlocksCount === 1 ? 'skill' : 'skills'}
+                </span>
+                {next.explanation.margin !== null && (
+                  <span className="hero-fact">{next.explanation.margin} points ahead of the next option</span>
+                )}
+              </div>
               <div className="hero-actions">
                 <Link className="btn btn-white" to={PATHS.assessmentQuiz(next.skillId)}>
                   Start assessment
@@ -114,6 +143,18 @@ function DashboardPage() {
                   View in Graph
                 </Link>
               </div>
+              {otherReady.length > 0 && (
+                <div className="hero-others">
+                  <p className="hero-others-title">Also ready for you</p>
+                  <div className="hero-others-list">
+                    {otherReady.map((item) => (
+                      <Link className="hero-other" key={item.skillId} to={PATHS.assessmentQuiz(item.skillId)}>
+                        {item.skillName}
+                      </Link>
+                    ))}
+                  </div>
+                </div>
+              )}
             </>
           ) : goalComplete ? (
             <p className="hero-text">

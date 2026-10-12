@@ -1,4 +1,4 @@
-import { useMemo } from 'react'
+import { useMemo, useState } from 'react'
 import { Navigate } from 'react-router-dom'
 import { ReactFlow, Controls } from '@xyflow/react'
 import '@xyflow/react/dist/style.css'
@@ -7,7 +7,10 @@ import { useRecommendation } from '../hooks/useRecommendation'
 import { useTheme } from '../hooks/useTheme'
 import { buildFlowElements } from '../utils/graphLayout'
 import SkillNode from '../components/SkillNode'
+import SkillDetailPanel from '../components/SkillDetailPanel'
+import ErrorState from '../components/ErrorState'
 import '../styles/pages.css'
+import '../styles/skill-panel.css'
 import { PATHS } from '../routes/paths'
 
 // Defined outside the component so React Flow does not re-create it on every render
@@ -22,9 +25,11 @@ const LEGEND = [
 ]
 
 function SkillGraphPage() {
-  const { goal, graph, loading, error } = useGoalGraph()
+  const { goal, graph, loading, error, reload } = useGoalGraph()
   const { recommendation } = useRecommendation()
   const { theme } = useTheme()
+  // The skill whose details are open in the side panel
+  const [selectedId, setSelectedId] = useState<number | null>(null)
   const recommendedId = recommendation?.next?.skillId
 
   // Recompute the layout only when the graph data or the recommendation changes
@@ -35,10 +40,12 @@ function SkillGraphPage() {
 
   if (!goal) return <Navigate to={PATHS.selectGoal} replace />
   if (loading) return <p className="muted">Loading graph...</p>
-  if (error) return <p className="form-error">{error}</p>
+  if (error) return <ErrorState title="Could not load the skill graph" message={error} onRetry={reload} />
 
   const skills = graph?.nodes ?? []
   const mastered = skills.filter((s) => s.userState === 'MASTERED').length
+  const next = recommendation?.next ?? null
+  const panelOpen = selectedId !== null && skills.some((s) => s.id === selectedId)
 
   return (
     <div>
@@ -60,19 +67,44 @@ function SkillGraphPage() {
         </div>
       </div>
 
-      {/* React Flow needs a container with a fixed height */}
-      <div className="graph-box">
-        <ReactFlow
-          nodes={elements.nodes}
-          edges={elements.edges}
-          nodeTypes={nodeTypes}
-          colorMode={theme}
-          nodesDraggable={false}
-          nodesConnectable={false}
-          fitView
-        >
-          <Controls showInteractive={false} />
-        </ReactFlow>
+      {next && (
+        <div className="graph-recommend">
+          <span>
+            Recommended next: <strong>{next.skillName}</strong>
+          </span>
+          <button type="button" className="btn btn-outline btn-sm" onClick={() => setSelectedId(next.skillId)}>
+            Why this skill?
+          </button>
+        </div>
+      )}
+
+      <div className={`graph-layout ${panelOpen ? 'with-panel' : ''}`}>
+        {/* React Flow needs a container with a fixed height */}
+        <div className="graph-box">
+          <ReactFlow
+            nodes={elements.nodes}
+            edges={elements.edges}
+            nodeTypes={nodeTypes}
+            colorMode={theme}
+            nodesDraggable={false}
+            nodesConnectable={false}
+            onNodeClick={(_, node) => setSelectedId(Number(node.id))}
+            onPaneClick={() => setSelectedId(null)}
+            fitView
+          >
+            <Controls showInteractive={false} />
+          </ReactFlow>
+        </div>
+
+        {panelOpen && graph && selectedId !== null && (
+          <SkillDetailPanel
+            skillId={selectedId}
+            graph={graph}
+            recommendation={recommendation}
+            onSelect={setSelectedId}
+            onClose={() => setSelectedId(null)}
+          />
+        )}
       </div>
     </div>
   )

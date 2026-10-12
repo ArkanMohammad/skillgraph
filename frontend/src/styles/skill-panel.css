@@ -1,0 +1,182 @@
+/* Skill graph: details panel, recommended banner and the selected node */
+.graph-layout {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr);
+  gap: 16px;
+}
+
+.graph-layout.with-panel {
+  grid-template-columns: minmax(0, 1fr) 320px;
+}
+
+@media (max-width: 1000px) {
+  .graph-layout.with-panel {
+    grid-template-columns: minmax(0, 1fr);
+  }
+}
+
+.graph-recommend {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: 12px;
+  margin-bottom: 16px;
+  padding: 12px 16px;
+  border: 1px solid var(--border);
+  border-left: 4px solid #8b5cf6;
+  border-radius: 12px;
+  background: var(--surface);
+  font-size: 14px;
+}
+
+.skill-node.selected {
+  box-shadow: 0 0 0 5px rgba(99, 102, 241, 0.25);
+}
+
+.skill-panel {
+  max-height: 68vh;
+  padding: 20px;
+  overflow-y: auto;
+  border: 1px solid var(--border);
+  border-radius: 20px;
+  background: var(--surface);
+  color: var(--text);
+}
+
+.skill-panel-top {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 12px;
+}
+
+.skill-panel h3 {
+  margin: 0 0 6px;
+  font-size: 20px;
+}
+
+.skill-panel h4 {
+  margin: 18px 0 8px;
+  font: 600 12px var(--font-mono);
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--text-muted);
+}
+
+.skill-panel-close {
+  display: grid;
+  place-items: center;
+  width: 32px;
+  height: 32px;
+  border: none;
+  border-radius: 8px;
+  background: transparent;
+  color: var(--text-muted);
+  cursor: pointer;
+}
+
+.skill-panel-close:hover {
+  background: var(--primary-soft);
+  color: var(--primary);
+}
+
+.skill-panel p {
+  margin: 8px 0;
+  font-size: 14px;
+  line-height: 1.5;
+}
+
+.skill-panel-why {
+  padding: 12px 14px;
+  border-radius: 12px;
+  background: var(--primary-soft);
+  color: var(--text);
+}
+
+.skill-panel-reasons {
+  margin: 8px 0 0;
+  padding-left: 18px;
+  font-size: 13px;
+  color: var(--text-muted);
+}
+
+.skill-panel-links {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.skill-panel-link {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  width: 100%;
+  padding: 8px 10px;
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  background: transparent;
+  color: var(--text);
+  font: 500 14px var(--font-body);
+  text-align: left;
+  cursor: pointer;
+}
+
+.skill-panel-link:hover {
+  border-color: var(--primary);
+}
+
+.skill-panel .btn {
+  width: 100%;
+  margin-top: 18px;
+  padding: 12px 16px;
+  font-size: 15px;
+}
+
+/* Dashboard: facts and other ready skills inside the Next Best Skill card */
+.hero-facts {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin: 0 0 20px;
+}
+
+.hero-fact {
+  padding: 6px 12px;
+  border-radius: 999px;
+  background: rgba(255, 255, 255, 0.18);
+  font-size: 13px;
+  font-weight: 600;
+}
+
+.hero-others {
+  margin-top: 22px;
+  padding-top: 16px;
+  border-top: 1px solid rgba(255, 255, 255, 0.25);
+  font-size: 14px;
+}
+
+.hero-others-title {
+  margin: 0 0 8px;
+  opacity: 0.8;
+}
+
+.hero-others-list {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.hero-other {
+  padding: 6px 12px;
+  border: 1px solid rgba(255, 255, 255, 0.4);
+  border-radius: 999px;
+  color: #fff;
+  font-weight: 600;
+  text-decoration: none;
+}
+
+.hero-other:hover {
+  background: rgba(255, 255, 255, 0.15);
+}

@@ -9,6 +9,7 @@ import {
   type AdminUser,
 } from '../services/adminService'
 import { ApiError } from '../services/apiClient'
+import ErrorState from '../components/ErrorState'
 import type { UserRole } from '../types/api'
 import '../styles/pages.css'
 import '../styles/progress.css'
@@ -45,6 +46,7 @@ function AdminPage() {
   const [users, setUsers] = useState<AdminUser[]>([])
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
+  const [attempt, setAttempt] = useState(0) // bumped by reload() to fetch again
 
   useEffect(() => {
     let cancelled = false // ignore the result if the page was left meanwhile
@@ -66,7 +68,14 @@ function AdminPage() {
     return () => {
       cancelled = true
     }
-  }, [])
+  }, [attempt])
+
+  // Try again after a failed load
+  function reload() {
+    setLoading(true)
+    setError(null)
+    setAttempt((n) => n + 1)
+  }
 
   async function handleRoleChange(user: AdminUser, role: UserRole) {
     setError(null)
@@ -85,7 +94,15 @@ function AdminPage() {
   }
 
   if (loading) return <p className="muted">Loading admin data...</p>
-  if (!stats) return <p className="form-error">{error ?? 'Could not load admin data'}</p>
+  if (!stats) {
+    return (
+      <ErrorState
+        title="Could not load admin data"
+        message={error ?? 'Could not load admin data'}
+        onRetry={reload}
+      />
+    )
+  }
 
   return (
     <div>
