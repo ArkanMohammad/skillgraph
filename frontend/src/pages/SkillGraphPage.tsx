@@ -3,9 +3,9 @@ import { Navigate } from 'react-router-dom'
 import { ReactFlow, Controls } from '@xyflow/react'
 import '@xyflow/react/dist/style.css'
 import { useGoalGraph } from '../hooks/useGoalGraph'
+import { useRecommendation } from '../hooks/useRecommendation'
 import { useTheme } from '../hooks/useTheme'
 import { buildFlowElements } from '../utils/graphLayout'
-import { pickNextSkill } from '../utils/nextSkill'
 import SkillNode from '../components/SkillNode'
 import '../styles/pages.css'
 import { PATHS } from '../routes/paths'
@@ -23,13 +23,15 @@ const LEGEND = [
 
 function SkillGraphPage() {
   const { goal, graph, loading, error } = useGoalGraph()
+  const { recommendation } = useRecommendation()
   const { theme } = useTheme()
+  const recommendedId = recommendation?.next?.skillId
 
-  // Recompute the layout only when the graph data changes
+  // Recompute the layout only when the graph data or the recommendation changes
   const elements = useMemo(() => {
     if (!graph) return { nodes: [], edges: [] }
-    return buildFlowElements(graph, pickNextSkill(graph.nodes)?.id)
-  }, [graph])
+    return buildFlowElements(graph, recommendedId)
+  }, [graph, recommendedId])
 
   if (!goal) return <Navigate to={PATHS.selectGoal} replace />
   if (loading) return <p className="muted">Loading graph...</p>

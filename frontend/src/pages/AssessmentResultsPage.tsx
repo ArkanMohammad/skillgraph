@@ -32,6 +32,7 @@ function AssessmentResultsPage() {
   if (!result) return <Navigate to={PATHS.assessments} replace />
 
   const concepts = result.concepts ?? []
+  const next = result.nextRecommendation?.next ?? null
   const weakNames = concepts.filter((c) => c.score < WEAK_SCORE).map((c) => c.name)
 
   return (
@@ -71,6 +72,23 @@ function AssessmentResultsPage() {
                 </span>
               </div>
             ))}
+          </div>
+        )}
+
+        {next && (
+          <div className="next-step">
+            <p className="page-eyebrow">Your next step</p>
+            <h3>{next.skillName}</h3>
+            <p className="muted">{next.explanation.summary}</p>
+            <Link className="btn btn-primary" to={PATHS.assessmentQuiz(next.skillId)}>
+              Start {next.skillName} assessment
+            </Link>
+          </div>
+        )}
+        {!next && result.nextRecommendation?.goalComplete && (
+          <div className="next-step">
+            <p className="page-eyebrow">Goal complete</p>
+            <p>You mastered every skill of your goal. Great job!</p>
           </div>
         )}
 

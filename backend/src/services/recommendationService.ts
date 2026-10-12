@@ -7,10 +7,10 @@ import {
   GoalGraphData,
   GoalSkillNode,
   GraphEdge,
-  Recommendation,
   UserProgress,
   getNextBestSkill,
 } from './algorithm/recommendationEngine';
+import { ExplainedCandidate, explainCandidates } from './algorithm/recommendationExplainer';
 
 /** An error that carries the HTTP status code the route should answer with */
 export class RecommendationError extends Error {
@@ -113,10 +113,20 @@ export const getCurrentGoal = async (userId: string): Promise<GoalInfo | null> =
   return result.rows[0] ?? null;
 };
 
-/** Next Best Skill for the user's current goal (recalculated from the latest data every time) */
-export const recommendNextSkill = async (
-  userId: string
-): Promise<Recommendation & { goal: GoalInfo }> => {
+/** Recommendation with a readable explanation on every candidate */
+export interface ExplainedRecommendation {
+  goal: GoalInfo;
+  goalComplete: boolean;
+  next: ExplainedCandidate | null;
+  candidates: ExplainedCandidate[]; // Best first
+}
+
+/**
+ * Next Best Skill for the user's current goal.
+ * It is recalculated from the latest data every time, so after a mastery change
+ * the next call already returns the new plan (dynamic replanning).
+ */
+export const recommendNextSkill = async (userId: string): Promise<ExplainedRecommendation> => {
   const goal = await getCurrentGoal(userId);
   if (!goal) throw new RecommendationError(400, 'Select a goal first');
 
@@ -124,5 +134,13 @@ export const recommendNextSkill = async (
   if (!data) throw new RecommendationError(404, 'Goal not found');
   if (data.skills.length === 0) throw new RecommendationError(400, 'This goal has no skills yet');
 
-  return { goal, ...getNextBestSkill(data) };
+  const recommendation = getNextBestSkill(data);
+  const candidates = explainCandidates(recommendation.candidates, data);
+
+  return {
+    goal,
+    goalComplete: recommendation.goalComplete,
+    next: candidates[0] ?? null,
+    candidates,
+  };
 };
