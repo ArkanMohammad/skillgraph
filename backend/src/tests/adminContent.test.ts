@@ -1,8 +1,10 @@
 /**
  * Tests for the admin content management (src/services/adminContentService.ts).
  *  - Part 1 checks the input rules (no database needed).
- *  - Part 2 runs the real service against PostgreSQL. It builds its own fixture (every name starts
- *    with "d15test_") and removes it at the end, so it does not touch the seeded content.
+ *  - Part 2 runs the real service against PostgreSQL: skills, questions and the skills of a goal.
+ *  - Part 3 runs the prerequisite editing against PostgreSQL (cycles, shared links, links outside the goal).
+ * Parts 2 and 3 build their own fixture (every name starts with "d15test_") and remove it at the end,
+ * so they do not touch the seeded content.
  * Run after `npm run migrate`, from the backend folder:
  *   npx ts-node --transpile-only src/tests/adminContent.test.ts
  */
@@ -19,10 +21,12 @@ import {
   listQuestions,
   listSkills,
   parseGoalSkillInput,
+  parsePrerequisiteInput,
   parseQuestionInput,
   parseSkillInput,
   removeSkillFromGoal,
   setQuestionActive,
+  setSkillPrerequisites,
   updateGoalSkill,
   updateQuestion,
   updateSkill,
@@ -126,6 +130,20 @@ async function partOne(): Promise<void> {
       category: 'Backend',
       description: '',
     });
+  });
+
+  await test('prerequisite input: a list of different ids is accepted', () => {
+    assert.deepStrictEqual(parsePrerequisiteInput({ prerequisiteIds: [3, 5] }).prerequisiteIds, [3, 5]);
+    assert.deepStrictEqual(parsePrerequisiteInput({ prerequisiteIds: [] }).prerequisiteIds, []);
+  });
+
+  await test('prerequisite input: not a list, a repeated id, a bad id or too many are refused (400)', async () => {
+    await rejectsWith(400, () => parsePrerequisiteInput({}));
+    await rejectsWith(400, () => parsePrerequisiteInput({ prerequisiteIds: '3' }));
+    await rejectsWith(400, () => parsePrerequisiteInput({ prerequisiteIds: [3, 3] }));
+    await rejectsWith(400, () => parsePrerequisiteInput({ prerequisiteIds: [0] }));
+    await rejectsWith(400, () => parsePrerequisiteInput({ prerequisiteIds: [1.5] }));
+    await rejectsWith(400, () => parsePrerequisiteInput({ prerequisiteIds: Array.from({ length: 21 }, (_, i) => i + 1) }));
   });
 }
 
@@ -334,9 +352,144 @@ async function partTwo(): Promise<void> {
   }
 }
 
+async function partThree(): Promise<void> {
+  console.log('\n--- Part 3: prerequisites ---');
+  const stamp = Date.now();
+  const skillName = (label: string): string => `d15test_p${label}_${stamp}`;
+  const goalName = (label: string): string => `d15test_pgoal${label}_${stamp}`;
+
+  const makeGoal = async (label: string): Promise<number> =>
+    (await query<{ id: number }>('INSERT INTO goals (name) VALUES ($1) RETURNING id', [goalName(label)])).rows[0].id;
+
+  // A skill with 4 questions, so it can be part of a goal
+  const makeSkill = async (label: string): Promise<number> => {
+    const id = (await createSkill(parseSkillInput({ name: skillName(label), category: 'Test' }))).id;
+    const concept = (await query<{ id: number }>('SELECT id FROM concepts WHERE skill_id = $1', [id])).rows[0].id;
+    for (const n of [1, 2, 3, 4]) {
+      await createQuestion(
+        id,
+        parseQuestionInput({
+          conceptId: concept,
+          difficulty: 2,
+          prompt: `${label} question ${n}`,
+          options: ['one', 'two', 'three', 'four'].map((text, index) => ({ text: `${text} ${label} ${n}`, isCorrect: index === 0 })),
+        })
+      );
+    }
+    return id;
+  };
+
+  const goalOne = await makeGoal('1');
+  const goalTwo = await makeGoal('2');
+  const [a, b, c, d, e] = [
+    await makeSkill('a'),
+    await makeSkill('b'),
+    await makeSkill('c'),
+    await makeSkill('d'),
+    await makeSkill('e'),
+  ];
+
+  const prerequisitesOf = async (goalId: number, skillId: number): Promise<number[]> =>
+    (await getGoalSkills(goalId)).skills.find((row) => row.skillId === skillId)!.prerequisiteIds.sort((x, y) => x - y);
+
+  const input = (ids: number[]) => parsePrerequisiteInput({ prerequisiteIds: ids });
+
+  try {
+    // Goal one has a, b, c, d. Goal two has a, b and e. Skill e is not part of goal one.
+    for (const id of [a, b, c, d]) await addSkillToGoal(goalOne, id, parseGoalSkillInput(defaults));
+    for (const id of [a, b, e]) await addSkillToGoal(goalTwo, id, parseGoalSkillInput(defaults));
+
+    await test('setSkillPrerequisites adds a prerequisite and the goal view shows it', async () => {
+      const change = await setSkillPrerequisites(goalOne, b, input([a]));
+      assert.deepStrictEqual(change.added, [skillName('a')]);
+      assert.deepStrictEqual(change.removed, []);
+      assert.deepStrictEqual(await prerequisitesOf(goalOne, b), [a]);
+    });
+
+    await test('the answer lists the other goals that contain both skills', async () => {
+      const change = await setSkillPrerequisites(goalOne, b, input([]));
+      assert.deepStrictEqual(change.removed, [skillName('a')]);
+      assert.deepStrictEqual(change.alsoAffectedGoals, [goalName('2')]);
+      const back = await setSkillPrerequisites(goalOne, b, input([a]));
+      assert.deepStrictEqual(back.alsoAffectedGoals, [goalName('2')]);
+      // Goal two sees the same link, because the link is shared
+      assert.deepStrictEqual(await prerequisitesOf(goalTwo, b), [a]);
+    });
+
+    await test('a link between skills that no other goal contains reports no other goal', async () => {
+      const change = await setSkillPrerequisites(goalOne, c, input([a, b]));
+      assert.deepStrictEqual(change.added, [skillName('a'), skillName('b')]);
+      assert.deepStrictEqual(change.alsoAffectedGoals, []); // a and b are in goal two, but c is not
+    });
+
+    await test('replacing the list adds and removes in one call', async () => {
+      const change = await setSkillPrerequisites(goalOne, c, input([b, d]));
+      assert.deepStrictEqual(change.added, [skillName('d')]);
+      assert.deepStrictEqual(change.removed, [skillName('a')]);
+      assert.deepStrictEqual(await prerequisitesOf(goalOne, c), [b, d].sort((x, y) => x - y));
+    });
+
+    await test('saving the same list again changes nothing', async () => {
+      const change = await setSkillPrerequisites(goalOne, c, input([b, d]));
+      assert.deepStrictEqual(change, { added: [], removed: [], alsoAffectedGoals: [] });
+    });
+
+    await test('a direct cycle is refused (400) and nothing changes', async () => {
+      // b needs a, so a cannot need b
+      await rejectsWith(400, () => setSkillPrerequisites(goalOne, a, input([b])));
+      assert.deepStrictEqual(await prerequisitesOf(goalOne, a), []);
+    });
+
+    await test('an indirect cycle is refused (400)', async () => {
+      // c needs b, b needs a, so a cannot need c
+      await rejectsWith(400, () => setSkillPrerequisites(goalOne, a, input([c])));
+      assert.deepStrictEqual(await prerequisitesOf(goalOne, a), []);
+    });
+
+    await test('a skill cannot be its own prerequisite (400)', async () => {
+      await rejectsWith(400, () => setSkillPrerequisites(goalOne, a, input([a])));
+    });
+
+    await test('a prerequisite from outside the goal is refused (400), a skill outside the goal gives 404', async () => {
+      await rejectsWith(400, () => setSkillPrerequisites(goalOne, a, input([e])));
+      await rejectsWith(404, () => setSkillPrerequisites(goalOne, e, input([a])));
+      await rejectsWith(404, () => setSkillPrerequisites(999999999, a, input([])));
+    });
+
+    await test('a prerequisite that is not part of this goal is left untouched', async () => {
+      // d needs e through goal two. In goal one e does not exist, so goal one must not remove that link.
+      await query('INSERT INTO skill_dependencies (skill_id, prerequisite_skill_id) VALUES ($1, $2)', [d, e]);
+      await setSkillPrerequisites(goalOne, d, input([a]));
+      const rows = await query<{ prerequisite_skill_id: number }>(
+        'SELECT prerequisite_skill_id FROM skill_dependencies WHERE skill_id = $1 ORDER BY prerequisite_skill_id',
+        [d]
+      );
+      assert.deepStrictEqual(rows.rows.map((r) => r.prerequisite_skill_id), [a, e].sort((x, y) => x - y));
+      await setSkillPrerequisites(goalOne, d, input([]));
+      const after = await query('SELECT 1 FROM skill_dependencies WHERE skill_id = $1 AND prerequisite_skill_id = $2', [d, e]);
+      assert.strictEqual(after.rowCount, 1, 'the link to e is still there');
+    });
+
+    await test('a cycle through a skill of another goal is also refused', async () => {
+      // d needs e (kept above). e needing d would close a cycle, even though goal one does not contain e.
+      await addSkillToGoal(goalTwo, d, parseGoalSkillInput(defaults));
+      await rejectsWith(400, () => setSkillPrerequisites(goalTwo, e, input([d])));
+    });
+
+    await test('an empty list removes every prerequisite inside the goal', async () => {
+      await setSkillPrerequisites(goalOne, c, input([]));
+      assert.deepStrictEqual(await prerequisitesOf(goalOne, c), []);
+    });
+  } finally {
+    await query('DELETE FROM skills WHERE name LIKE $1', [`d15test_p%_${stamp}`]);
+    await query('DELETE FROM goals WHERE id = $1 OR id = $2', [goalOne, goalTwo]);
+  }
+}
+
 async function main(): Promise<void> {
   await partOne();
   await partTwo();
+  await partThree();
   console.log(`\n${passed} passed, ${failed} failed`);
   await pool.end();
   if (failed > 0) process.exit(1);

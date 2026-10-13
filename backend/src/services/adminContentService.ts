@@ -7,6 +7,8 @@
  *    is removed from a goal only (the progress of users is stored per skill, so it stays).
  *  - A skill needs at least QUESTIONS_PER_ASSESSMENT active questions, otherwise it cannot be tested.
  *  - A skill can only be added to a goal when it can be tested.
+ *  - Prerequisites are edited per goal, but the link is shared by every goal that contains both skills,
+ *    and a change that would create a cycle is refused.
  */
 import { pool, query } from '../config/db';
 import { QUESTIONS_PER_ASSESSMENT } from './algorithm/adaptiveService';
@@ -534,5 +536,139 @@ export const removeSkillFromGoal = async (goalId: number, skillId: number): Prom
 
     await run('DELETE FROM goal_skills WHERE goal_id = $1 AND skill_id = $2', [goalId, skillId]);
     return { affectedSkills: dependents.rows.map((row) => row.name) };
+  });
+};
+
+// ---------------------------------------------------------------------------
+// Prerequisites of a skill inside a goal
+// ---------------------------------------------------------------------------
+
+const MAX_PREREQUISITES = 20;
+
+export interface PrerequisiteInput {
+  prerequisiteIds: number[];
+}
+
+export const parsePrerequisiteInput = (body: Record<string, unknown> | undefined): PrerequisiteInput => {
+  const raw = body?.prerequisiteIds;
+  if (!Array.isArray(raw)) throw new AdminContentError(400, 'prerequisiteIds must be a list of skill ids');
+  if (raw.length > MAX_PREREQUISITES) {
+    throw new AdminContentError(400, `A skill can have at most ${MAX_PREREQUISITES} prerequisites`);
+  }
+  const prerequisiteIds = raw.map((value, index) => cleanNumber(value, `prerequisiteIds[${index}]`, 1, 2147483647, true));
+  if (new Set(prerequisiteIds).size !== prerequisiteIds.length) {
+    throw new AdminContentError(400, 'prerequisiteIds must not repeat a skill');
+  }
+  return { prerequisiteIds };
+};
+
+export interface PrerequisiteChange {
+  added: string[]; // Names of the prerequisites that were added
+  removed: string[]; // Names of the prerequisites that were removed
+  alsoAffectedGoals: string[]; // Other goals that contain both skills of a changed link
+}
+
+/** True when `target` can be reached from `start` by following prerequisites */
+const dependsOn = (prerequisitesOf: Map<number, Set<number>>, start: number, target: number): boolean => {
+  const seen = new Set<number>();
+  const stack = [start];
+  while (stack.length > 0) {
+    const current = stack.pop() as number;
+    if (current === target) return true;
+    if (seen.has(current)) continue;
+    seen.add(current);
+    for (const next of prerequisitesOf.get(current) ?? []) stack.push(next);
+  }
+  return false;
+};
+
+/**
+ * Replaces the prerequisites of one skill with the given list. Only skills of the same goal can be chosen.
+ * A prerequisite of the skill that is NOT part of this goal is left untouched.
+ * The link is shared: every other goal that contains both skills sees the same change
+ * (the answer lists those goals). A change that would create a cycle is refused.
+ */
+export const setSkillPrerequisites = async (
+  goalId: number,
+  skillId: number,
+  input: PrerequisiteInput
+): Promise<PrerequisiteChange> => {
+  return inTransaction(async (run) => {
+    // Two admins editing at the same time must not be able to create a cycle together
+    await run('LOCK TABLE skill_dependencies IN SHARE ROW EXCLUSIVE MODE');
+
+    const members = await run<{ skill_id: number; name: string }>(
+      `SELECT gs.skill_id, s.name FROM goal_skills gs JOIN skills s ON s.id = gs.skill_id WHERE gs.goal_id = $1`,
+      [goalId]
+    );
+    const names = new Map(members.rows.map((row) => [row.skill_id, row.name]));
+    if (!names.has(skillId)) throw new AdminContentError(404, 'This skill is not part of the goal');
+
+    if (input.prerequisiteIds.includes(skillId)) {
+      throw new AdminContentError(400, 'A skill cannot be its own prerequisite');
+    }
+    if (input.prerequisiteIds.some((id) => !names.has(id))) {
+      throw new AdminContentError(400, 'Prerequisites must be skills of this goal');
+    }
+
+    const wanted = new Set(input.prerequisiteIds);
+    const current = await run<{ prerequisite_skill_id: number }>(
+      `SELECT d.prerequisite_skill_id
+       FROM skill_dependencies d
+       JOIN goal_skills gs ON gs.goal_id = $1 AND gs.skill_id = d.prerequisite_skill_id
+       WHERE d.skill_id = $2`,
+      [goalId, skillId]
+    );
+    const existing = new Set(current.rows.map((row) => row.prerequisite_skill_id));
+    const toAdd = [...wanted].filter((id) => !existing.has(id));
+    const toRemove = [...existing].filter((id) => !wanted.has(id));
+
+    // The whole graph (all goals share it), with the change applied, must stay free of cycles
+    const edges = await run<{ skill_id: number; prerequisite_skill_id: number }>(
+      'SELECT skill_id, prerequisite_skill_id FROM skill_dependencies'
+    );
+    const prerequisitesOf = new Map<number, Set<number>>();
+    for (const edge of edges.rows) {
+      if (!prerequisitesOf.has(edge.skill_id)) prerequisitesOf.set(edge.skill_id, new Set());
+      prerequisitesOf.get(edge.skill_id)!.add(edge.prerequisite_skill_id);
+    }
+    for (const id of toRemove) prerequisitesOf.get(skillId)?.delete(id);
+    for (const id of toAdd) {
+      if (dependsOn(prerequisitesOf, id, skillId)) {
+        throw new AdminContentError(
+          400,
+          `"${names.get(id)}" already depends on "${names.get(skillId)}", so it cannot be its prerequisite`
+        );
+      }
+    }
+
+    for (const id of toRemove) {
+      await run('DELETE FROM skill_dependencies WHERE skill_id = $1 AND prerequisite_skill_id = $2', [skillId, id]);
+    }
+    for (const id of toAdd) {
+      await run('INSERT INTO skill_dependencies (skill_id, prerequisite_skill_id) VALUES ($1, $2)', [skillId, id]);
+    }
+
+    // Other goals that contain both skills of a changed link see the change too
+    const affected = new Set<string>();
+    for (const id of [...toAdd, ...toRemove]) {
+      const goals = await run<{ name: string }>(
+        `SELECT g.name
+         FROM goals g
+         JOIN goal_skills a ON a.goal_id = g.id AND a.skill_id = $2
+         JOIN goal_skills b ON b.goal_id = g.id AND b.skill_id = $3
+         WHERE g.id <> $1
+         ORDER BY g.name`,
+        [goalId, skillId, id]
+      );
+      for (const goal of goals.rows) affected.add(goal.name);
+    }
+
+    const nameOf = (id: number): string => names.get(id) as string;
+    return {
+      added: toAdd.map(nameOf).sort(),
+      removed: toRemove.map(nameOf).sort(),
+      alsoAffectedGoals: [...affected].sort(),
+    };
   });
 };

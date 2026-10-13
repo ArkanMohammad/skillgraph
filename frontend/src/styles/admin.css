@@ -1,4 +1,4 @@
-/* Admin content management: questions and goal skills */
+/* Admin content management: questions, goal skills and prerequisites */
 
 .admin-panel {
   margin-bottom: 24px;
@@ -107,9 +107,35 @@ textarea.input {
   background: var(--ready-soft);
 }
 
+/* Prerequisites picker: one checkbox per skill of the goal */
+.admin-check-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 8px 20px;
+  margin-bottom: 20px;
+}
+
+.admin-check {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  font-size: 15px;
+}
+
+.admin-check input {
+  width: 18px;
+  height: 18px;
+  accent-color: var(--primary);
+}
+
+.admin-check-disabled {
+  opacity: 0.5;
+}
+
 @media (max-width: 720px) {
   .admin-form-grid,
-  .admin-form-four {
+  .admin-form-four,
+  .admin-check-grid {
     grid-template-columns: 1fr;
   }
 }

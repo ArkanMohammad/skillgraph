@@ -3,6 +3,7 @@
 Admins (role `ADMIN`) can change what users are tested on and what every goal contains,
 without touching the code or the database. Everything is in `backend/src/services/adminContentService.ts`
 and exposed under `/api/admin` (see `backend/src/routes/adminContentRoutes.ts`).
+The screens are the **Questions** and **Goal skills** tabs of the Admin page.
 
 ## What an admin can do
 
@@ -10,7 +11,7 @@ and exposed under `/api/admin` (see `backend/src/routes/adminContentRoutes.ts`).
 | --- | --- |
 | Skills | create a skill, edit its name, category and description |
 | Questions | add a question (4 options, exactly one correct), edit it, hide or show it |
-| Goal skills | add an existing skill to a goal, change its required mastery, importance and hours, remove it from the goal |
+| Goal skills | add an existing skill to a goal, change its required mastery, importance and hours, choose what it needs first (prerequisites), remove it from the goal |
 
 ## Rules that protect the data
 
@@ -23,9 +24,23 @@ and exposed under `/api/admin` (see `backend/src/routes/adminContentRoutes.ts`).
 | A goal keeps at least one skill | An empty goal cannot give a recommendation |
 | Editing a question updates its 4 option rows in place | The saved answers of users point to those rows |
 | Required mastery is 0.5 to 1, importance is above 0 up to 1, hours are whole numbers | Same limits the seed data follows |
+| Prerequisites are chosen among the skills of the same goal | A link to a skill that is not in the goal would mean nothing inside it |
+| A change that creates a cycle is refused | A skill in a cycle could never become READY |
 
 A new skill starts with one concept called `General` (weight 1), so its questions can be attached to it.
-Prerequisites between skills are not editable yet, so a new skill has none and is READY as soon as it is in a goal.
+A new skill has no prerequisites, so it is READY as soon as it is in a goal. Set its prerequisites on the
+Goal skills tab.
+
+## Prerequisites
+
+The prerequisite links are stored once (`skill_dependencies`) and shared by all goals. Editing the
+prerequisites of a skill inside one goal therefore changes it for every other goal that contains both
+skills, and the screen tells which goals those are. A prerequisite of the skill that is not part of the
+edited goal is never touched.
+
+Saving replaces the whole list in one transaction. The table is locked while it runs, so two admins
+cannot create a cycle together. User progress is not changed: LOCKED and READY are calculated from the
+graph on every request.
 
 ## Seed and admin changes
 
@@ -59,11 +74,12 @@ All routes need the ADMIN role (401 without login, 403 for a normal user).
 | POST | `/admin/goals/:goalId/skills` | `skillId`, `requiredMastery`, `importance`, `estimatedHours` | 201 |
 | PUT | `/admin/goals/:goalId/skills/:skillId` | `requiredMastery`, `importance`, `estimatedHours` | 204 |
 | DELETE | `/admin/goals/:goalId/skills/:skillId` | | 200 `{ affectedSkills }` |
+| PUT | `/admin/goals/:goalId/skills/:skillId/prerequisites` | `prerequisiteIds` (list of skill ids of that goal) | 200 `{ added, removed, alsoAffectedGoals }` |
 
 Errors use `{ message }` with 400 (invalid input or a rule above), 404 (not found) or 409 (duplicate).
 
 ## Tests
 
 ```bash
-npm run test:db     # includes src/tests/adminContent.test.ts
+npm run test:db     # includes src/tests/adminContent.test.ts (39 checks)
 ```

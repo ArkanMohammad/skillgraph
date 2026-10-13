@@ -1,10 +1,11 @@
 import { useEffect, useState } from 'react'
-import { Check, Pencil, Plus, Trash2, X } from 'lucide-react'
+import { Check, Link2, Pencil, Plus, Trash2, X } from 'lucide-react'
 import { getGoals } from '../../services/goalService'
 import {
   addAdminGoalSkill,
   getAdminGoalSkills,
   removeAdminGoalSkill,
+  setAdminPrerequisites,
   updateAdminGoalSkill,
   type GoalSkillInput,
   type GoalSkillRow,
@@ -44,7 +45,35 @@ function readNumbers(values: Numbers): { input: GoalSkillInput } | { error: stri
   }
 }
 
-// Tab to change which skills belong to a goal and how much each one counts
+// Skills of this goal that already need `skillId` (directly or through other skills).
+// They cannot become its prerequisite, because that would create a cycle.
+function findDependents(skills: GoalSkillRow[], skillId: number): Set<number> {
+  const found = new Set<number>()
+  const queue = [skillId]
+  while (queue.length > 0) {
+    const current = queue.pop() as number
+    for (const row of skills) {
+      if (row.prerequisiteIds.includes(current) && !found.has(row.skillId)) {
+        found.add(row.skillId)
+        queue.push(row.skillId)
+      }
+    }
+  }
+  return found
+}
+
+// Short text that tells what a prerequisite change did
+function describeChange(added: string[], removed: string[], goals: string[]) {
+  if (added.length === 0 && removed.length === 0) return 'No change'
+  const parts: string[] = []
+  if (added.length > 0) parts.push(`Added: ${added.join(', ')}`)
+  if (removed.length > 0) parts.push(`Removed: ${removed.join(', ')}`)
+  let text = parts.join('. ')
+  if (goals.length > 0) text += `. The same link is used by: ${goals.join(', ')}`
+  return text
+}
+
+// Tab to change which skills belong to a goal, how much each one counts and what it needs first
 function AdminGoalSkills() {
   const [goals, setGoals] = useState<Goal[]>([])
   const [goalId, setGoalId] = useState<number | null>(null)
@@ -58,6 +87,8 @@ function AdminGoalSkills() {
   const [editingId, setEditingId] = useState<number | null>(null)
   const [draft, setDraft] = useState<Numbers>({ mastery: '', importance: '', hours: '' })
   const [removing, setRemoving] = useState<GoalSkillRow | null>(null)
+  const [prereqFor, setPrereqFor] = useState<GoalSkillRow | null>(null)
+  const [prereqDraft, setPrereqDraft] = useState<number[]>([])
   const [adding, setAdding] = useState({ skillId: '', mastery: '70', importance: '50', hours: '10' })
 
   // Goals for the selector
@@ -114,6 +145,7 @@ function AdminGoalSkills() {
     setView(null)
     setEditingId(null)
     setRemoving(null)
+    setPrereqFor(null)
     setNotice(null)
   }
 
@@ -136,12 +168,35 @@ function AdminGoalSkills() {
 
   function startEdit(row: GoalSkillRow) {
     setRemoving(null)
+    setPrereqFor(null)
     setEditingId(row.skillId)
     setDraft({
       mastery: String(Math.round(row.requiredMastery * 100)),
       importance: String(Math.round(row.importance * 100)),
       hours: String(row.estimatedHours),
     })
+  }
+
+  function startPrerequisites(row: GoalSkillRow) {
+    setRemoving(null)
+    setEditingId(null)
+    setNotice(null)
+    setPrereqFor(row)
+    setPrereqDraft(row.prerequisiteIds)
+  }
+
+  function togglePrerequisite(id: number) {
+    setPrereqDraft((list) => (list.includes(id) ? list.filter((item) => item !== id) : [...list, id]))
+  }
+
+  async function savePrerequisites() {
+    if (goalId === null || !prereqFor) return
+    const target = prereqFor
+    const ok = await run(async () => {
+      const result = await setAdminPrerequisites(goalId, target.skillId, prereqDraft)
+      return describeChange(result.added, result.removed, result.alsoAffectedGoals)
+    })
+    if (ok) setPrereqFor(null)
   }
 
   async function saveEdit(row: GoalSkillRow) {
@@ -194,10 +249,15 @@ function AdminGoalSkills() {
     return <ErrorState title="Could not load goal skills" message={error} onRetry={retry} />
   }
 
+  const nameOf = new Map((view?.skills ?? []).map((row) => [row.skillId, row.name]))
+
   // Skills of this goal that list the skill being removed as a prerequisite
   const dependents = removing && view
     ? view.skills.filter((row) => row.prerequisiteIds.includes(removing.skillId))
     : []
+
+  // Skills that cannot be chosen as a prerequisite of the skill being edited (cycle)
+  const blocked = prereqFor && view ? findDependents(view.skills, prereqFor.skillId) : new Set<number>()
 
   return (
     <div>
@@ -252,6 +312,50 @@ function AdminGoalSkills() {
         </div>
       )}
 
+      {prereqFor && view && (
+        <div className="card admin-panel">
+          <h3>Prerequisites of {prereqFor.name}</h3>
+          <p className="muted">
+            Choose the skills a user must master first. The link is shared: every goal that contains
+            both skills uses it. A skill that already needs {prereqFor.name} cannot be chosen.
+          </p>
+          {view.skills.length <= 1 ? (
+            <p className="muted">This goal has no other skills.</p>
+          ) : (
+            <div className="admin-check-grid">
+              {view.skills
+                .filter((row) => row.skillId !== prereqFor.skillId)
+                .map((row) => {
+                  const isBlocked = blocked.has(row.skillId)
+                  return (
+                    <label
+                      key={row.skillId}
+                      className={`admin-check ${isBlocked ? 'admin-check-disabled' : ''}`}
+                      title={isBlocked ? `${row.name} already needs ${prereqFor.name}` : undefined}
+                    >
+                      <input
+                        type="checkbox"
+                        checked={prereqDraft.includes(row.skillId)}
+                        disabled={isBlocked}
+                        onChange={() => togglePrerequisite(row.skillId)}
+                      />
+                      {row.name}
+                    </label>
+                  )
+                })}
+            </div>
+          )}
+          <div className="admin-actions">
+            <button type="button" className="btn btn-primary btn-sm" disabled={busy} onClick={savePrerequisites}>
+              <Check size={14} /> Save prerequisites
+            </button>
+            <button type="button" className="btn btn-outline btn-sm" onClick={() => setPrereqFor(null)}>
+              Cancel
+            </button>
+          </div>
+        </div>
+      )}
+
       {view && (
         <>
           <div className="card card-flush">
@@ -260,6 +364,7 @@ function AdminGoalSkills() {
               <thead>
                 <tr>
                   <th>Skill</th>
+                  <th>Needs first</th>
                   <th>Required mastery</th>
                   <th>Importance</th>
                   <th>Hours</th>
@@ -275,6 +380,11 @@ function AdminGoalSkills() {
                       <td>
                         {row.name}
                         {row.category && <div className="muted">{row.category}</div>}
+                      </td>
+                      <td className="muted">
+                        {row.prerequisiteIds.length > 0
+                          ? row.prerequisiteIds.map((id) => nameOf.get(id) ?? id).join(', ')
+                          : '—'}
                       </td>
                       {isEditing ? (
                         <>
@@ -352,6 +462,13 @@ function AdminGoalSkills() {
                               <button
                                 type="button"
                                 className="btn btn-outline btn-sm"
+                                onClick={() => startPrerequisites(row)}
+                              >
+                                <Link2 size={14} /> Prerequisites
+                              </button>
+                              <button
+                                type="button"
+                                className="btn btn-outline btn-sm"
                                 disabled={view.skills.length <= 1}
                                 title={
                                   view.skills.length <= 1
@@ -360,6 +477,7 @@ function AdminGoalSkills() {
                                 }
                                 onClick={() => {
                                   setEditingId(null)
+                                  setPrereqFor(null)
                                   setRemoving(row)
                                 }}
                               >

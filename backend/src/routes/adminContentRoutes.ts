@@ -12,6 +12,7 @@
  *   POST   /goals/:goalId/skills            add a skill to a goal
  *   PUT    /goals/:goalId/skills/:skillId   edit mastery threshold, importance, hours
  *   DELETE /goals/:goalId/skills/:skillId   remove a skill from a goal
+ *   PUT    /goals/:goalId/skills/:skillId/prerequisites   replace the prerequisites of a skill in a goal
  */
 import { Router, Request, Response } from 'express';
 import { positiveIntBody, positiveIntParam } from '../middleware/validate';
@@ -24,10 +25,12 @@ import {
   listQuestions,
   listSkills,
   parseGoalSkillInput,
+  parsePrerequisiteInput,
   parseQuestionInput,
   parseSkillInput,
   removeSkillFromGoal,
   setQuestionActive,
+  setSkillPrerequisites,
   updateGoalSkill,
   updateQuestion,
   updateSkill,
@@ -107,6 +110,15 @@ router.put('/goals/:goalId/skills/:skillId', positiveIntParam('goalId', 'skillId
 
 router.delete('/goals/:goalId/skills/:skillId', positiveIntParam('goalId', 'skillId'), handle(async (req, res) => {
   res.status(200).json(await removeSkillFromGoal(Number(req.params.goalId), Number(req.params.skillId)));
+}));
+
+router.put('/goals/:goalId/skills/:skillId/prerequisites', positiveIntParam('goalId', 'skillId'), handle(async (req, res) => {
+  const result = await setSkillPrerequisites(
+    Number(req.params.goalId),
+    Number(req.params.skillId),
+    parsePrerequisiteInput(req.body)
+  );
+  res.status(200).json(result);
 }));
 
 export default router;

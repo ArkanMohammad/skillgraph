@@ -1,6 +1,6 @@
 # Testing
 
-All tests live in `backend/src/tests/`. There are 135 checks in total. They are plain TypeScript files that print `ok` or `FAIL` for every check and exit with an error code when something fails, so they also work in CI.
+All tests live in `backend/src/tests/`. There are 149 checks in total. They are plain TypeScript files that print `ok` or `FAIL` for every check and exit with an error code when something fails, so they also work in CI.
 
 ## Quick start
 
@@ -18,9 +18,9 @@ The API tests need a running server, so they are started separately (see below).
 | Command | Needs | Checks | What it covers |
 | --- | --- | --- | --- |
 | `npm run test:unit` | Nothing | 52 | Pure logic, no database |
-| `npm run test:db` | PostgreSQL after `migrate` and `seed` | 58 | Real database and real services |
+| `npm run test:db` | PostgreSQL after `migrate` and `seed` | 72 | Real database and real services |
 | `npm run test:api` | Running backend (`npm run dev`) | 25 | HTTP level: auth, roles, validation, main flow |
-| `npm test` | PostgreSQL | 110 | `test:unit` and `test:db` together |
+| `npm test` | PostgreSQL | 124 | `test:unit` and `test:db` together |
 | `npm run smoke` | Running site | 15 | A live check of a deployed or local site |
 
 ### Unit tests (52)
@@ -32,13 +32,13 @@ The API tests need a running server, so they are started separately (see below).
 | `progressSummary.test.ts` | 11 | The progress summary and request validators |
 | `goalChange.test.ts` | 10 | Changing the goal: shared skills keep their mastery, the recommendation follows the new goal |
 
-### Database tests (58)
+### Database tests (72)
 
 | File | Checks | Covers |
 | --- | --- | --- |
 | `recommendationDb.test.ts` | 13 | The real seeded database with the real services, using a temporary user |
 | `postgresConstraints.test.ts` | 20 | Unique, foreign key and check constraints, cascade deletes, key joins |
-| `adminContent.test.ts` | 25 | Admin content rules and PostgreSQL behavior: hidden questions are never asked, a skill needs at least 4 active questions, a goal keeps at least one skill, a failed change rolls back completely, user progress stays after a skill leaves a goal |
+| `adminContent.test.ts` | 39 | Admin content rules and PostgreSQL behavior: hidden questions are never asked, a skill needs at least 4 active questions, a goal keeps at least one skill, a failed change rolls back completely, user progress stays after a skill leaves a goal, prerequisite editing (no cycles, shared links, links outside the goal untouched) |
 
 These tests create their own fixture rows (names start with `d12test_` or `d15test_`) and delete them at the end, so the seeded content is not touched. If a run is killed in the middle, the leftover rows can be removed by running the test again.
 
