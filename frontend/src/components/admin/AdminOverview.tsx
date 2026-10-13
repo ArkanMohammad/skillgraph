@@ -1,16 +1,8 @@
 import { useEffect, useState } from 'react'
 import { Activity, ClipboardList, ShieldCheck, Users, type LucideIcon } from 'lucide-react'
-import { useAppSelector } from '../../hooks/reduxHooks'
-import {
-  getAdminStats,
-  getAdminUsers,
-  setUserRole,
-  type AdminStats,
-  type AdminUser,
-} from '../../services/adminService'
+import { getAdminStats, type AdminStats } from '../../services/adminService'
 import ErrorState from '../ErrorState'
 import { getMessage } from './adminHelpers'
-import type { UserRole } from '../../types/api'
 
 // Small card: icon tile, big value and a label
 function StatCard(props: {
@@ -31,12 +23,9 @@ function StatCard(props: {
   )
 }
 
-// Totals, users per goal and a users table with role control
+// Totals and the number of users per goal (the users themselves are in the Users tab)
 function AdminOverview() {
-  const me = useAppSelector((state) => state.auth.user)
-
   const [stats, setStats] = useState<AdminStats | null>(null)
-  const [users, setUsers] = useState<AdminUser[]>([])
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
   const [attempt, setAttempt] = useState(0) // bumped by reload() to fetch again
@@ -46,10 +35,8 @@ function AdminOverview() {
 
     async function load() {
       try {
-        const [statsData, usersData] = await Promise.all([getAdminStats(), getAdminUsers()])
-        if (cancelled) return
-        setStats(statsData)
-        setUsers(usersData.users)
+        const data = await getAdminStats()
+        if (!cancelled) setStats(data)
       } catch (err) {
         if (!cancelled) setError(getMessage(err))
       } finally {
@@ -68,22 +55,6 @@ function AdminOverview() {
     setLoading(true)
     setError(null)
     setAttempt((n) => n + 1)
-  }
-
-  async function handleRoleChange(user: AdminUser, role: UserRole) {
-    setError(null)
-    try {
-      await setUserRole(user.id, role)
-      setUsers((list) => list.map((item) => (item.id === user.id ? { ...item, role } : item)))
-      // Keep the admin counter in sync without another request
-      setStats((current) =>
-        current
-          ? { ...current, admins: current.admins + (role === 'ADMIN' ? 1 : -1) }
-          : current
-      )
-    } catch (err) {
-      setError(getMessage(err))
-    }
   }
 
   if (loading) return <p className="muted">Loading admin data...</p>
@@ -124,43 +95,6 @@ function AdminOverview() {
             <span className="muted">{goal.users}</span>
           </div>
         ))}
-      </div>
-
-      <div className="card card-flush progress-recent">
-        <h3>Users</h3>
-        {error && <p className="form-error progress-empty">{error}</p>}
-        <table className="table">
-          <thead>
-            <tr>
-              <th>Name</th>
-              <th>Email</th>
-              <th>Goal</th>
-              <th>Tests</th>
-              <th>Role</th>
-            </tr>
-          </thead>
-          <tbody>
-            {users.map((user) => (
-              <tr key={user.id}>
-                <td>{user.name}</td>
-                <td className="muted">{user.email}</td>
-                <td>{user.currentGoal ?? '—'}</td>
-                <td>{user.assessmentsCompleted}</td>
-                <td>
-                  <select
-                    className="admin-role-select"
-                    value={user.role}
-                    disabled={user.id === me?.id} // an admin cannot change their own role
-                    onChange={(e) => handleRoleChange(user, e.target.value as UserRole)}
-                  >
-                    <option value="USER">USER</option>
-                    <option value="ADMIN">ADMIN</option>
-                  </select>
-                </td>
-              </tr>
-            ))}
-          </tbody>
-        </table>
       </div>
     </div>
   )
