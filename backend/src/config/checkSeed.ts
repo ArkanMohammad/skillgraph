@@ -35,7 +35,12 @@ async function main(): Promise<void> {
   report(goalCount === Object.keys(GOAL_SKILLS).length ? 'PASS' : 'FAIL', `goals in the database: ${goalCount}`);
 
   const skillCount = Number((await query<{ total: string }>('SELECT COUNT(*) AS total FROM skills')).rows[0].total);
-  report(skillCount === SKILLS.length ? 'PASS' : 'FAIL', `skills match the catalog: ${skillCount} of ${SKILLS.length}`);
+  // Admins can add skills, so more than the catalog is fine; fewer means the seed was not run
+  report(
+    skillCount === SKILLS.length ? 'PASS' : skillCount > SKILLS.length ? 'WARN' : 'FAIL',
+    `skills: ${skillCount} in the database, ${SKILLS.length} in the catalog` +
+      (skillCount > SKILLS.length ? ' (skills added in the admin panel)' : '')
+  );
 
   const dependencyCount = Number(
     (await query<{ total: string }>('SELECT COUNT(*) AS total FROM skill_dependencies')).rows[0].total
@@ -45,7 +50,7 @@ async function main(): Promise<void> {
     `prerequisites match the catalog: ${dependencyCount} of ${DEPENDENCIES.length} (run the seed again if they differ)`
   );
 
-  // Every goal must hold exactly the skills the catalog lists for it
+  // Admins can change the skills of a goal, so a difference is a warning, not a failure
   const stored = await query<{ name: string; total: string }>(
     `SELECT g.name, COUNT(gs.skill_id) AS total
      FROM goals g LEFT JOIN goal_skills gs ON gs.goal_id = g.id
@@ -53,8 +58,8 @@ async function main(): Promise<void> {
   );
   const storedTotals = new Map(stored.rows.map((row) => [row.name, Number(row.total)]));
   expectNone(
-    'FAIL',
-    'every goal has the skills the catalog lists',
+    'WARN',
+    'every goal has the skills the catalog lists (a difference means the admin changed the goal)',
     Object.entries(GOAL_SKILLS)
       .filter(([goal, list]) => storedTotals.get(goal) !== list.length)
       .map(([goal, list]) => `${goal}: ${storedTotals.get(goal) ?? 'missing'} in the database, ${list.length} in the catalog`)
@@ -126,20 +131,34 @@ async function main(): Promise<void> {
   );
 
   // ---------- Assessment content ----------
+  // An assessment asks 4 questions, so every skill needs at least 4 ACTIVE questions
   expectNone(
     'FAIL',
-    'every skill has 10 questions: 3 easy, 4 medium, 3 hard',
+    'every skill has at least 4 active questions',
     await names(
-      `SELECT s.name || ': ' ||
-              COUNT(q.id) FILTER (WHERE q.difficulty = 1) || '/' ||
-              COUNT(q.id) FILTER (WHERE q.difficulty = 2) || '/' ||
-              COUNT(q.id) FILTER (WHERE q.difficulty = 3) || ' (easy/medium/hard)' AS line
+      `SELECT s.name || ': ' || COUNT(q.id) FILTER (WHERE q.is_active) || ' active' AS line
        FROM skills s LEFT JOIN questions q ON q.skill_id = s.id
        GROUP BY s.id, s.name
-       HAVING COUNT(q.id) <> 10
-           OR COUNT(q.id) FILTER (WHERE q.difficulty = 1) <> 3
-           OR COUNT(q.id) FILTER (WHERE q.difficulty = 2) <> 4
-           OR COUNT(q.id) FILTER (WHERE q.difficulty = 3) <> 3
+       HAVING COUNT(q.id) FILTER (WHERE q.is_active) < 4
+       ORDER BY s.name`
+    )
+  );
+
+  // The seed gives every skill 10 questions: 3 easy, 4 medium, 3 hard (admins may change this)
+  expectNone(
+    'WARN',
+    'every skill has the standard bank: 10 active questions, 3 easy, 4 medium, 3 hard',
+    await names(
+      `SELECT s.name || ': ' ||
+              COUNT(q.id) FILTER (WHERE q.is_active AND q.difficulty = 1) || '/' ||
+              COUNT(q.id) FILTER (WHERE q.is_active AND q.difficulty = 2) || '/' ||
+              COUNT(q.id) FILTER (WHERE q.is_active AND q.difficulty = 3) || ' (easy/medium/hard)' AS line
+       FROM skills s LEFT JOIN questions q ON q.skill_id = s.id
+       GROUP BY s.id, s.name
+       HAVING COUNT(q.id) FILTER (WHERE q.is_active) <> 10
+           OR COUNT(q.id) FILTER (WHERE q.is_active AND q.difficulty = 1) <> 3
+           OR COUNT(q.id) FILTER (WHERE q.is_active AND q.difficulty = 2) <> 4
+           OR COUNT(q.id) FILTER (WHERE q.is_active AND q.difficulty = 3) <> 3
        ORDER BY s.name`
     )
   );
