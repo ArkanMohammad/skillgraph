@@ -4,6 +4,13 @@ SkillGraph turns a career goal into a graph of skills and tells the learner what
 The user picks a goal, takes short adaptive assessments, and the system recommends the
 **Next Best Skill** with a clear explanation. After every assessment the plan is recalculated.
 
+## Screenshots
+
+![Dashboard](docs/screenshots/dashboard.png)
+![Skill graph](docs/screenshots/skill-graph.png)
+![Progress](docs/screenshots/progress.png)
+![Assessment](docs/screenshots/assessment.png)
+
 ## Tech stack
 
 | Part | Technology |
