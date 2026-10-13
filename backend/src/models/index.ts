@@ -1,5 +1,4 @@
 /**
- * أنواع TypeScript المطابقة لجداول PostgreSQL
  * TypeScript types matching the PostgreSQL tables
  */
 export type UserRole = 'USER' | 'ADMIN';
@@ -13,17 +12,17 @@ export type SkillState =
   | 'MASTERED'
   | 'NEEDS_VERIFICATION';
 
-/** 1 = easy, 2 = medium, 3 = hard / 1 سهل، 2 متوسط، 3 صعب */
+/** 1 = easy, 2 = medium, 3 = hard */
 export type Difficulty = 1 | 2 | 3;
 
-/** JWT payload after login / بيانات التوكن بعد تسجيل الدخول */
+/** JWT payload after login */
 export interface AuthPayload {
   id: string;
   email: string;
   role: UserRole;
 }
 
-/** User account with hashed password and role / حساب مستخدم مع كلمة مرور مشفّرة ودور */
+/** User account with hashed password and role */
 export interface User {
   id: string;
   name: string;
@@ -34,7 +33,7 @@ export interface User {
   updated_at: Date;
 }
 
-/** One of the seven career goals / هدف مهني من الأهداف السبعة */
+/** One of the seven career goals */
 export interface Goal {
   id: number;
   name: string;
@@ -42,7 +41,7 @@ export interface Goal {
   created_at: Date;
 }
 
-/** Shared skill used across goals / مهارة عامة مشتركة */
+/** Shared skill used across goals */
 export interface Skill {
   id: number;
   name: string;
@@ -51,7 +50,7 @@ export interface Skill {
   created_at: Date;
 }
 
-/** Links a skill to a goal: mastery, importance, hours / ربط مهارة بهدف */
+/** Links a skill to a goal: mastery, importance, hours */
 export interface GoalSkill {
   goal_id: number;
   skill_id: number;
@@ -60,13 +59,13 @@ export interface GoalSkill {
   estimated_hours: number;
 }
 
-/** Directed graph edge: skill requires a prerequisite / متطلب سابق */
+/** Directed graph edge: skill requires a prerequisite */
 export interface SkillDependency {
   skill_id: number;
   prerequisite_skill_id: number;
 }
 
-/** User's current path toward a goal / مسار المستخدم الحالي نحو هدف */
+/** User's current path toward a goal */
 export interface UserGoal {
   user_id: string;
   goal_id: number;
@@ -76,7 +75,7 @@ export interface UserGoal {
   completed_at: Date | null;
 }
 
-/** Actual proficiency and confidence for the algorithm / مستوى التمكين والثقة */
+/** Actual proficiency and confidence for the algorithm */
 export interface UserSkill {
   user_id: string;
   skill_id: number;
@@ -87,7 +86,7 @@ export interface UserSkill {
   updated_at: Date;
 }
 
-/** Assessment session / جلسة تقييم لمهارة */
+/** Assessment session */
 export interface Assessment {
   id: number;
   user_id: string;
@@ -97,7 +96,7 @@ export interface Assessment {
   final_score: number | null;
 }
 
-/** Sub-skill of a skill with a weight in the score / مفهوم فرعي له وزن في النتيجة */
+/** Sub-skill of a skill with a weight in the score */
 export interface Concept {
   id: number;
   skill_id: number;
@@ -105,7 +104,7 @@ export interface Concept {
   weight: number;
 }
 
-/** Question belonging to a skill and a concept / سؤال تابع لمهارة ومفهوم */
+/** Question belonging to a skill and a concept */
 export interface Question {
   id: number;
   skill_id: number;
@@ -114,7 +113,7 @@ export interface Question {
   prompt: string;
 }
 
-/** Answer choice; is_correct stays server-side / خيار إجابة — الصحيح يبقى في السيرفر */
+/** Answer choice; is_correct stays server-side */
 export interface QuestionOption {
   id: number;
   question_id: number;
@@ -122,7 +121,7 @@ export interface QuestionOption {
   is_correct: boolean;
 }
 
-/** Saved answer for one question / إجابة محفوظة لسؤال */
+/** Saved answer for one question */
 export interface AssessmentAnswer {
   assessment_id: number;
   question_id: number;
@@ -131,7 +130,7 @@ export interface AssessmentAnswer {
   answered_at: Date;
 }
 
-/** Audit log for mastery changes / سجل أحداث التمكن */
+/** Audit log for mastery changes */
 export interface SkillEvent {
   id: number;
   user_id: string;

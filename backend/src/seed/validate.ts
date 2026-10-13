@@ -1,6 +1,5 @@
 /**
  * Checks the seed data BEFORE touching the database (so a typo never breaks the DB).
- * تتحقق من بيانات الـ seed قبل لمس قاعدة البيانات.
  */
 import { DEPENDENCIES, GOAL_SKILLS, SKILLS } from './catalog';
 import { allQuestions, extraQuestions } from './allQuestions';

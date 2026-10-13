@@ -1,5 +1,4 @@
 /**
- * فحص صحة السيرفر واتصال قاعدة البيانات
  * Health check for the server and database connection
  */
 import { Request, Response } from 'express';

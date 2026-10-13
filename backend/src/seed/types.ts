@@ -1,9 +1,8 @@
 /**
  * Shapes of the seed data (skills, concepts, questions)
- * أشكال بيانات الـ seed: المهارات والمفاهيم والأسئلة
  */
 
-/** 1 = easy, 2 = medium, 3 = hard / 1 سهل، 2 متوسط، 3 صعب */
+/** 1 = easy, 2 = medium, 3 = hard */
 export type SeedDifficulty = 1 | 2 | 3;
 
 /**
@@ -19,7 +18,7 @@ export type QuestionTuple = [
   wrong: [string, string, string]
 ];
 
-/** All concepts and questions of one skill / مفاهيم وأسئلة مهارة واحدة */
+/** All concepts and questions of one skill */
 export interface SkillQuestions {
   skill: string;
   /** [concept name, weight]: the weights of a skill must add up to 1 */
@@ -37,8 +36,8 @@ export interface SeedSkill {
   name: string;
   category: string;
   description: string;
-  hours: number; // Estimated learning hours / ساعات التعلم المقدّرة
+  hours: number; // Estimated learning hours
 }
 
-/** [skill name, required mastery 0-1, importance 0-1] / [المهارة، شرط التمكن، الأهمية] */
+/** [skill name, required mastery 0-1, importance 0-1] */
 export type GoalSkillTuple = [skill: string, required: number, importance: number];
