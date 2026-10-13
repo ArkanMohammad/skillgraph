@@ -1,0 +1,115 @@
+/* Admin content management: questions and goal skills */
+
+.admin-panel {
+  margin-bottom: 24px;
+}
+
+.admin-toolbar {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: flex-end;
+  gap: 16px;
+}
+
+.admin-toolbar .field {
+  flex: 1 1 260px;
+  margin-bottom: 0;
+}
+
+.admin-field-flat {
+  max-width: 420px;
+}
+
+.admin-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.admin-form-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 0 20px;
+}
+
+.admin-form-four {
+  grid-template-columns: 2fr 1fr 1fr 1fr;
+}
+
+.admin-form-wide {
+  grid-column: 1 / -1;
+}
+
+.admin-option-row {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin-bottom: 12px;
+}
+
+.admin-option-row .input {
+  flex: 1;
+}
+
+.admin-option-row input[type='radio'] {
+  width: 18px;
+  height: 18px;
+  accent-color: var(--primary);
+}
+
+textarea.input {
+  min-height: 80px;
+  resize: vertical;
+}
+
+/* Compact inputs inside table rows */
+.input-sm {
+  padding: 8px 10px;
+  font-size: 14px;
+}
+
+.admin-num {
+  width: 90px;
+}
+
+.admin-prompt {
+  max-width: 440px;
+}
+
+.admin-row-hidden {
+  opacity: 0.55;
+}
+
+/* Messages and buttons inside a flush card (it has no padding of its own) */
+.admin-flush-message {
+  margin: 0 24px 16px;
+}
+
+.badge-hard {
+  background: var(--danger-soft);
+  color: var(--danger);
+}
+
+.admin-notice {
+  margin: 0 0 16px;
+  padding: 10px 14px;
+  border-radius: 10px;
+  font-size: 14px;
+}
+
+.admin-notice-ok {
+  background: var(--mastered-soft);
+  color: var(--mastered-text);
+}
+
+.admin-warning {
+  border-color: var(--ready);
+  background: var(--ready-soft);
+}
+
+@media (max-width: 720px) {
+  .admin-form-grid,
+  .admin-form-four {
+    grid-template-columns: 1fr;
+  }
+}

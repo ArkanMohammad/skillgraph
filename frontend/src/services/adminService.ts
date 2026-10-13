@@ -36,3 +36,147 @@ export function setUserRole(userId: string, role: UserRole) {
     { method: 'PUT', body: JSON.stringify({ role }) }
   )
 }
+
+// ---------- Content management: skills and questions ----------
+
+export type AdminConcept = { id: number; name: string; weight: number }
+
+// One skill with its question counts
+export type AdminSkill = {
+  id: number
+  name: string
+  category: string | null
+  description: string | null
+  activeQuestions: number
+  totalQuestions: number
+  goals: number
+  concepts: AdminConcept[]
+}
+
+export type SkillInput = {
+  name: string
+  category: string
+  description: string
+}
+
+export type AdminQuestionOption = { id: number; text: string; isCorrect: boolean }
+
+export type AdminQuestion = {
+  id: number
+  conceptId: number | null
+  conceptName: string | null
+  difficulty: number
+  prompt: string
+  isActive: boolean
+  timesAnswered: number
+  options: AdminQuestionOption[]
+}
+
+export type QuestionInput = {
+  conceptId: number
+  difficulty: number
+  prompt: string
+  options: { text: string; isCorrect: boolean }[]
+}
+
+export function getAdminSkills() {
+  return apiRequest<{ skills: AdminSkill[] }>('/admin/skills')
+}
+
+export function createAdminSkill(input: SkillInput) {
+  return apiRequest<{ id: number }>('/admin/skills', {
+    method: 'POST',
+    body: JSON.stringify(input),
+  })
+}
+
+export function updateAdminSkill(skillId: number, input: SkillInput) {
+  return apiRequest<null>(`/admin/skills/${skillId}`, {
+    method: 'PUT',
+    body: JSON.stringify(input),
+  })
+}
+
+export function getAdminQuestions(skillId: number) {
+  return apiRequest<{ questions: AdminQuestion[] }>(`/admin/skills/${skillId}/questions`)
+}
+
+export function createAdminQuestion(skillId: number, input: QuestionInput) {
+  return apiRequest<{ id: number }>(`/admin/skills/${skillId}/questions`, {
+    method: 'POST',
+    body: JSON.stringify(input),
+  })
+}
+
+export function updateAdminQuestion(questionId: number, input: QuestionInput) {
+  return apiRequest<null>(`/admin/questions/${questionId}`, {
+    method: 'PUT',
+    body: JSON.stringify(input),
+  })
+}
+
+// Hides or shows a question (hidden questions are never asked, nothing is deleted)
+export function setAdminQuestionActive(questionId: number, isActive: boolean) {
+  return apiRequest<null>(`/admin/questions/${questionId}/active`, {
+    method: 'PATCH',
+    body: JSON.stringify({ isActive }),
+  })
+}
+
+// ---------- Content management: skills of a goal ----------
+
+export type GoalSkillInput = {
+  requiredMastery: number
+  importance: number
+  estimatedHours: number
+}
+
+export type GoalSkillRow = {
+  skillId: number
+  name: string
+  category: string | null
+  requiredMastery: number
+  importance: number
+  estimatedHours: number
+  activeQuestions: number
+  prerequisiteIds: number[] // prerequisites that are also part of this goal
+}
+
+export type AvailableSkillRow = {
+  skillId: number
+  name: string
+  category: string | null
+  activeQuestions: number
+  canAdd: boolean // false when the skill has too few active questions to be tested
+}
+
+export type GoalSkillsView = {
+  goal: { id: number; name: string }
+  skills: GoalSkillRow[]
+  available: AvailableSkillRow[]
+}
+
+export function getAdminGoalSkills(goalId: number) {
+  return apiRequest<GoalSkillsView>(`/admin/goals/${goalId}/skills`)
+}
+
+export function addAdminGoalSkill(goalId: number, skillId: number, input: GoalSkillInput) {
+  return apiRequest<{ message: string }>(`/admin/goals/${goalId}/skills`, {
+    method: 'POST',
+    body: JSON.stringify({ skillId, ...input }),
+  })
+}
+
+export function updateAdminGoalSkill(goalId: number, skillId: number, input: GoalSkillInput) {
+  return apiRequest<null>(`/admin/goals/${goalId}/skills/${skillId}`, {
+    method: 'PUT',
+    body: JSON.stringify(input),
+  })
+}
+
+// Removes a skill from one goal only: the skill and user progress stay
+export function removeAdminGoalSkill(goalId: number, skillId: number) {
+  return apiRequest<{ affectedSkills: string[] }>(`/admin/goals/${goalId}/skills/${skillId}`, {
+    method: 'DELETE',
+  })
+}

@@ -1,177 +1,47 @@
-import { useEffect, useState } from 'react'
-import { Activity, ClipboardList, ShieldCheck, Users, type LucideIcon } from 'lucide-react'
-import { useAppSelector } from '../hooks/reduxHooks'
-import {
-  getAdminStats,
-  getAdminUsers,
-  setUserRole,
-  type AdminStats,
-  type AdminUser,
-} from '../services/adminService'
-import { ApiError } from '../services/apiClient'
-import ErrorState from '../components/ErrorState'
-import type { UserRole } from '../types/api'
+import { useState } from 'react'
+import AdminGoalSkills from '../components/admin/AdminGoalSkills'
+import AdminOverview from '../components/admin/AdminOverview'
+import AdminQuestions from '../components/admin/AdminQuestions'
 import '../styles/pages.css'
 import '../styles/progress.css'
+import '../styles/admin.css'
 
-// Small card: icon tile, big value and a label
-function StatCard(props: {
-  icon: LucideIcon
-  tone: 'primary' | 'mastered' | 'ready' | 'danger'
-  value: string
-  label: string
-}) {
-  const Icon = props.icon
-  return (
-    <div className="card">
-      <div className={`stat-icon tone-${props.tone}`}>
-        <Icon size={22} />
-      </div>
-      <div className="stat-value">{props.value}</div>
-      <div>{props.label}</div>
-    </div>
-  )
-}
+type Tab = 'overview' | 'questions' | 'goals'
 
-// Turns any thrown error into a message for the screen
-function getMessage(err: unknown) {
-  return err instanceof ApiError ? err.message : 'Cannot reach the server'
-}
+const TABS: { id: Tab; label: string; title: string }[] = [
+  { id: 'overview', label: 'Overview', title: 'Overview' },
+  { id: 'questions', label: 'Questions', title: 'Questions and skills' },
+  { id: 'goals', label: 'Goal skills', title: 'Skills of a goal' },
+]
 
-// Minimal admin overview: totals, users per goal and a users table with role control
+// Admin area: overview of users, plus tabs to manage questions and goal skills
 function AdminPage() {
-  const me = useAppSelector((state) => state.auth.user)
-
-  const [stats, setStats] = useState<AdminStats | null>(null)
-  const [users, setUsers] = useState<AdminUser[]>([])
-  const [loading, setLoading] = useState(true)
-  const [error, setError] = useState<string | null>(null)
-  const [attempt, setAttempt] = useState(0) // bumped by reload() to fetch again
-
-  useEffect(() => {
-    let cancelled = false // ignore the result if the page was left meanwhile
-
-    async function load() {
-      try {
-        const [statsData, usersData] = await Promise.all([getAdminStats(), getAdminUsers()])
-        if (cancelled) return
-        setStats(statsData)
-        setUsers(usersData.users)
-      } catch (err) {
-        if (!cancelled) setError(getMessage(err))
-      } finally {
-        if (!cancelled) setLoading(false)
-      }
-    }
-
-    load()
-    return () => {
-      cancelled = true
-    }
-  }, [attempt])
-
-  // Try again after a failed load
-  function reload() {
-    setLoading(true)
-    setError(null)
-    setAttempt((n) => n + 1)
-  }
-
-  async function handleRoleChange(user: AdminUser, role: UserRole) {
-    setError(null)
-    try {
-      await setUserRole(user.id, role)
-      setUsers((list) => list.map((item) => (item.id === user.id ? { ...item, role } : item)))
-      // Keep the admin counter in sync without another request
-      setStats((current) =>
-        current
-          ? { ...current, admins: current.admins + (role === 'ADMIN' ? 1 : -1) }
-          : current
-      )
-    } catch (err) {
-      setError(getMessage(err))
-    }
-  }
-
-  if (loading) return <p className="muted">Loading admin data...</p>
-  if (!stats) {
-    return (
-      <ErrorState
-        title="Could not load admin data"
-        message={error ?? 'Could not load admin data'}
-        onRetry={reload}
-      />
-    )
-  }
+  const [tab, setTab] = useState<Tab>('overview')
+  const current = TABS.find((item) => item.id === tab) ?? TABS[0]
 
   return (
     <div>
       <p className="page-eyebrow">Admin</p>
-      <h1 className="page-title">Overview</h1>
+      <h1 className="page-title">{current.title}</h1>
 
-      <div className="stats-grid">
-        <StatCard icon={Users} tone="primary" value={String(stats.users)} label="Users" />
-        <StatCard icon={ShieldCheck} tone="danger" value={String(stats.admins)} label="Admins" />
-        <StatCard
-          icon={ClipboardList}
-          tone="ready"
-          value={String(stats.assessmentsCompleted)}
-          label="Assessments completed"
-        />
-        <StatCard
-          icon={Activity}
-          tone="mastered"
-          value={stats.averageScore === null ? '—' : `${stats.averageScore}%`}
-          label="Average score"
-        />
-      </div>
-
-      <div className="card">
-        <h3>Users per goal</h3>
-        {stats.usersPerGoal.map((goal) => (
-          <div className="skill-row-top" key={goal.goalId}>
-            <span>{goal.name}</span>
-            <span className="muted">{goal.users}</span>
-          </div>
+      <div className="pills" role="tablist">
+        {TABS.map((item) => (
+          <button
+            key={item.id}
+            type="button"
+            role="tab"
+            aria-selected={tab === item.id}
+            className={`pill ${tab === item.id ? 'active' : ''}`}
+            onClick={() => setTab(item.id)}
+          >
+            {item.label}
+          </button>
         ))}
       </div>
 
-      <div className="card card-flush progress-recent">
-        <h3>Users</h3>
-        {error && <p className="form-error progress-empty">{error}</p>}
-        <table className="table">
-          <thead>
-            <tr>
-              <th>Name</th>
-              <th>Email</th>
-              <th>Goal</th>
-              <th>Tests</th>
-              <th>Role</th>
-            </tr>
-          </thead>
-          <tbody>
-            {users.map((user) => (
-              <tr key={user.id}>
-                <td>{user.name}</td>
-                <td className="muted">{user.email}</td>
-                <td>{user.currentGoal ?? '—'}</td>
-                <td>{user.assessmentsCompleted}</td>
-                <td>
-                  <select
-                    className="admin-role-select"
-                    value={user.role}
-                    disabled={user.id === me?.id} // an admin cannot change their own role
-                    onChange={(e) => handleRoleChange(user, e.target.value as UserRole)}
-                  >
-                    <option value="USER">USER</option>
-                    <option value="ADMIN">ADMIN</option>
-                  </select>
-                </td>
-              </tr>
-            ))}
-          </tbody>
-        </table>
-      </div>
+      {tab === 'overview' && <AdminOverview />}
+      {tab === 'questions' && <AdminQuestions />}
+      {tab === 'goals' && <AdminGoalSkills />}
     </div>
   )
 }
