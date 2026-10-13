@@ -23,6 +23,7 @@ erDiagram
     assessments ||--o{ assessment_answers : records
     questions ||--o{ assessment_answers : "answered in"
     users ||--o{ skill_events : logs
+    users ||--o{ user_advice : "receives"
 ```
 
 ## Tables
@@ -54,6 +55,12 @@ A skill is shared, so its numbers live in `goal_skills` and can differ from goal
 
 Progress is stored per skill, not per goal. When a user changes goal, skills they share with the new goal keep their mastery.
 
+### Advice
+
+| Table | Purpose | Notes |
+| --- | --- | --- |
+| `user_advice` | A message an admin writes for a user (shown on the dashboard) | `message` is 1 to 1000 characters, `read_at` is empty until the user marks it as read. `admin_id` becomes empty if the admin account is deleted, the advice stays (migration 005) |
+
 ### Assessments and questions
 
 | Table | Purpose | Notes |
@@ -72,7 +79,8 @@ Foreign keys decide what happens to related rows:
 
 | Deleting | Also deletes | Keeps |
 | --- | --- | --- |
-| A user | Their goals, skill progress, assessments, answers, events | Everything else |
+| A user | Their goals, skill progress, assessments, answers, events, advice they received | Everything else |
+| An admin | Nothing | The advice they wrote stays (the author becomes empty) |
 | A goal | Its `goal_skills` and `user_goals` rows | Skills and their questions |
 | A skill | Its concepts, questions, options, goal links, prerequisites, user progress, assessments | Goals |
 | A question | Its options and the answers to it | The skill |
@@ -119,10 +127,11 @@ The runner records every applied file in the `schema_migrations` table, so each 
 | `002_performance_indexes` | Adds the indexes listed above |
 | `003_admin_content` | Adds `questions.is_active` and its index |
 | `004_remove_arabic_text` | Removes Arabic text that older versions stored in goal and skill descriptions (`English / Arabic`), keeping the English part |
+| `005_user_advice` | Adds the `user_advice` table and its index |
 
 Rules for a new migration:
 
-1. Add a file with the next number, for example `005_name.sql`.
+1. Add a file with the next number, for example `006_name.sql`.
 2. Make it safe to read twice (`IF NOT EXISTS`) where PostgreSQL allows it.
 3. Never edit a migration that was already merged. Add a new one instead.
 4. Run `npm run migrate`, then `npm run test:db`.
