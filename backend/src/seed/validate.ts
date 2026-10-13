@@ -3,7 +3,11 @@
  * تتحقق من بيانات الـ seed قبل لمس قاعدة البيانات.
  */
 import { DEPENDENCIES, GOAL_SKILLS, SKILLS } from './catalog';
-import { allQuestions } from './allQuestions';
+import { allQuestions, extraQuestions } from './allQuestions';
+
+/** Every skill has 10 questions: 3 easy, 4 medium, 3 hard (an assessment asks 4 of them) */
+export const QUESTIONS_PER_SKILL = 10;
+export const QUESTIONS_PER_DIFFICULTY: Record<number, number> = { 1: 3, 2: 4, 3: 3 };
 
 export function validateSeedData(): string[] {
   const problems: string[] = [];
@@ -56,10 +60,14 @@ export function validateSeedData(): string[] {
     const weightSum = item.concepts.reduce((sum, [, weight]) => sum + weight, 0);
     if (Math.abs(weightSum - 1) > 0.001) problems.push(`${label}: concept weights add up to ${weightSum}`);
 
-    if (item.questions.length !== 6) problems.push(`${label}: has ${item.questions.length} questions (expected 6)`);
+    if (item.questions.length !== QUESTIONS_PER_SKILL) {
+      problems.push(`${label}: has ${item.questions.length} questions (expected ${QUESTIONS_PER_SKILL})`);
+    }
     for (const level of [1, 2, 3]) {
       const count = item.questions.filter((q) => q[1] === level).length;
-      if (count !== 2) problems.push(`${label}: ${count} questions at difficulty ${level} (expected 2)`);
+      if (count !== QUESTIONS_PER_DIFFICULTY[level]) {
+        problems.push(`${label}: ${count} questions at difficulty ${level} (expected ${QUESTIONS_PER_DIFFICULTY[level]})`);
+      }
     }
 
     const usedConcepts = new Set<number>();
@@ -81,6 +89,14 @@ export function validateSeedData(): string[] {
 
   for (const name of skillNames) {
     if (!covered.has(name)) problems.push(`Skill "${name}" has no questions`);
+  }
+
+  // Extra questions must belong to a skill that has base questions, and only once
+  const extraSeen = new Set<string>();
+  for (const extra of extraQuestions) {
+    if (!covered.has(extra.skill)) problems.push(`Extra questions: skill "${extra.skill}" has no base questions`);
+    if (extraSeen.has(extra.skill)) problems.push(`Extra questions: skill "${extra.skill}" is defined twice`);
+    extraSeen.add(extra.skill);
   }
 
   return problems;
