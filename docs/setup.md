@@ -41,8 +41,8 @@ Then:
 
 ```bash
 npm run migrate      # creates the tables and applies the numbered migrations
-npm run seed         # 7 goals, 44 skills, prerequisites and 264 questions
-npm run check:seed   # optional: checks that the data is consistent
+  npm run seed         # 7 goals, 44 skills, prerequisites and 440 questions (10 per skill)
+  npm run check:seed   # optional: checks that the data is consistent
 npm run dev          # http://localhost:3000, check http://localhost:3000/api/health
 ```
 
