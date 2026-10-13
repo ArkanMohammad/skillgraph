@@ -8,6 +8,7 @@ import { useTheme } from '../hooks/useTheme'
 import { buildFlowElements } from '../utils/graphLayout'
 import SkillNode from '../components/SkillNode'
 import SkillDetailPanel from '../components/SkillDetailPanel'
+import WhySkillModal from '../components/WhySkillModal'
 import ErrorState from '../components/ErrorState'
 import '../styles/pages.css'
 import '../styles/skill-panel.css'
@@ -30,6 +31,8 @@ function SkillGraphPage() {
   const { theme } = useTheme()
   // The skill whose details are open in the side panel
   const [selectedId, setSelectedId] = useState<number | null>(null)
+  // Whether the full "Why this skill?" window is open
+  const [whyOpen, setWhyOpen] = useState(false)
   const recommendedId = recommendation?.next?.skillId
 
   // Recompute the layout only when the graph data or the recommendation changes
@@ -72,7 +75,7 @@ function SkillGraphPage() {
           <span>
             Recommended next: <strong>{next.skillName}</strong>
           </span>
-          <button type="button" className="btn btn-outline btn-sm" onClick={() => setSelectedId(next.skillId)}>
+          <button type="button" className="btn btn-outline btn-sm" onClick={() => setWhyOpen(true)}>
             Why this skill?
           </button>
         </div>
@@ -106,6 +109,15 @@ function SkillGraphPage() {
           />
         )}
       </div>
+
+      {whyOpen && next && graph && (
+        <WhySkillModal
+          skill={next}
+          candidates={recommendation?.candidates ?? []}
+          graph={graph}
+          onClose={() => setWhyOpen(false)}
+        />
+      )}
     </div>
   )
 }
