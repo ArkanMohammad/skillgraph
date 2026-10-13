@@ -1,8 +1,12 @@
 /**
  * Fills the database with skills, goals, prerequisites, concepts and questions.
  *
- * Run from the backend folder:  npx ts-node --transpile-only src/seed/runSeed.ts
+ * Run from the backend folder:  npm run seed
  * It is safe to run many times (nothing is duplicated).
+ *
+ * The seed is the INITIAL content. Once the database has goal skills, admins manage the content in
+ * the admin panel, so the seed stops by itself instead of overwriting their changes.
+ * To reset everything to the catalog on purpose:  npm run seed -- --force
  * It uses plain SQL only (no plpgsql / DO blocks).
  */
 import { pool } from '../config/db';
@@ -44,6 +48,18 @@ async function main(): Promise<void> {
   // 2) Make sure tables and the 7 goals exist
   await ensureAssessmentSchema();
   await seedGoals();
+
+  // 2b) Protect the work of the admins: do not overwrite content that already exists
+  const existing = await pool.query<{ total: number }>('SELECT COUNT(*)::int AS total FROM goal_skills');
+  if (existing.rows[0].total > 0 && !process.argv.includes('--force')) {
+    console.log(
+      'The database already has content, so the seed did nothing.\n' +
+        'Admins manage skills and questions in the admin panel. ' +
+        'To reset everything to the catalog (this overwrites their changes) run: npm run seed -- --force'
+    );
+    await pool.end();
+    return;
+  }
 
   const client = await pool.connect();
   try {
