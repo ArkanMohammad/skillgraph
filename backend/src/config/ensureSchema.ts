@@ -1,5 +1,4 @@
 /**
- * إنشاء/تحديث جداول التقييم إن لم تكن موجودة (قواعد قائمة مسبقاً)
  * Create or upgrade the assessment tables (for databases that already exist)
  * Safe to run on every start: every statement is idempotent.
  */
@@ -16,7 +15,7 @@ export const ensureAssessmentSchema = async (): Promise<void> => {
     );
   }
 
-  // New states from the design doc / حالات جديدة حسب وثيقة التصميم
+  // New states from the design doc
   await query(`ALTER TYPE skill_state ADD VALUE IF NOT EXISTS 'ASSESSING'`);
   await query(`ALTER TYPE skill_state ADD VALUE IF NOT EXISTS 'NEEDS_VERIFICATION'`);
 
@@ -41,7 +40,7 @@ export const ensureAssessmentSchema = async (): Promise<void> => {
     )
   `);
 
-  // Sub-skills used for the per-concept score / مفاهيم فرعية لحساب نتيجة كل مفهوم
+  // Sub-skills used for the per-concept score
   await query(`
     CREATE TABLE IF NOT EXISTS concepts (
       id SERIAL PRIMARY KEY,
@@ -72,7 +71,7 @@ export const ensureAssessmentSchema = async (): Promise<void> => {
   `);
 
   // Needed so the seed can run many times without duplicating questions
-  // ملاحظة: إن وُجدت أسئلة مكرّرة قديمة سينتبه السكربت ويخبرك
+  // Note: old duplicate questions, if any, must be removed before this index can be created
   await query(`
     CREATE UNIQUE INDEX IF NOT EXISTS uq_questions_skill_prompt
     ON questions (skill_id, prompt)

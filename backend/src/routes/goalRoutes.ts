@@ -1,5 +1,4 @@
 /**
- * مسارات الأهداف المهنية واختيار الهدف النشط
  * Career goal routes and current-goal selection
  */
 import { Router, Request, Response } from 'express';
@@ -9,25 +8,25 @@ import { Goal, UserGoal } from '../models';
 
 const router = Router();
 
-router.use(authenticateJWT); // Protect all goal routes / حماية كل مسارات الأهداف
+router.use(authenticateJWT); // Protect all goal routes
 
-/** GET / — list the seven goals / جلب قائمة الأهداف */
+/** GET / — list the seven goals */
 router.get('/', async (_req: Request, res: Response): Promise<void> => {
   try {
     const result = await query<Goal>('SELECT id, name, description, created_at FROM goals ORDER BY id');
     res.status(200).json({ goals: result.rows });
   } catch (err) {
     console.error(err);
-    res.status(500).json({ message: 'Server error / حدث خطأ في الخادم' });
+    res.status(500).json({ message: 'Server error' });
   }
 });
 
-/** GET /current — the user's current goal, or null / الهدف الحالي للمستخدم أو null */
+/** GET /current — the user's current goal, or null */
 router.get('/current', async (req: Request, res: Response): Promise<void> => {
   const userId = req.user?.id;
 
   if (!userId) {
-    res.status(401).json({ message: 'Unauthorized / غير مصرّح' });
+    res.status(401).json({ message: 'Unauthorized' });
     return;
   }
 
@@ -43,39 +42,39 @@ router.get('/current', async (req: Request, res: Response): Promise<void> => {
     res.status(200).json({ goal: result.rows[0] ?? null });
   } catch (err) {
     console.error(err);
-    res.status(500).json({ message: 'Server error / حدث خطأ في الخادم' });
+    res.status(500).json({ message: 'Server error' });
   }
 });
 
-/** PUT /select — set the user's current goal / حفظ أو تفعيل الهدف الحالي */
+/** PUT /select — set the user's current goal */
 router.put('/select', async (req: Request, res: Response): Promise<void> => {
   const userId = req.user?.id;
   const goalId = Number(req.body.goalId);
 
   if (!userId) {
-    res.status(401).json({ message: 'Unauthorized / غير مصرّح' });
+    res.status(401).json({ message: 'Unauthorized' });
     return;
   }
 
   if (!Number.isInteger(goalId) || goalId <= 0) {
-    res.status(400).json({ message: 'Valid goalId is required / معرّف الهدف مطلوب' });
+    res.status(400).json({ message: 'Valid goalId is required' });
     return;
   }
 
-  const client = await pool.connect(); // Transaction for one current goal / معاملة لهدف حالي واحد
+  const client = await pool.connect(); // Transaction for one current goal
   let started = false;
 
   try {
     const goal = await client.query<Goal>('SELECT id FROM goals WHERE id = $1', [goalId]);
     if (goal.rowCount === 0) {
-      res.status(404).json({ message: 'Goal not found / الهدف غير موجود' });
+      res.status(404).json({ message: 'Goal not found' });
       return;
     }
 
     await client.query('BEGIN');
     started = true;
 
-    // Clear other current flags / إلغاء الأهداف الحالية الأخرى
+    // Clear other current flags
     await client.query(
       `UPDATE user_goals
        SET is_current = FALSE,
@@ -84,7 +83,7 @@ router.put('/select', async (req: Request, res: Response): Promise<void> => {
       [userId, goalId]
     );
 
-    // Insert or reactivate as ACTIVE / إدخال أو إعادة تفعيل كـ ACTIVE
+    // Insert or reactivate as ACTIVE
     const upserted = await client.query<UserGoal>(
       `INSERT INTO user_goals (user_id, goal_id, status, is_current, started_at, completed_at)
        VALUES ($1, $2, 'ACTIVE', TRUE, NOW(), NULL)
@@ -98,13 +97,13 @@ router.put('/select', async (req: Request, res: Response): Promise<void> => {
 
     await client.query('COMMIT');
     res.status(200).json({
-      message: 'Current goal updated / تم تحديث الهدف الحالي',
+      message: 'Current goal updated',
       userGoal: upserted.rows[0],
     });
   } catch (err) {
     if (started) await client.query('ROLLBACK');
     console.error(err);
-    res.status(500).json({ message: 'Server error / حدث خطأ في الخادم' });
+    res.status(500).json({ message: 'Server error' });
   } finally {
     client.release();
   }
