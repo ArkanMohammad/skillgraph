@@ -48,7 +48,7 @@ npm run smoke -- https://YOUR-FRONTEND-DOMAIN
 - [ ] Refresh the page: you are still logged in
 - [ ] Dashboard shows the Next Best Skill with an explanation
 - [ ] Skill graph opens and a node shows its detail panel
-- [ ] A full assessment (4 questions) finishes and the recommendation changes
+- [ ] A full assessment (10 questions) finishes and the recommendation changes
 - [ ] Progress page shows the new percent
 - [ ] Changing the goal keeps the progress of shared skills
 - [ ] Log in as `demo.admin@skillgraph.dev`: the admin page opens

@@ -21,8 +21,8 @@ Every change is made in a window (modal) that opens on top of the page, so the t
 | --- | --- |
 | A question is hidden (`is_active = FALSE`), never deleted | Deleting it would delete the answers of users (the foreign key is `ON DELETE CASCADE`) |
 | Removing a skill from a goal does not delete the skill | The progress of users is stored per skill, so it stays and is reused by other goals |
-| A skill needs at least 4 active questions | An assessment asks 4 questions (`QUESTIONS_PER_ASSESSMENT`) |
-| A skill can only be added to a goal when it has 4 active questions | Otherwise users could not be tested on it |
+| A skill needs at least 10 active questions | An assessment asks 10 questions (`QUESTIONS_PER_ASSESSMENT`) |
+| A skill can only be added to a goal when it has 10 active questions | Otherwise users could not be tested on it |
 | A goal keeps at least one skill | An empty goal cannot give a recommendation |
 | Editing a question updates its 4 option rows in place | The saved answers of users point to those rows |
 | Required mastery is 0.5 to 1, importance is above 0 up to 1, hours are whole numbers | Same limits the seed data follows |
@@ -73,7 +73,7 @@ npm run seed -- --force
 On the live site: `npm run seed:prod -- --force`.
 
 `npm run check:seed` treats differences from the catalog as warnings (an admin changed something).
-It still fails when a skill has fewer than 4 active questions.
+It still fails when a skill has fewer than 10 active questions.
 
 ## API
 
