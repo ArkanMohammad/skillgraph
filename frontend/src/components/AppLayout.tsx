@@ -16,6 +16,7 @@ import {
 } from 'lucide-react'
 import Logo from './Logo'
 import ThemeToggle from './ThemeToggle'
+import AdviceBell from './AdviceBell'
 import { useSignOut } from '../hooks/useSignOut'
 import { useAppSelector } from '../hooks/reduxHooks'
 import { PATHS } from '../routes/paths'
@@ -79,6 +80,10 @@ function AppLayout() {
 
       {/* The active page renders here */}
       <main className="app-main">
+        {/* Advice from admin: icon with an unread counter */}
+        <div className="app-topbar">
+          <AdviceBell />
+        </div>
         <Outlet />
       </main>
     </div>
