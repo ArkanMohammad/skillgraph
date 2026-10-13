@@ -32,8 +32,8 @@
   gap: 0 20px;
 }
 
-.admin-form-four {
-  grid-template-columns: 2fr 1fr 1fr 1fr;
+.admin-form-three {
+  grid-template-columns: 1fr 1fr 1fr;
 }
 
 .admin-form-wide {
@@ -134,8 +134,96 @@ textarea.input {
 
 @media (max-width: 720px) {
   .admin-form-grid,
-  .admin-form-four,
+  .admin-form-three,
   .admin-check-grid {
     grid-template-columns: 1fr;
   }
+}
+
+/* Users tab: user window, advice and delete */
+.admin-danger {
+  color: var(--danger);
+  border-color: var(--danger);
+}
+
+.admin-danger:disabled {
+  color: var(--text-muted);
+  border-color: var(--border);
+}
+
+.admin-danger-solid {
+  background: var(--danger);
+  border-color: var(--danger);
+  color: #fff;
+}
+
+.admin-facts {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(130px, 1fr));
+  gap: 12px;
+  margin-bottom: 8px;
+  padding: 14px 16px;
+  border-radius: 14px;
+  background: var(--primary-soft);
+}
+
+.admin-facts div {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  font-size: 14px;
+}
+
+.admin-section {
+  margin-top: 22px;
+}
+
+.admin-section h3 {
+  margin: 0 0 8px;
+  font: 600 12px var(--font-mono);
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--text-muted);
+}
+
+.admin-table-flat {
+  margin-top: 8px;
+}
+
+.admin-mastery-cell {
+  min-width: 160px;
+}
+
+.admin-advice-actions {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  margin-bottom: 14px;
+}
+
+.admin-advice-list {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.admin-advice-list li {
+  padding: 10px 14px;
+  border: 1px solid var(--border);
+  border-radius: 12px;
+}
+
+.admin-advice-list p {
+  margin: 0 0 4px;
+  font-size: 14px;
+  line-height: 1.5;
+  white-space: pre-wrap;
+}
+
+.admin-advice-list span {
+  font-size: 13px;
 }
