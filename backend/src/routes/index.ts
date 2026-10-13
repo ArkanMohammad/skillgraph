@@ -1,5 +1,4 @@
 /**
- * تجميع مسارات الواجهة البرمجية
  * Collects all API routes in one place
  */
 import { Router } from 'express';

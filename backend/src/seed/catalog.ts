@@ -1,6 +1,5 @@
 /**
  * The skill catalog: skills, prerequisites (graph edges) and the skills of each goal.
- * كتالوج المهارات: المهارات والاعتماديات (روابط الرسم) ومهارات كل هدف.
  *
  * A skill is stored once and can belong to many goals (for example Git or SQL),
  * so what a user learned stays saved when they change goal.

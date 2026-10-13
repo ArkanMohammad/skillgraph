@@ -1,6 +1,5 @@
 /**
  * Adaptive question selection (pure functions: no database, easy to unit test).
- * اختيار الأسئلة التكيّفي (دوال نقية بدون قاعدة بيانات، سهلة الاختبار).
  *
  * Rules:
  *  - The first question is medium (difficulty 2).
@@ -11,10 +10,10 @@
  */
 import { Difficulty } from '../../models';
 
-/** How many questions one assessment asks (each skill has 6, so the choice matters) */
+/** How many questions one assessment asks (each skill has 10, so the choice matters) */
 export const QUESTIONS_PER_ASSESSMENT = 4;
 
-/** Difficulty of the first question / صعوبة السؤال الأول */
+/** Difficulty of the first question */
 export const START_DIFFICULTY: Difficulty = 2;
 
 export interface PoolQuestion {

@@ -118,10 +118,11 @@ The runner records every applied file in the `schema_migrations` table, so each 
 | `001_user_profile` | Adds `users.weekly_hours` |
 | `002_performance_indexes` | Adds the indexes listed above |
 | `003_admin_content` | Adds `questions.is_active` and its index |
+| `004_remove_arabic_text` | Removes Arabic text that older versions stored in goal and skill descriptions (`English / Arabic`), keeping the English part |
 
 Rules for a new migration:
 
-1. Add a file with the next number, for example `004_name.sql`.
+1. Add a file with the next number, for example `005_name.sql`.
 2. Make it safe to read twice (`IF NOT EXISTS`) where PostgreSQL allows it.
 3. Never edit a migration that was already merged. Add a new one instead.
 4. Run `npm run migrate`, then `npm run test:db`.

@@ -1,5 +1,4 @@
 /**
- * مسار فحص الحالة GET /health
  * Health check route: GET /health
  */
 import { Router } from 'express';

@@ -1,22 +1,21 @@
 -- SkillGraph database schema
--- مخطط قاعدة بيانات SkillGraph
--- Run once to create tables and constraints / يُنفَّذ مرة واحدة لإنشاء الجداول والقيود
+-- Run once to create tables and constraints
 
--- Generate UUIDs for users / توليد معرفات UUID للمستخدمين
+-- Generate UUIDs for users
 CREATE EXTENSION IF NOT EXISTS pgcrypto;
 
--- Account roles / أدوار الحسابات
+-- Account roles
 CREATE TYPE user_role AS ENUM ('USER', 'ADMIN');
 
--- User path status toward a career goal / حالة مسار المستخدم نحو هدف مهني
+-- User path status toward a career goal
 CREATE TYPE user_goal_status AS ENUM ('ACTIVE', 'PAUSED', 'COMPLETED');
 
--- Skill learning state after assessments / حالة المهارة بعد التقييم
+-- Skill learning state after assessments
 CREATE TYPE skill_state AS ENUM (
   'LOCKED', 'READY', 'LEARNING', 'PRACTICING', 'ASSESSING', 'MASTERED', 'NEEDS_VERIFICATION'
 );
 
--- Accounts: unique email, hashed password / الحسابات: البريد فريد وكلمة المرور مشفّرة
+-- Accounts: unique email, hashed password
 CREATE TABLE users (
   id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
   name VARCHAR(100) NOT NULL,
@@ -27,7 +26,7 @@ CREATE TABLE users (
   updated_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
 );
 
--- The system's seven career goals / الأهداف المهنية السبعة للنظام
+-- The system's seven career goals
 CREATE TABLE goals (
   id SERIAL PRIMARY KEY,
   name VARCHAR(150) NOT NULL UNIQUE,
@@ -35,7 +34,7 @@ CREATE TABLE goals (
   created_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
 );
 
--- Shared skills used across goals / المهارات العامة المشتركة بين الأهداف
+-- Shared skills used across goals
 CREATE TABLE skills (
   id SERIAL PRIMARY KEY,
   name VARCHAR(150) NOT NULL UNIQUE,
@@ -45,7 +44,6 @@ CREATE TABLE skills (
 );
 
 -- Goal-skill link: mastery threshold, importance, estimated hours
--- ربط المهارة بالهدف: شرط التمكن، الأهمية، والساعات المقدّرة
 CREATE TABLE goal_skills (
   goal_id INTEGER NOT NULL REFERENCES goals(id) ON DELETE CASCADE,
   skill_id INTEGER NOT NULL REFERENCES skills(id) ON DELETE CASCADE,
@@ -59,7 +57,6 @@ CREATE TABLE goal_skills (
 );
 
 -- Directed graph: skill requires a prerequisite
--- مخطط بياني موجّه: المهارة تتطلب متطلباً سابقاً
 CREATE TABLE skill_dependencies (
   skill_id INTEGER NOT NULL REFERENCES skills(id) ON DELETE CASCADE,
   prerequisite_skill_id INTEGER NOT NULL REFERENCES skills(id) ON DELETE CASCADE,
@@ -67,7 +64,7 @@ CREATE TABLE skill_dependencies (
   CHECK (skill_id <> prerequisite_skill_id)
 );
 
--- User's current path toward a specific goal / المسار الحالي للمستخدم نحو هدف معيّن
+-- User's current path toward a specific goal
 CREATE TABLE user_goals (
   user_id UUID NOT NULL REFERENCES users(id) ON DELETE CASCADE,
   goal_id INTEGER NOT NULL REFERENCES goals(id) ON DELETE CASCADE,
@@ -79,7 +76,6 @@ CREATE TABLE user_goals (
 );
 
 -- User proficiency and confidence per skill (algorithm input)
--- مستوى التمكين الفعلي والثقة لكل مستخدم في كل مهارة (مدخل الخوارزمية)
 CREATE TABLE user_skills (
   user_id UUID NOT NULL REFERENCES users(id) ON DELETE CASCADE,
   skill_id INTEGER NOT NULL REFERENCES skills(id) ON DELETE CASCADE,
@@ -93,19 +89,18 @@ CREATE TABLE user_skills (
   PRIMARY KEY (user_id, skill_id)
 );
 
--- Only one current goal per user / هدف حالي واحد فقط لكل مستخدم
+-- Only one current goal per user
 CREATE UNIQUE INDEX one_current_goal_per_user
   ON user_goals (user_id)
   WHERE is_current = TRUE;
 
 -- Indexes to speed up graph and recommendation queries
--- فهارس لتسريع استعلامات الرسم البياني والترشيح
 CREATE INDEX idx_goal_skills_skill ON goal_skills (skill_id);
 CREATE INDEX idx_skill_deps_prereq ON skill_dependencies (prerequisite_skill_id);
 CREATE INDEX idx_user_skills_skill ON user_skills (skill_id);
 CREATE INDEX idx_user_goals_goal ON user_goals (goal_id);
 
--- Assessment module (Day 6 & 7) / نظام التقييم والتمكين
+-- Assessment module (Day 6 & 7)
 CREATE TABLE assessments (
   id SERIAL PRIMARY KEY,
   user_id UUID NOT NULL REFERENCES users(id) ON DELETE CASCADE,
@@ -116,7 +111,6 @@ CREATE TABLE assessments (
 );
 
 -- Sub-skills of a skill: used for the per-concept score and its weight
--- مفاهيم فرعية داخل المهارة: لكل مفهوم نتيجة ووزن
 CREATE TABLE concepts (
   id SERIAL PRIMARY KEY,
   skill_id INTEGER NOT NULL REFERENCES skills(id) ON DELETE CASCADE,
@@ -125,7 +119,7 @@ CREATE TABLE concepts (
   UNIQUE (skill_id, name)
 );
 
--- difficulty: 1 = easy, 2 = medium, 3 = hard / الصعوبة: 1 سهل، 2 متوسط، 3 صعب
+-- difficulty: 1 = easy, 2 = medium, 3 = hard
 CREATE TABLE questions (
   id SERIAL PRIMARY KEY,
   skill_id INTEGER NOT NULL REFERENCES skills(id) ON DELETE CASCADE,
