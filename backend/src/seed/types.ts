@@ -27,6 +27,12 @@ export interface SkillQuestions {
   questions: QuestionTuple[];
 }
 
+/** Extra questions of one skill, added on top of the base questions of that skill */
+export interface ExtraQuestions {
+  skill: string;
+  questions: QuestionTuple[];
+}
+
 export interface SeedSkill {
   name: string;
   category: string;

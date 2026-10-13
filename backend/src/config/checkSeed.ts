@@ -128,7 +128,7 @@ async function main(): Promise<void> {
   // ---------- Assessment content ----------
   expectNone(
     'FAIL',
-    'every skill has 6 questions: 2 easy, 2 medium, 2 hard',
+    'every skill has 10 questions: 3 easy, 4 medium, 3 hard',
     await names(
       `SELECT s.name || ': ' ||
               COUNT(q.id) FILTER (WHERE q.difficulty = 1) || '/' ||
@@ -136,10 +136,10 @@ async function main(): Promise<void> {
               COUNT(q.id) FILTER (WHERE q.difficulty = 3) || ' (easy/medium/hard)' AS line
        FROM skills s LEFT JOIN questions q ON q.skill_id = s.id
        GROUP BY s.id, s.name
-       HAVING COUNT(q.id) <> 6
-           OR COUNT(q.id) FILTER (WHERE q.difficulty = 1) <> 2
-           OR COUNT(q.id) FILTER (WHERE q.difficulty = 2) <> 2
-           OR COUNT(q.id) FILTER (WHERE q.difficulty = 3) <> 2
+       HAVING COUNT(q.id) <> 10
+           OR COUNT(q.id) FILTER (WHERE q.difficulty = 1) <> 3
+           OR COUNT(q.id) FILTER (WHERE q.difficulty = 2) <> 4
+           OR COUNT(q.id) FILTER (WHERE q.difficulty = 3) <> 3
        ORDER BY s.name`
     )
   );

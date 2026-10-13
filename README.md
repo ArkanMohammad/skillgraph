@@ -55,8 +55,8 @@ cd backend
 npm install
 cp .env.example .env        # then edit DATABASE_URL and JWT_SECRET
 npm run migrate             # applies schema.sql once, then every file in migrations/
-npm run seed                # goals, skills, edges, questions
-npm run dev                 # http://localhost:3000
+  npm run check:seed      # reads the database: catalog match, prerequisite cycles, 10 questions per skill (3 easy, 4 medium, 3 hard), one correct option per question
+  npm run dev                 # http://localhost:3000
 ```
 
 The server also runs the pending migrations when it starts, so `npm run migrate`
