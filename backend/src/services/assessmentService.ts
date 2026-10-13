@@ -78,7 +78,7 @@ const toNum = (value: string | number): number => Number(value);
 /** All questions of a skill (only what the algorithm needs) */
 const loadPool = async (skillId: number): Promise<PoolQuestion[]> => {
   const result = await query<{ id: number; concept_id: number | null; difficulty: Difficulty }>(
-    'SELECT id, concept_id, difficulty FROM questions WHERE skill_id = $1 ORDER BY id',
+       'SELECT id, concept_id, difficulty FROM questions WHERE skill_id = $1 AND is_active ORDER BY id',
     [skillId]
   );
   return result.rows.map((row) => ({
