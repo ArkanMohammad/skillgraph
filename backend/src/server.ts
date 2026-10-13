@@ -15,6 +15,7 @@ import assessmentRoutes from './routes/assessmentRoutes';
 import recommendationRoutes from './routes/recommendationRoutes';
 import progressRoutes from './routes/progressRoutes';
 import adminRoutes from './routes/adminRoutes';
+import adviceRoutes from './routes/adviceRoutes';
 import { errorHandler, notFound } from './middleware';
 import { ensureAssessmentSchema } from './config/ensureSchema';
 import { runMigrations } from './config/migrate';
@@ -47,6 +48,7 @@ app.use('/api/graph', graphRoutes); // Skill graph for React Flow
 app.use('/api/assessments', assessmentRoutes); // Assessment and mastery
 app.use('/api/recommendations', recommendationRoutes); // Next Best Skill
 app.use('/api/progress', progressRoutes); // Progress of the current goal and of every goal
+app.use('/api/advice', adviceRoutes); // Advice written for the logged-in user
 app.use('/api/admin', adminRoutes); // Admin only (RBAC)
 
 app.use(notFound);
