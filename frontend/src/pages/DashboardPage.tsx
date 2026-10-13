@@ -7,6 +7,7 @@ import StatusBadge from '../components/StatusBadge'
 import ProgressBar from '../components/ProgressBar'
 import DonutChart from '../components/DonutChart'
 import ErrorState from '../components/ErrorState'
+import ReviewCard from '../components/ReviewCard'
 import '../styles/pages.css'
 import '../styles/skill-panel.css'
 import { PATHS } from '../routes/paths'
@@ -175,6 +176,8 @@ function DashboardPage() {
           </p>
         </div>
       </div>
+
+      <ReviewCard />
 
       <div className="two-col">
         <div className="card">
