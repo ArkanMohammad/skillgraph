@@ -28,11 +28,16 @@ function WhySkillModal(props: {
 }) {
   const { skill, candidates, graph, onClose } = props
   const closeRef = useRef<HTMLButtonElement>(null)
+  // Keep the latest onClose in a ref so the effect below runs only once
+  const onCloseRef = useRef(onClose)
+  useEffect(() => {
+    onCloseRef.current = onClose
+  })
 
   // Close with Escape, lock the page scroll while open, and focus the close button
   useEffect(() => {
     function onKey(event: KeyboardEvent) {
-      if (event.key === 'Escape') onClose()
+      if (event.key === 'Escape') onCloseRef.current()
     }
     document.addEventListener('keydown', onKey)
     const previousOverflow = document.body.style.overflow
@@ -42,7 +47,7 @@ function WhySkillModal(props: {
       document.removeEventListener('keydown', onKey)
       document.body.style.overflow = previousOverflow
     }
-  }, [onClose])
+  }, [])
 
   const byId = new Map(graph.nodes.map((node) => [node.id, node]))
   const node = byId.get(skill.skillId)

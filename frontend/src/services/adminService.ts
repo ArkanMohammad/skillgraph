@@ -1,5 +1,7 @@
 import { apiRequest } from './apiClient'
-import type { UserRole } from '../types/api'
+import type { SkillStatus, UserRole } from '../types/api'
+import type { AdviceItem } from './adviceService'
+import type { ProgressSummary, RecentAssessment } from './progressService'
 
 // Totals shown on the admin page
 export type AdminStats = {
@@ -35,6 +37,51 @@ export function setUserRole(userId: string, role: UserRole) {
     `/admin/users/${userId}/role`,
     { method: 'PUT', body: JSON.stringify({ role }) }
   )
+}
+
+// ---------- Users: progress, delete and advice ----------
+
+// One skill of the user's current goal
+export type AdminUserSkill = {
+  id: number
+  name: string
+  category: string | null
+  state: SkillStatus
+  mastery: number // percent 0-100
+  requiredMastery: number // percent 0-100
+}
+
+// Everything the admin sees about one user
+export type AdminUserDetail = {
+  id: string
+  name: string
+  email: string
+  role: UserRole
+  createdAt: string
+  weeklyHours: number | null
+  currentGoal: { id: number; name: string } | null
+  summary: ProgressSummary | null // null when the user has no goal yet
+  assessmentsCompleted: number
+  recentAssessments: RecentAssessment[]
+  skills: AdminUserSkill[]
+  advice: AdviceItem[]
+}
+
+export function getAdminUserDetail(userId: string) {
+  return apiRequest<AdminUserDetail>(`/admin/users/${userId}`)
+}
+
+// Deletes the user and all their data (cannot be undone)
+export function deleteAdminUser(userId: string) {
+  return apiRequest<{ message: string }>(`/admin/users/${userId}`, { method: 'DELETE' })
+}
+
+// Writes an advice that the user sees on their dashboard
+export function sendAdminAdvice(userId: string, message: string) {
+  return apiRequest<AdviceItem>(`/admin/users/${userId}/advice`, {
+    method: 'POST',
+    body: JSON.stringify({ message }),
+  })
 }
 
 // ---------- Content management: skills and questions ----------

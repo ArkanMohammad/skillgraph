@@ -1,0 +1,76 @@
+/* Advice icon in the top bar and the "Advice from admin" window */
+.advice-bell {
+  position: relative;
+  display: grid;
+  place-items: center;
+  width: 44px;
+  height: 44px;
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  background: var(--surface);
+  color: var(--text);
+  cursor: pointer;
+}
+
+.advice-bell:hover {
+  border-color: var(--primary);
+  color: var(--primary);
+}
+
+.advice-badge {
+  position: absolute;
+  top: -6px;
+  right: -6px;
+  min-width: 20px;
+  height: 20px;
+  padding: 0 5px;
+  border-radius: 999px;
+  background: var(--danger);
+  color: #fff;
+  font: 700 12px/20px var(--font-body);
+  text-align: center;
+}
+
+.advice-list {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  margin: 16px 0 0;
+  padding: 0;
+  list-style: none;
+}
+
+.advice-list li {
+  padding: 12px 14px;
+  border: 1px solid var(--border);
+  border-radius: 12px;
+}
+
+.advice-list li.advice-unread {
+  border-left: 4px solid var(--primary);
+  background: var(--primary-soft);
+}
+
+.advice-list p {
+  margin: 0 0 8px;
+  font-size: 15px;
+  line-height: 1.6;
+  white-space: pre-wrap;
+}
+
+.advice-meta {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  font-size: 13px;
+}
+
+.advice-read {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  color: var(--mastered-text);
+  font-weight: 600;
+}

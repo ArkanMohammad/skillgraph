@@ -6,6 +6,7 @@
  *   GET /stats                  totals for the admin overview
  *   GET /users?limit=&offset=   users with their current goal
  *   PUT /users/:userId/role     change a role (an admin cannot change their own role)
+ *   ...user routes              one user's progress, delete a user, write advice (see adminUserRoutes.ts)
  *   ...content routes           skills, questions and goal skills (see adminContentRoutes.ts)
  */
 import { Router, Request, Response } from 'express';
@@ -13,6 +14,7 @@ import { query } from '../config/db';
 import { authenticateJWT, requireRole } from '../middleware/authMiddleware';
 import { isPositiveInt, uuidParam } from '../middleware/validate';
 import adminContentRoutes from './adminContentRoutes';
+import adminUserRoutes from './adminUserRoutes';
 
 const router = Router();
 router.use(authenticateJWT, requireRole('ADMIN'));
@@ -150,6 +152,7 @@ router.put('/users/:userId/role', uuidParam('userId'), async (req: Request, res:
   }
 });
 
+router.use(adminUserRoutes); // One user: progress, delete, advice (ADMIN only, same guards)
 router.use(adminContentRoutes); // Skills, questions and goal skills (ADMIN only, same guards)
 
 export default router;
