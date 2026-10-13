@@ -36,7 +36,7 @@ Say: "The weights are engineering parameters. The system never says 'learn this'
 
 ## Slide 5: Adaptive assessment (1 min)
 
-- 4 questions per skill. Difficulty goes up after a correct answer and down after a wrong one.
+- 10 questions per test, picked from a bank of 15 per skill. Difficulty goes up after a correct answer and down after a wrong one.
 - The server picks the questions and reveals the correct answer only after saving the answer.
 - Score is difficulty-weighted. Confidence = 0.5 coverage + 0.2 sample size + 0.3 consistency.
 

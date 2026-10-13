@@ -66,12 +66,12 @@ Progress is stored per skill, not per goal. When a user changes goal, skills the
 | Table | Purpose | Notes |
 | --- | --- | --- |
 | `concepts` | Sub-topics of a skill | Each has a `weight` (above 0, up to 1). The score of a skill is built from its concept scores |
-| `questions` | The question bank (440 questions, 10 per skill) | `difficulty` is 1 (easy), 2 (medium) or 3 (hard). `(skill_id, prompt)` is unique. `is_active` hides a question (migration 003) |
+| `questions` | The question bank (660 questions, 15 per skill) | `difficulty` is 1 (easy), 2 (medium) or 3 (hard). `(skill_id, prompt)` is unique. `is_active` hides a question (migration 003) |
 | `question_options` | The 4 answers of a question | Exactly one is correct (enforced by the admin service) |
 | `assessments` | One test of one user in one skill | `completed_at` is empty while the test is open. `final_score` is 0 to 100 |
 | `assessment_answers` | The answer to each question | Primary key `(assessment_id, question_id)`, so a question is answered once per test |
 
-The standard bank per skill is 10 questions: 3 easy, 4 medium and 3 hard. One assessment asks 4 of them, picked from the **active** questions only.
+The standard bank per skill is 15 questions: 5 easy, 5 medium and 5 hard. One assessment asks 10 of them, picked from the **active** questions only.
 
 ## Deleting data
 
@@ -138,12 +138,12 @@ Rules for a new migration:
 
 ## Seed data
 
-`npm run seed` fills an empty database with 7 goals, 44 skills, 43 prerequisites and 440 questions. It is an initial load only:
+`npm run seed` fills an empty database with 7 goals, 44 skills, 43 prerequisites and 660 questions. It is an initial load only:
 
 - If the database already has content, it prints a message and writes nothing, so it never overwrites changes made by admins.
 - `npm run seed -- --force` resets the content to the catalog in `backend/src/seed/`.
 - In production use `npm run seed:prod` (and `seed:prod -- --force`) after `npm run build`.
 
-`npm run check:seed` verifies the result: every skill has at least 4 active questions, the standard bank is 3 easy, 4 medium and 3 hard, the graph has no cycles, and every goal is reachable.
+`npm run check:seed` verifies the result: every skill has at least 10 active questions, the standard bank is 5 easy, 5 medium and 5 hard, the graph has no cycles, and every goal is reachable.
 
 `npm run seed:demo` creates the demo accounts used in the presentation.

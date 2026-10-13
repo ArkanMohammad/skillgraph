@@ -174,7 +174,7 @@ function AdminQuestions() {
         {skill && (
           <p className="muted">
             {skill.activeQuestions} active of {skill.totalQuestions} questions. Used in{' '}
-            {skill.goals} {skill.goals === 1 ? 'goal' : 'goals'}. A skill needs at least 4 active
+            {skill.goals} {skill.goals === 1 ? 'goal' : 'goals'}. A skill needs at least 10 active
             questions.
           </p>
         )}

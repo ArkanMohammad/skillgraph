@@ -2,11 +2,11 @@
  * Checks the seed data BEFORE touching the database (so a typo never breaks the DB).
  */
 import { DEPENDENCIES, GOAL_SKILLS, SKILLS } from './catalog';
-import { allQuestions, extraQuestions } from './allQuestions';
+import { allQuestions, extraQuestions, moreQuestions } from './allQuestions';
 
-/** Every skill has 10 questions: 3 easy, 4 medium, 3 hard (an assessment asks 4 of them) */
-export const QUESTIONS_PER_SKILL = 10;
-export const QUESTIONS_PER_DIFFICULTY: Record<number, number> = { 1: 3, 2: 4, 3: 3 };
+/** Every skill has 15 questions: 5 easy, 5 medium, 5 hard (an assessment asks 10 of them) */
+export const QUESTIONS_PER_SKILL = 15;
+export const QUESTIONS_PER_DIFFICULTY: Record<number, number> = { 1: 5, 2: 5, 3: 5 };
 
 export function validateSeedData(): string[] {
   const problems: string[] = [];
@@ -90,12 +90,14 @@ export function validateSeedData(): string[] {
     if (!covered.has(name)) problems.push(`Skill "${name}" has no questions`);
   }
 
-  // Extra questions must belong to a skill that has base questions, and only once
-  const extraSeen = new Set<string>();
-  for (const extra of extraQuestions) {
-    if (!covered.has(extra.skill)) problems.push(`Extra questions: skill "${extra.skill}" has no base questions`);
-    if (extraSeen.has(extra.skill)) problems.push(`Extra questions: skill "${extra.skill}" is defined twice`);
-    extraSeen.add(extra.skill);
+  // Extra and more questions must belong to a skill that has base questions, and only once per list
+  for (const [label, list] of [['Extra', extraQuestions], ['More', moreQuestions]] as const) {
+    const seen = new Set<string>();
+    for (const item of list) {
+      if (!covered.has(item.skill)) problems.push(`${label} questions: skill "${item.skill}" has no base questions`);
+      if (seen.has(item.skill)) problems.push(`${label} questions: skill "${item.skill}" is defined twice`);
+      seen.add(item.skill);
+    }
   }
 
   return problems;

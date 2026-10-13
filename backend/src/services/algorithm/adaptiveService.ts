@@ -10,8 +10,8 @@
  */
 import { Difficulty } from '../../models';
 
-/** How many questions one assessment asks (each skill has 10, so the choice matters) */
-export const QUESTIONS_PER_ASSESSMENT = 4;
+/** How many questions one assessment asks (each skill has a bank of 15, so every attempt differs) */
+export const QUESTIONS_PER_ASSESSMENT = 10;
 
 /** Difficulty of the first question */
 export const START_DIFFICULTY: Difficulty = 2;

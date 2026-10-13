@@ -1,8 +1,9 @@
 /**
  * Joins every question file into one list.
- * Each skill has 6 base questions (the files questionsWeb, questionsData, ...) plus 4 extra
- * questions (the files ...Extra), so the bank of every skill has 10 questions.
- * An assessment still asks only 4 of them, so users get different questions between attempts.
+ * Each skill has 6 base questions (the files questionsWeb, questionsData, ...), 4 extra questions
+ * (the files ...Extra) and 5 more questions (the files ...More), so the bank of every skill
+ * has 15 questions: 5 easy, 5 medium and 5 hard.
+ * An assessment asks 10 of them, so users get different questions between attempts.
  */
 import { ExtraQuestions, SkillQuestions } from './types';
 import { webQuestions } from './questionsWeb';
@@ -15,6 +16,11 @@ import { dataExtraQuestions } from './questionsDataExtra';
 import { securityExtraQuestions } from './questionsSecurityExtra';
 import { designExtraQuestions } from './questionsDesignExtra';
 import { devopsExtraQuestions } from './questionsDevopsExtra';
+import { webMoreQuestions } from './questionsWebMore';
+import { dataMoreQuestions } from './questionsDataMore';
+import { securityMoreQuestions } from './questionsSecurityMore';
+import { designMoreQuestions } from './questionsDesignMore';
+import { devopsMoreQuestions } from './questionsDevopsMore';
 
 const baseQuestions: SkillQuestions[] = [
   ...webQuestions,
@@ -32,8 +38,18 @@ export const extraQuestions: ExtraQuestions[] = [
   ...devopsExtraQuestions,
 ];
 
-/** Base questions + extra questions of the same skill (validate.ts reports extras with no skill) */
+export const moreQuestions: ExtraQuestions[] = [
+  ...webMoreQuestions,
+  ...dataMoreQuestions,
+  ...securityMoreQuestions,
+  ...designMoreQuestions,
+  ...devopsMoreQuestions,
+];
+
+/** Base + extra + more questions of the same skill (validate.ts reports extras with no skill) */
 export const allQuestions: SkillQuestions[] = baseQuestions.map((item) => {
-  const extra = extraQuestions.find((e) => e.skill === item.skill);
-  return extra ? { ...item, questions: [...item.questions, ...extra.questions] } : item;
+  const added = [...extraQuestions, ...moreQuestions]
+    .filter((e) => e.skill === item.skill)
+    .flatMap((e) => e.questions);
+  return added.length > 0 ? { ...item, questions: [...item.questions, ...added] } : item;
 });

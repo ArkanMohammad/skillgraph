@@ -39,7 +39,7 @@ The API tests need a running server, so they are started separately (see below).
 | --- | --- | --- |
 | `recommendationDb.test.ts` | 13 | The real seeded database with the real services, using a temporary user |
 | `postgresConstraints.test.ts` | 20 | Unique, foreign key and check constraints, cascade deletes, key joins |
-| `adminContent.test.ts` | 39 | Admin content rules and PostgreSQL behavior: hidden questions are never asked, a skill needs at least 4 active questions, a goal keeps at least one skill, a failed change rolls back completely, user progress stays after a skill leaves a goal, prerequisite editing (no cycles, shared links, links outside the goal untouched) |
+| `adminContent.test.ts` | 39 | Admin content rules and PostgreSQL behavior: hidden questions are never asked, a skill needs at least 10 active questions, a goal keeps at least one skill, a failed change rolls back completely, user progress stays after a skill leaves a goal, prerequisite editing (no cycles, shared links, links outside the goal untouched) |
 | `adminUsers.test.ts` | 19 | Advice input rules, saving and reading advice, unread counter, mark all as read, one user cannot touch another user's advice, the progress detail of a user, deleting a user removes all their data, an admin cannot delete themselves or another admin, advice stays when its author is deleted |
 | `reviewDb.test.ts` | 11 | The review queue: only mastered skills of the current goal, order (most forgotten first), counters, next review date, stored mastery never changes, a new test restarts the curve |
 

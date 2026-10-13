@@ -11,6 +11,7 @@
 import assert from 'node:assert';
 import { pool, query } from '../config/db';
 import { startAssessment } from '../services/assessmentService';
+import { QUESTIONS_PER_ASSESSMENT } from '../services/algorithm/adaptiveService';
 import {
   AdminContentError,
   MIN_ACTIVE_QUESTIONS,
@@ -246,8 +247,9 @@ async function partTwo(): Promise<void> {
 
     await test('with enough questions the skill can be added; duplicates, unknown ids are refused', async () => {
       const concept = await conceptOf(alpha);
-      for (const label of ['q2', 'q3', 'q4']) await createQuestion(alpha, questionBody(concept, label));
-      assert.ok(MIN_ACTIVE_QUESTIONS <= 4);
+      // q1 exists already: add the others until the skill has exactly the minimum
+      for (let n = 2; n <= MIN_ACTIVE_QUESTIONS; n += 1) await createQuestion(alpha, questionBody(concept, `q${n}`));
+      assert.strictEqual(MIN_ACTIVE_QUESTIONS, QUESTIONS_PER_ASSESSMENT);
       await addSkillToGoal(goalId, alpha, parseGoalSkillInput(defaults));
       await rejectsWith(409, () => addSkillToGoal(goalId, alpha, parseGoalSkillInput(defaults)));
       await rejectsWith(404, () => addSkillToGoal(999999999, alpha, parseGoalSkillInput(defaults)));
@@ -259,7 +261,7 @@ async function partTwo(): Promise<void> {
       assert.strictEqual(view.goal.id, goalId);
       const row = view.skills.find((skill) => skill.skillId === alpha);
       assert.ok(row, 'skill is in the goal');
-      assert.deepStrictEqual([row.requiredMastery, row.importance, row.estimatedHours, row.activeQuestions], [0.7, 0.8, 10, 4]);
+      assert.deepStrictEqual([row.requiredMastery, row.importance, row.estimatedHours, row.activeQuestions], [0.7, 0.8, 10, MIN_ACTIVE_QUESTIONS]);
       assert.ok(!view.available.some((skill) => skill.skillId === alpha));
       await rejectsWith(404, () => getGoalSkills(999999999));
     });
@@ -294,30 +296,30 @@ async function partTwo(): Promise<void> {
     await test('a question cannot be hidden when the skill would fall below the minimum', async () => {
       const [first] = await listQuestions(alpha);
       await rejectsWith(400, () => setQuestionActive(first.id, false));
-      assert.strictEqual((await listQuestions(alpha)).filter((q) => q.isActive).length, 4);
+      assert.strictEqual((await listQuestions(alpha)).filter((q) => q.isActive).length, MIN_ACTIVE_QUESTIONS);
     });
 
-    await test('with a 5th question one can be hidden, and the assessment never asks the hidden one', async () => {
+    await test('with one more question one can be hidden, and the assessment never asks the hidden one', async () => {
       const concept = await conceptOf(alpha);
-      await createQuestion(alpha, questionBody(concept, 'q5'));
+      await createQuestion(alpha, questionBody(concept, `q${MIN_ACTIVE_QUESTIONS + 1}`));
       const list = await listQuestions(alpha);
       const hidden = list[0];
       await setQuestionActive(hidden.id, false);
-      assert.strictEqual((await listQuestions(alpha)).filter((q) => q.isActive).length, 4);
+      assert.strictEqual((await listQuestions(alpha)).filter((q) => q.isActive).length, MIN_ACTIVE_QUESTIONS);
 
       const started = await startAssessment(userId, alpha);
       assert.ok(started.question, 'a question is returned');
       assert.notStrictEqual(started.question!.id, hidden.id, 'the hidden question is skipped');
-      assert.strictEqual(started.totalQuestions, 4);
+      assert.strictEqual(started.totalQuestions, MIN_ACTIVE_QUESTIONS);
 
       await setQuestionActive(hidden.id, true); // It can be shown again
-      assert.strictEqual((await listQuestions(alpha)).filter((q) => q.isActive).length, 5);
+      assert.strictEqual((await listQuestions(alpha)).filter((q) => q.isActive).length, MIN_ACTIVE_QUESTIONS + 1);
       await rejectsWith(404, () => setQuestionActive(999999999, false));
     });
 
     await test('removeSkillFromGoal keeps the skill and lists the skills that needed it', async () => {
       const concept = await conceptOf(beta);
-      for (const label of ['b1', 'b2', 'b3', 'b4']) await createQuestion(beta, questionBody(concept, label));
+      for (let n = 1; n <= MIN_ACTIVE_QUESTIONS; n += 1) await createQuestion(beta, questionBody(concept, `b${n}`));
       await addSkillToGoal(goalId, beta, parseGoalSkillInput(defaults));
       await query('INSERT INTO skill_dependencies (skill_id, prerequisite_skill_id) VALUES ($1, $2)', [beta, alpha]);
 
@@ -361,11 +363,11 @@ async function partThree(): Promise<void> {
   const makeGoal = async (label: string): Promise<number> =>
     (await query<{ id: number }>('INSERT INTO goals (name) VALUES ($1) RETURNING id', [goalName(label)])).rows[0].id;
 
-  // A skill with 4 questions, so it can be part of a goal
+  // A skill with the minimum number of questions, so it can be part of a goal
   const makeSkill = async (label: string): Promise<number> => {
     const id = (await createSkill(parseSkillInput({ name: skillName(label), category: 'Test' }))).id;
     const concept = (await query<{ id: number }>('SELECT id FROM concepts WHERE skill_id = $1', [id])).rows[0].id;
-    for (const n of [1, 2, 3, 4]) {
+    for (let n = 1; n <= MIN_ACTIVE_QUESTIONS; n += 1) {
       await createQuestion(
         id,
         parseQuestionInput({

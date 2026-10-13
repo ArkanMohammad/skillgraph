@@ -54,7 +54,7 @@ runner-up. The summary sentence is built from these facts only.
 1. The first question has difficulty 2 (medium).
 2. A correct answer makes the next target one level harder (max 3), a wrong one one level easier (min 1).
 3. From the unanswered questions the server picks the one closest to the target,
-   preferring the concept that was asked the least. An assessment asks 4 questions.
+   preferring the concept that was asked the least. An assessment asks 10 questions (the bank of a skill has 15).
 4. The correct answer is revealed only after the answer is saved.
 5. Concept score = difficulty-weighted share of correct answers (difficulty 1/2/3 = weight 1/2/3).
    Skill score = concept scores averaged with the concept weights; concepts not asked are left out.
