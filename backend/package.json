@@ -1,7 +1,7 @@
 {
   "name": "skillgraph",
   "version": "1.0.0",
-  "description": "نظام ترشيح مهارات ذكي يعتمد على رسم بياني وقاعدة بيانات PostgreSQL",
+  "description": "Skill recommendation system based on a skill graph and a PostgreSQL database",
   "main": "dist/server.js",
   "scripts": {
     "dev": "ts-node-dev --respawn --transpile-only src/server.ts",
@@ -16,9 +16,11 @@
     "test:api": "ts-node --transpile-only src/tests/apiIntegration.test.ts",
     "test": "npm run test:unit && npm run test:db",
     "check:deploy": "ts-node --transpile-only src/config/checkDeploy.ts",
+    "smoke": "ts-node --transpile-only src/config/smokeTest.ts",
     "migrate:prod": "node dist/config/migrate.js",
     "seed:prod": "node dist/seed/runSeed.js",
-    "check:deploy:prod": "node dist/config/checkDeploy.js"
+    "check:deploy:prod": "node dist/config/checkDeploy.js",
+    "smoke:prod": "node dist/config/smokeTest.js"
   },
   "keywords": [
     "skillgraph",
