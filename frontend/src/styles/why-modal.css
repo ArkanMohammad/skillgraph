@@ -1,0 +1,245 @@
+/* "Why this skill?" window */
+.why-overlay {
+  position: fixed;
+  inset: 0;
+  z-index: 1000;
+  display: grid;
+  place-items: center;
+  padding: 24px 16px;
+  background: rgba(8, 10, 20, 0.65);
+  backdrop-filter: blur(3px);
+}
+
+.why-modal {
+  display: flex;
+  flex-direction: column;
+  width: min(760px, 100%);
+  max-height: 100%;
+  border: 1px solid var(--border);
+  border-radius: 20px;
+  background: var(--surface);
+  color: var(--text);
+  box-shadow: 0 24px 60px rgba(0, 0, 0, 0.35);
+  overflow: hidden;
+}
+
+.why-header {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 22px 24px 16px;
+  border-bottom: 1px solid var(--border);
+}
+
+.why-eyebrow {
+  margin: 0 0 4px;
+  font: 600 12px var(--font-mono);
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--text-muted);
+}
+
+.why-header h2 {
+  margin: 0 0 8px;
+  font-size: 26px;
+}
+
+.why-meta {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 10px;
+  font-size: 14px;
+}
+
+.why-close {
+  display: grid;
+  place-items: center;
+  flex-shrink: 0;
+  width: 36px;
+  height: 36px;
+  border: none;
+  border-radius: 10px;
+  background: transparent;
+  color: var(--text-muted);
+  cursor: pointer;
+}
+
+.why-close:hover {
+  background: var(--primary-soft);
+  color: var(--primary);
+}
+
+.why-body {
+  padding: 8px 24px 20px;
+  overflow-y: auto;
+}
+
+.why-section {
+  margin-top: 20px;
+}
+
+.why-section h3 {
+  margin: 0 0 8px;
+  font: 600 12px var(--font-mono);
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--text-muted);
+}
+
+.why-section p {
+  margin: 6px 0;
+  font-size: 14px;
+  line-height: 1.6;
+}
+
+.why-summary {
+  padding: 14px 16px;
+  border-radius: 14px;
+  background: var(--primary-soft);
+}
+
+.why-summary p {
+  margin-top: 0;
+  font-size: 15px;
+}
+
+.why-summary ul,
+.why-tips {
+  margin: 8px 0 0;
+  padding-left: 20px;
+  font-size: 14px;
+  line-height: 1.7;
+}
+
+.why-factors {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  margin-top: 10px;
+}
+
+.why-factor-top {
+  display: flex;
+  justify-content: space-between;
+  gap: 12px;
+  margin-bottom: 4px;
+  font-size: 14px;
+}
+
+.why-compare {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  margin-top: 10px;
+}
+
+.why-compare-row {
+  display: grid;
+  grid-template-columns: minmax(120px, 200px) 1fr 48px;
+  align-items: center;
+  gap: 12px;
+  padding: 6px 10px;
+  border-radius: 10px;
+  font-size: 14px;
+}
+
+.why-compare-row.current {
+  background: var(--primary-soft);
+  font-weight: 600;
+}
+
+.why-compare-row strong {
+  text-align: right;
+}
+
+.why-compare-bar {
+  height: 8px;
+  border-radius: 999px;
+  background: var(--border);
+  overflow: hidden;
+}
+
+.why-compare-bar span {
+  display: block;
+  height: 100%;
+  border-radius: 999px;
+  background: var(--primary);
+}
+
+.why-two-cols {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 20px;
+}
+
+.why-chips {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+}
+
+.why-chip {
+  padding: 5px 12px;
+  border: 1px solid var(--border);
+  border-radius: 999px;
+  font-size: 13px;
+}
+
+.why-resources {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 10px;
+}
+
+.why-resource {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+  padding: 12px 14px;
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  color: var(--text);
+  font-size: 14px;
+  text-decoration: none;
+}
+
+.why-resource span:first-child {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.why-resource .muted {
+  font-size: 13px;
+}
+
+.why-resource:hover {
+  border-color: var(--primary);
+  color: var(--primary);
+}
+
+.why-footer {
+  display: flex;
+  justify-content: flex-end;
+  gap: 10px;
+  padding: 14px 24px;
+  border-top: 1px solid var(--border);
+}
+
+@media (max-width: 640px) {
+  .why-two-cols,
+  .why-resources {
+    grid-template-columns: 1fr;
+  }
+
+  .why-compare-row {
+    grid-template-columns: 1fr 48px;
+  }
+
+  .why-compare-bar {
+    display: none;
+  }
+}
