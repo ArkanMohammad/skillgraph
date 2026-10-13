@@ -180,3 +180,18 @@ export function removeAdminGoalSkill(goalId: number, skillId: number) {
     method: 'DELETE',
   })
 }
+
+// What changed after the prerequisites of a skill were saved
+export type PrerequisiteChange = {
+  added: string[]
+  removed: string[]
+  alsoAffectedGoals: string[] // other goals that contain both skills of a changed link
+}
+
+// Replaces the prerequisites of a skill inside one goal (only skills of that goal)
+export function setAdminPrerequisites(goalId: number, skillId: number, prerequisiteIds: number[]) {
+  return apiRequest<PrerequisiteChange>(`/admin/goals/${goalId}/skills/${skillId}/prerequisites`, {
+    method: 'PUT',
+    body: JSON.stringify({ prerequisiteIds }),
+  })
+}
