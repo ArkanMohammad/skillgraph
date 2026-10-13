@@ -45,7 +45,7 @@ function AdviceModal(props: {
 
   return (
     <Modal
-      title="Advice from admin"
+      title="Advices from admin"
       subtitle={props.unread > 0 ? `${props.unread} unread` : 'You have read everything'}
       dismissOnOverlay
       onClose={props.onClose}
