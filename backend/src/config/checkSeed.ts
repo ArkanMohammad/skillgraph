@@ -7,6 +7,7 @@
  */
 import { pool, query } from './db';
 import { DEPENDENCIES, GOAL_SKILLS, SKILLS } from '../seed/catalog';
+import { QUESTIONS_PER_ASSESSMENT } from '../services/algorithm/adaptiveService';
 
 type Level = 'PASS' | 'WARN' | 'FAIL';
 let failures = 0;
@@ -131,23 +132,23 @@ async function main(): Promise<void> {
   );
 
   // ---------- Assessment content ----------
-  // An assessment asks 4 questions, so every skill needs at least 4 ACTIVE questions
+  // An assessment asks QUESTIONS_PER_ASSESSMENT questions, so every skill needs at least that many ACTIVE questions
   expectNone(
     'FAIL',
-    'every skill has at least 4 active questions',
+    `every skill has at least ${QUESTIONS_PER_ASSESSMENT} active questions`,
     await names(
       `SELECT s.name || ': ' || COUNT(q.id) FILTER (WHERE q.is_active) || ' active' AS line
        FROM skills s LEFT JOIN questions q ON q.skill_id = s.id
        GROUP BY s.id, s.name
-       HAVING COUNT(q.id) FILTER (WHERE q.is_active) < 4
+       HAVING COUNT(q.id) FILTER (WHERE q.is_active) < ${QUESTIONS_PER_ASSESSMENT}
        ORDER BY s.name`
     )
   );
 
-  // The seed gives every skill 10 questions: 3 easy, 4 medium, 3 hard (admins may change this)
+  // The seed gives every skill 15 questions: 5 easy, 5 medium, 5 hard (admins may change this)
   expectNone(
     'WARN',
-    'every skill has the standard bank: 10 active questions, 3 easy, 4 medium, 3 hard',
+    'every skill has the standard bank: 15 active questions, 5 easy, 5 medium, 5 hard',
     await names(
       `SELECT s.name || ': ' ||
               COUNT(q.id) FILTER (WHERE q.is_active AND q.difficulty = 1) || '/' ||
@@ -155,10 +156,10 @@ async function main(): Promise<void> {
               COUNT(q.id) FILTER (WHERE q.is_active AND q.difficulty = 3) || ' (easy/medium/hard)' AS line
        FROM skills s LEFT JOIN questions q ON q.skill_id = s.id
        GROUP BY s.id, s.name
-       HAVING COUNT(q.id) FILTER (WHERE q.is_active) <> 10
-           OR COUNT(q.id) FILTER (WHERE q.is_active AND q.difficulty = 1) <> 3
-           OR COUNT(q.id) FILTER (WHERE q.is_active AND q.difficulty = 2) <> 4
-           OR COUNT(q.id) FILTER (WHERE q.is_active AND q.difficulty = 3) <> 3
+       HAVING COUNT(q.id) FILTER (WHERE q.is_active) <> 15
+           OR COUNT(q.id) FILTER (WHERE q.is_active AND q.difficulty = 1) <> 5
+           OR COUNT(q.id) FILTER (WHERE q.is_active AND q.difficulty = 2) <> 5
+           OR COUNT(q.id) FILTER (WHERE q.is_active AND q.difficulty = 3) <> 5
        ORDER BY s.name`
     )
   );
