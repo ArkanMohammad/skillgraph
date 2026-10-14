@@ -14,6 +14,7 @@ import {
 } from '../services/assessmentService'
 import { ApiError } from '../services/apiClient'
 import { useGoalGraph } from '../hooks/useGoalGraph'
+import Modal from '../components/Modal'
 import ProgressBar from '../components/ProgressBar'
 import ThemeToggle from '../components/ThemeToggle'
 import type { AssessmentQuestion } from '../types/api'
@@ -43,7 +44,7 @@ function AssessmentQuizPage() {
   const [loading, setLoading] = useState(true)
   const [submitting, setSubmitting] = useState(false)
   const [error, setError] = useState<string | null>(null)
-  const [confirmExit, setConfirmExit] = useState(false) // shows the "leave the assessment?" box
+  const [confirmExit, setConfirmExit] = useState(false) // opens the "leave the assessment?" window
   // After an answer is saved we show green/red first; the next question waits for "Next"
   const [feedback, setFeedback] = useState<SubmitAnswerResult | null>(null)
 
@@ -196,20 +197,6 @@ function AssessmentQuizPage() {
 
       {error && <p className="form-error">{error}</p>}
 
-      {confirmExit && (
-        <div className="quiz-exit-box">
-          <p>Leave this assessment? Your answers so far are saved, and you can continue later.</p>
-          <div className="quiz-exit-actions">
-            <button className="btn btn-outline" type="button" onClick={() => setConfirmExit(false)}>
-              Stay
-            </button>
-            <button className="btn btn-primary" type="button" onClick={() => navigate(PATHS.dashboard)}>
-              Leave
-            </button>
-          </div>
-        </div>
-      )}
-
       <div className="quiz-actions quiz-actions-split">
         <button
           className="btn btn-outline"
@@ -229,6 +216,26 @@ function AssessmentQuizPage() {
           </button>
         )}
       </div>
+
+      {confirmExit && (
+        <Modal
+          title="Leave this assessment?"
+          dismissOnOverlay
+          onClose={() => setConfirmExit(false)}
+          footer={
+            <>
+              <button className="btn btn-outline" type="button" onClick={() => setConfirmExit(false)}>
+                Stay
+              </button>
+              <button className="btn btn-primary" type="button" onClick={() => navigate(PATHS.dashboard)}>
+                Leave
+              </button>
+            </>
+          }
+        >
+          <p>Your answers so far are saved, and you can continue later.</p>
+        </Modal>
+      )}
     </div>
   )
 }
