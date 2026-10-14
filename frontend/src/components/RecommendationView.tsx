@@ -3,17 +3,22 @@ import Logo from './Logo'
 import type { Recommendation } from '../services/projectService'
 import { formatDate } from '../utils/formatDate'
 import '../styles/projects.css'
+import '../styles/recommendation-print.css'
 
-// A recommendation laid out like the paper it will become:
-// the SkillGraph name on top, the mentor's own words in the middle,
-// the fixed SkillGraph seal at the bottom left and the mentor's signature at the bottom right.
-function RecommendationView(props: {
+export type RecommendationViewProps = {
   recommendation: Recommendation
   projectTitle: string
   learnerName: string
   goalName: string
-}) {
-  const { recommendation, projectTitle, learnerName, goalName } = props
+  verifyUrl?: string // where anybody can check the code, printed under the seal
+}
+
+// A recommendation laid out like the paper it will become:
+// the SkillGraph name on top, the mentor's own words in the middle,
+// the fixed SkillGraph seal at the bottom left and the mentor's signature at the bottom right.
+// dir="auto" lets texts written in Arabic (or any right-to-left language) read the right way.
+function RecommendationView(props: RecommendationViewProps) {
+  const { recommendation, projectTitle, learnerName, goalName, verifyUrl } = props
 
   return (
     <article className="recommendation">
@@ -22,12 +27,16 @@ function RecommendationView(props: {
       </header>
 
       <p className="recommendation-eyebrow">Personal recommendation</p>
-      <h3 className="recommendation-title">{projectTitle}</h3>
-      <p className="muted">
+      <h3 className="recommendation-title" dir="auto">
+        {projectTitle}
+      </h3>
+      <p className="muted" dir="auto">
         For <strong>{learnerName}</strong> · {goalName}
       </p>
 
-      <p className="recommendation-body">{recommendation.body}</p>
+      <p className="recommendation-body" dir="auto">
+        {recommendation.body}
+      </p>
 
       <footer className="recommendation-footer">
         <div className="recommendation-seal">
@@ -35,13 +44,18 @@ function RecommendationView(props: {
           <div>
             <strong>Issued via SkillGraph</strong>
             <span>Code {recommendation.code}</span>
+            {verifyUrl && (
+              <a className="recommendation-verify" href={verifyUrl}>
+                Verify: {verifyUrl.replace(/^https?:\/\//, '')}
+              </a>
+            )}
           </div>
         </div>
 
         <div className="recommendation-signature">
           <img src={recommendation.signature} alt={`Signature of ${recommendation.mentorName}`} />
-          <strong>{recommendation.mentorName}</strong>
-          <span>{recommendation.mentorTitle}</span>
+          <strong dir="auto">{recommendation.mentorName}</strong>
+          <span dir="auto">{recommendation.mentorTitle}</span>
           <span>{formatDate(recommendation.issuedAt)}</span>
         </div>
       </footer>

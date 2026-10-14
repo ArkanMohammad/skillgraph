@@ -1,0 +1,52 @@
+/* Admin: "Add mentor" button and window */
+.mentors-head {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 16px;
+}
+
+.mentors-head h3 {
+  margin: 0 0 8px;
+}
+
+.mentors-head p {
+  margin: 0;
+  max-width: 640px;
+}
+
+.mentor-form-password {
+  display: flex;
+  gap: 8px;
+}
+
+.mentor-form-password .input {
+  flex: 1;
+  font-family: var(--font-mono);
+}
+
+.mentor-form-goals {
+  margin-bottom: 8px;
+}
+
+.mentor-form-goals .admin-check-grid {
+  margin-bottom: 0;
+}
+
+.mentor-created {
+  display: grid;
+  gap: 4px;
+  margin: 16px 0;
+  padding: 14px 16px;
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  background: var(--surface);
+  font-family: var(--font-mono);
+  font-size: 14px;
+  word-break: break-all;
+}
+
+.mentor-created span {
+  color: var(--text-muted);
+}

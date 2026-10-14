@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react'
-import { Plus, X } from 'lucide-react'
+import { Plus, UserPlus, X } from 'lucide-react'
 import { getGoals } from '../../services/goalService'
 import {
   assignAdminMentor,
@@ -9,13 +9,16 @@ import {
 } from '../../services/adminService'
 import type { Goal } from '../../types/api'
 import ErrorState from '../ErrorState'
+import MentorForm from './MentorForm'
 import { getMessage } from './adminHelpers'
 import '../../styles/mentors.css'
+import '../../styles/mentor-form.css'
 
 type Notice = { type: 'ok' | 'error'; text: string }
 
-// Tab to choose which goals each mentor looks after.
-// A user becomes a mentor when an admin changes their role to MENTOR (Overview tab).
+// Tab to add mentors and to choose which goals each mentor looks after.
+// A mentor is either a brand new account made here (Add mentor)
+// or an existing user whose role an admin changed to MENTOR (Overview tab).
 function AdminMentors() {
   const [mentors, setMentors] = useState<AdminMentor[]>([])
   const [goals, setGoals] = useState<Goal[]>([])
@@ -24,6 +27,7 @@ function AdminMentors() {
   const [error, setError] = useState<string | null>(null) // the tab could not load
   const [notice, setNotice] = useState<Notice | null>(null) // result of the last change
   const [busy, setBusy] = useState(false)
+  const [adding, setAdding] = useState(false) // the "Add mentor" window is open
   const [attempt, setAttempt] = useState(0) // bumped to fetch again
 
   useEffect(() => {
@@ -97,11 +101,19 @@ function AdminMentors() {
   return (
     <div>
       <div className="card admin-panel">
-        <h3>Mentors</h3>
-        <p className="muted">
-          A mentor is a person from the field who helps the learners of a goal. To add one, change the role of a
-          user to MENTOR in the Overview tab, then choose the goals here. A goal can have several mentors.
-        </p>
+        <div className="mentors-head">
+          <div>
+            <h3>Mentors</h3>
+            <p className="muted">
+              A mentor is a person from the field who helps the learners of a goal. Add a new mentor here, or change
+              the role of an existing user to MENTOR in the Overview tab. Then choose the goals below. A goal can have
+              several mentors.
+            </p>
+          </div>
+          <button type="button" className="btn btn-primary btn-sm" onClick={() => setAdding(true)}>
+            <UserPlus size={14} /> Add mentor
+          </button>
+        </div>
       </div>
 
       {notice && (
@@ -110,7 +122,7 @@ function AdminMentors() {
 
       <div className="card card-flush">
         {mentors.length === 0 ? (
-          <p className="muted admin-flush-message">No mentors yet. Change the role of a user to MENTOR first.</p>
+          <p className="muted admin-flush-message">No mentors yet. Use "Add mentor" to create the first one.</p>
         ) : (
           <table className="table">
             <thead>
@@ -186,6 +198,17 @@ function AdminMentors() {
           </table>
         )}
       </div>
+
+      {adding && (
+        <MentorForm
+          goals={goals}
+          onClose={() => setAdding(false)}
+          onCreated={(mentor) => {
+            setNotice({ type: 'ok', text: `${mentor.name} is now a mentor` })
+            setAttempt((n) => n + 1)
+          }}
+        />
+      )}
     </div>
   )
 }
