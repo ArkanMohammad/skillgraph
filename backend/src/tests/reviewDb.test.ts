@@ -39,7 +39,12 @@ const setGoal = async (userId: string, goal: number): Promise<void> => {
   );
 };
 
-/** Stores a skill as tested `daysAgo` days ago (null = no test date at all) */
+/**
+ * Stores a skill as tested `daysAgo` days ago (null = no test date at all).
+ * One extra hour is subtracted on purpose: the date comes from the clock of the database and the
+ * test measures it with the clock of this computer. Without the margin, a clock that is a few
+ * seconds apart turns "exactly 40 days" into 39 days and the test fails for no real reason.
+ */
 const setSkill = async (
   userId: string,
   skill: string,
@@ -49,7 +54,7 @@ const setSkill = async (
 ): Promise<void> => {
   await query(
     `INSERT INTO user_skills (user_id, skill_id, proficiency_level, confidence, state, last_assessed_at)
-     VALUES ($1, $2, $3, $4, 'PRACTICING', CASE WHEN $5::int IS NULL THEN NULL ELSE NOW() - ($5::int * INTERVAL '1 day') END)
+     VALUES ($1, $2, $3, $4, 'PRACTICING', CASE WHEN $5::int IS NULL THEN NULL ELSE NOW() - ($5::int * INTERVAL '1 day') - INTERVAL '1 hour' END)
      ON CONFLICT (user_id, skill_id) DO UPDATE
      SET proficiency_level = EXCLUDED.proficiency_level,
          confidence = EXCLUDED.confidence,
