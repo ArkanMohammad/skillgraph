@@ -242,3 +242,31 @@ export function setAdminPrerequisites(goalId: number, skillId: number, prerequis
     body: JSON.stringify({ prerequisiteIds }),
   })
 }
+
+// ---------- Mentors ----------
+
+// A mentor with the goals they look after (admin view, includes the email)
+export type AdminMentor = {
+  id: string
+  name: string
+  email: string
+  goals: { id: number; name: string }[]
+}
+
+export function getAdminMentors() {
+  return apiRequest<{ mentors: AdminMentor[] }>('/admin/mentors')
+}
+
+// Assigns a mentor to a goal (created is false when they already looked after it)
+export function assignAdminMentor(goalId: number, mentorId: string) {
+  return apiRequest<{ created: boolean }>(`/admin/goals/${goalId}/mentors/${mentorId}`, {
+    method: 'PUT',
+  })
+}
+
+// Removes a mentor from a goal (the account stays)
+export function removeAdminMentor(goalId: number, mentorId: string) {
+  return apiRequest<null>(`/admin/goals/${goalId}/mentors/${mentorId}`, {
+    method: 'DELETE',
+  })
+}

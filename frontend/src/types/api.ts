@@ -1,7 +1,7 @@
 // Shared contracts between the frontend and the backend REST API
 
 // Role values exactly as the backend returns them
-export type UserRole = 'USER' | 'ADMIN'
+export type UserRole = 'USER' | 'MENTOR' | 'ADMIN'
 
 // Authenticated user (id is a UUID string, not a number)
 export type User = {

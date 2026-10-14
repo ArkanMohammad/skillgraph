@@ -1,0 +1,92 @@
+/* Dashboard: mentor card, and the admin mentors tab */
+.mentor-card {
+  margin-bottom: 24px;
+}
+
+.mentor-card h3 {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin: 0 0 4px;
+}
+
+.mentor-card p {
+  margin: 0 0 12px;
+  font-size: 14px;
+}
+
+.mentor-list {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 12px;
+}
+
+.mentor-person {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 8px 14px 8px 8px;
+  border: 1px solid var(--border);
+  border-radius: 999px;
+}
+
+.mentor-avatar {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  background: var(--primary-soft);
+  color: var(--primary);
+  font-weight: 700;
+}
+
+.mentor-name {
+  font-weight: 600;
+}
+
+/* Admin: goals of a mentor shown as small chips with a remove button */
+.mentor-chips {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+}
+
+.mentor-chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  padding: 3px 4px 3px 10px;
+  border-radius: 999px;
+  background: var(--primary-soft);
+  color: var(--primary);
+  font-size: 12px;
+  font-weight: 600;
+}
+
+.mentor-chip-remove {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 18px;
+  height: 18px;
+  padding: 0;
+  border: none;
+  border-radius: 50%;
+  background: transparent;
+  color: inherit;
+  cursor: pointer;
+}
+
+.mentor-chip-remove:hover {
+  background: var(--danger-soft);
+  color: var(--danger);
+}
+
+.mentor-assign {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 8px;
+}

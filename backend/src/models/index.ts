@@ -1,7 +1,7 @@
 /**
  * TypeScript types matching the PostgreSQL tables
  */
-export type UserRole = 'USER' | 'ADMIN';
+export type UserRole = 'USER' | 'MENTOR' | 'ADMIN';
 export type UserGoalStatus = 'ACTIVE' | 'PAUSED' | 'COMPLETED';
 export type SkillState =
   | 'LOCKED'

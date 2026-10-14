@@ -3,7 +3,7 @@
 Admins (role `ADMIN`) can change what users are tested on and what every goal contains,
 without touching the code or the database. Everything is in `backend/src/services/adminContentService.ts`
 and exposed under `/api/admin` (see `backend/src/routes/adminContentRoutes.ts`).
-The screens are the **Questions**, **Goal skills** and **Users** tabs of the Admin page.
+The screens are the **Questions**, **Goal skills**, **Mentors** and **Users** tabs of the Admin page.
 Every change is made in a window (modal) that opens on top of the page, so the table never moves while an admin types.
 
 ## What an admin can do
@@ -13,6 +13,7 @@ Every change is made in a window (modal) that opens on top of the page, so the t
 | Skills | create a skill, edit its name, category and description |
 | Questions | add a question (4 options, exactly one correct), edit it, hide or show it |
 | Goal skills | add an existing skill to a goal, change its required mastery, importance and hours, choose what it needs first (prerequisites), remove it from the goal |
+| Mentors | give a user the role MENTOR, assign a mentor to one or more goals, remove a mentor from a goal |
 | Users | search the users, look at the progress of one user (skills, mastery, recent tests), change a role, write an advice for the user, delete a user |
 
 ## Rules that protect the data
@@ -43,6 +44,20 @@ edited goal is never touched.
 Saving replaces the whole list in one transaction. The table is locked while it runs, so two admins
 cannot create a cycle together. User progress is not changed: LOCKED and READY are calculated from the
 graph on every request.
+
+## Mentors
+
+A mentor is a person from the field who helps the learners of a goal (see [mentors.md](mentors.md)).
+An admin changes the role of a user to **MENTOR** in the Overview tab, then opens the **Mentors** tab and chooses
+the goals that mentor looks after. A goal can have several mentors and a mentor can look after several goals.
+Learners see the mentors of their goal on the Dashboard (names only, never the email).
+
+| Rule | Why |
+| --- | --- |
+| Only a user with the role MENTOR can be assigned to a goal | A learner must never see a normal user as a mentor |
+| A user who stops being a MENTOR loses every goal | The role and the goals always agree |
+| Removing a mentor from a goal does not delete the account | The mentor can look after other goals |
+| The role is stored in the login token, so a changed role works after the next login | Same behavior as for admins |
 
 ## Users and advice
 
@@ -93,11 +108,16 @@ All routes need the ADMIN role (401 without login, 403 for a normal user).
 | PUT | `/admin/goals/:goalId/skills/:skillId` | `requiredMastery`, `importance`, `estimatedHours` | 204 |
 | DELETE | `/admin/goals/:goalId/skills/:skillId` | | 200 `{ affectedSkills }` |
 | PUT | `/admin/goals/:goalId/skills/:skillId/prerequisites` | `prerequisiteIds` (list of skill ids of that goal) | 200 `{ added, removed, alsoAffectedGoals }` |
+| GET | `/admin/mentors` | | `{ mentors }`, each with `id`, `name`, `email` and `goals` |
+| PUT | `/admin/goals/:goalId/mentors/:mentorId` | | 201 `{ created: true }`, or 200 `{ created: false }` when the link already existed. 400 if the user is not a MENTOR |
+| DELETE | `/admin/goals/:goalId/mentors/:mentorId` | | 204. 404 if the mentor is not assigned to that goal |
 | GET | `/admin/users/:userId` | | Profile, progress summary, skills with status and mastery, recent tests, advice |
 | DELETE | `/admin/users/:userId` | | 200 `{ message }`. 400 for yourself, 409 for an admin |
 | POST | `/admin/users/:userId/advice` | `message` (1-1000 characters) | 201 the advice |
 
-The users list (`GET /admin/users`) and the role change (`PUT /admin/users/:userId/role`) already existed.
+The users list (`GET /admin/users`) and the role change (`PUT /admin/users/:userId/role`, with `USER`, `MENTOR` or `ADMIN`) already existed.
+
+A learner reads the mentors of their goal with `GET /mentors/mine` (`{ goal, mentors }`, names only, 400 without a goal).
 
 Users read their own advice with `GET /advice` (`{ advice, unread }`), `PATCH /advice/:adviceId/read` and `PATCH /advice/read-all` (`{ marked }`).
 
@@ -106,5 +126,5 @@ Errors use `{ message }` with 400 (invalid input or a rule above), 404 (not foun
 ## Tests
 
 ```bash
-npm run test:db     # includes adminContent.test.ts (39 checks) and adminUsers.test.ts (19 checks)
+npm run test:db     # includes adminContent.test.ts (39), adminUsers.test.ts (19) and mentors.test.ts (17)
 ```

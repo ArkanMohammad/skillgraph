@@ -152,6 +152,7 @@ function AdminUsers() {
                         onChange={(e) => handleRoleChange(user, e.target.value as UserRole)}
                       >
                         <option value="USER">USER</option>
+                        <option value="MENTOR">MENTOR</option>
                         <option value="ADMIN">ADMIN</option>
                       </select>
                     </td>

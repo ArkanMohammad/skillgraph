@@ -8,6 +8,7 @@ import ProgressBar from '../components/ProgressBar'
 import DonutChart from '../components/DonutChart'
 import ErrorState from '../components/ErrorState'
 import ReviewCard from '../components/ReviewCard'
+import MentorCard from '../components/MentorCard'
 import '../styles/pages.css'
 import '../styles/skill-panel.css'
 import { PATHS } from '../routes/paths'
@@ -178,6 +179,8 @@ function DashboardPage() {
       </div>
 
       <ReviewCard />
+
+      <MentorCard />
 
       <div className="two-col">
         <div className="card">

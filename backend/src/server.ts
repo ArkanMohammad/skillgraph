@@ -17,6 +17,7 @@ import progressRoutes from './routes/progressRoutes';
 import adminRoutes from './routes/adminRoutes';
 import adviceRoutes from './routes/adviceRoutes';
 import reviewRoutes from './routes/reviewRoutes';
+import mentorRoutes from './routes/mentorRoutes';
 import { errorHandler, notFound } from './middleware';
 import { ensureAssessmentSchema } from './config/ensureSchema';
 import { runMigrations } from './config/migrate';
@@ -51,6 +52,7 @@ app.use('/api/recommendations', recommendationRoutes); // Next Best Skill
 app.use('/api/progress', progressRoutes); // Progress of the current goal and of every goal
 app.use('/api/advice', adviceRoutes); // Advice written for the logged-in user
 app.use('/api/review', reviewRoutes); // Knowledge decay: which mastered skills need a review
+app.use('/api/mentors', mentorRoutes); // The mentors of the goal the user follows
 app.use('/api/admin', adminRoutes); // Admin only (RBAC)
 
 app.use(notFound);
