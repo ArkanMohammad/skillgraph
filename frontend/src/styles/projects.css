@@ -1,0 +1,197 @@
+/* Projects page, mentor desk, signature pad and the recommendation paper */
+
+.projects-form-card {
+  max-width: 720px;
+  margin: 24px 0;
+}
+
+.projects-heading {
+  margin: 32px 0 16px;
+  font-size: 20px;
+}
+
+.field > .projects-counter {
+  display: block;
+  margin: 6px 0 0;
+  font-size: 13px;
+  font-weight: 400;
+  text-align: right;
+}
+
+.projects-body-input {
+  min-height: 160px;
+}
+
+.projects-list {
+  display: grid;
+  gap: 16px;
+}
+
+.project-head {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+}
+
+.project-head h3,
+.project-summary h3 {
+  margin: 0;
+}
+
+.project-item p,
+.project-summary p {
+  margin: 8px 0;
+}
+
+.project-summary {
+  margin-bottom: 20px;
+  padding: 16px;
+  border: 1px solid var(--border);
+  border-radius: 14px;
+}
+
+.project-description {
+  white-space: pre-wrap;
+}
+
+.project-link {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  color: var(--primary);
+  font-size: 14px;
+  word-break: break-all;
+}
+
+.project-note {
+  padding: 10px 14px;
+  border-radius: 10px;
+  background: var(--locked-soft);
+  font-size: 14px;
+}
+
+.project-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-top: 16px;
+}
+
+/* Signature pad: the paper is white in both themes, the picture itself has no background */
+.signature-pad {
+  display: block;
+}
+
+.signature-canvas {
+  display: block;
+  width: 100%;
+  aspect-ratio: 3 / 1;
+  border: 1px dashed var(--border);
+  border-radius: 12px;
+  background: #fff;
+  cursor: crosshair;
+  touch-action: none;
+}
+
+.signature-bar {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  margin-top: 8px;
+  font-size: 13px;
+}
+
+/* The recommendation as a piece of paper (white in both themes, like the PDF) */
+.recommendation {
+  padding: 32px;
+  border: 1px solid #e5e7eb;
+  border-radius: 12px;
+  background: #fff;
+  color: #0f1219;
+}
+
+.recommendation .muted {
+  color: #6b7280;
+}
+
+.recommendation-top {
+  padding-bottom: 16px;
+  border-bottom: 2px solid #6366f1;
+}
+
+.recommendation-eyebrow {
+  margin: 24px 0 4px;
+  color: #6366f1;
+  font-size: 13px;
+  font-weight: 600;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+
+.recommendation-title {
+  margin: 0 0 4px;
+  font-size: 24px;
+}
+
+.recommendation-body {
+  margin: 24px 0 32px;
+  line-height: 1.7;
+  white-space: pre-wrap;
+}
+
+.recommendation-footer {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: flex-end;
+  justify-content: space-between;
+  gap: 24px;
+  padding-top: 20px;
+  border-top: 1px solid #e5e7eb;
+}
+
+.recommendation-seal {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  color: #4f46e5;
+}
+
+.recommendation-seal div {
+  display: grid;
+  gap: 2px;
+  font-size: 13px;
+}
+
+.recommendation-seal span {
+  font-family: var(--font-mono);
+  color: #6b7280;
+}
+
+.recommendation-signature {
+  display: grid;
+  gap: 2px;
+  min-width: 180px;
+  font-size: 13px;
+  text-align: right;
+}
+
+.recommendation-signature img {
+  width: 180px;
+  height: auto;
+  margin-left: auto;
+}
+
+.recommendation-signature span {
+  color: #6b7280;
+}
+
+.recommendation-note {
+  margin: 20px 0 0;
+  color: #6b7280;
+  font-size: 12px;
+  text-align: center;
+}

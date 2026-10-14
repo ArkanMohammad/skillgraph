@@ -90,3 +90,8 @@
   align-items: center;
   gap: 8px;
 }
+
+/* Dashboard card: button to the Projects page */
+.mentor-share {
+  margin-top: 16px;
+}

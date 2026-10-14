@@ -1,5 +1,7 @@
-import { GraduationCap } from 'lucide-react'
+import { Link } from 'react-router-dom'
+import { FolderOpen, GraduationCap } from 'lucide-react'
 import { useMyMentors } from '../hooks/useMyMentors'
+import { PATHS } from '../routes/paths'
 import '../styles/mentors.css'
 
 // First letter of a name, shown inside the round avatar
@@ -32,6 +34,9 @@ function MentorCard() {
           </div>
         ))}
       </div>
+      <Link className="btn btn-outline btn-sm mentor-share" to={PATHS.projects}>
+        <FolderOpen size={14} /> Share a project
+      </Link>
     </div>
   )
 }

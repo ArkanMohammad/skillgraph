@@ -12,11 +12,14 @@ import MySkillsPage from '../pages/MySkillsPage'
 import SkillGraphPage from '../pages/SkillGraphPage'
 import ProgressPage from '../pages/ProgressPage'
 import MyProfilePage from '../pages/MyProfilePage'
+import ProjectsPage from '../pages/ProjectsPage'
+import MentorDeskPage from '../pages/MentorDeskPage'
 import AdminPage from '../pages/AdminPage'
 import AppLayout from '../components/AppLayout'
 import ProtectedRoute from './ProtectedRoute'
 import RequireGoal from './RequireGoal'
 import RequireAdmin from './RequireAdmin'
+import RequireMentor from './RequireMentor'
 
 export default function AppRoutes() {
   return (
@@ -47,6 +50,12 @@ export default function AppRoutes() {
             <Route path="my-skills" element={<MySkillsPage />} />
             <Route path="progress" element={<ProgressPage />} />
             <Route path="my-profile" element={<MyProfilePage />} />
+            <Route path="projects" element={<ProjectsPage />} />
+
+            {/* Mentors only: other users are sent back to the dashboard */}
+            <Route element={<RequireMentor />}>
+              <Route path="mentor-desk" element={<MentorDeskPage />} />
+            </Route>
 
             {/* Admins only: other users are sent back to the dashboard */}
             <Route element={<RequireAdmin />}>

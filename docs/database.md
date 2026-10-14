@@ -26,6 +26,9 @@ erDiagram
     users ||--o{ user_advice : "receives"
     goals ||--o{ goal_mentors : "has mentors"
     users ||--o{ goal_mentors : "mentors"
+    users ||--o{ project_shares : "shares"
+    goals ||--o{ project_shares : "about"
+    project_shares ||--o| recommendations : "answered by"
 ```
 
 ## Tables
@@ -68,6 +71,8 @@ Progress is stored per skill, not per goal. When a user changes goal, skills the
 | Table | Purpose | Notes |
 | --- | --- | --- |
 | `goal_mentors` | Which mentors look after which goal | Primary key `(goal_id, mentor_id)`, so a link exists once. A goal can have several mentors and a mentor can have several goals. Only users with the role `MENTOR` are assigned (enforced by the mentor service). Deleted with the goal or with the mentor account (migration 006) |
+| `project_shares` | A project a learner shares with a mentor of their goal | `status` is `PENDING`, `RECOMMENDED` or `DECLINED`. Title 3 to 120 and description 20 to 2000 characters. `mentor_id` becomes empty if the mentor account is deleted or stops being a mentor while the project waits. Deleted with the learner or the goal (migration 007) |
+| `recommendations` | The signed recommendation a mentor wrote for one project | One per project (`share_id` is unique). Keeps the mentor name and title it was signed with, the text (at least 50 characters), the signature as a PNG data URL and a unique verification code such as `SG-7KQ2-M9XD-4TPA`. Deleted with its project (migration 007) |
 
 ### Assessments and questions
 
@@ -90,7 +95,8 @@ Foreign keys decide what happens to related rows:
 | A user | Their goals, skill progress, assessments, answers, events, advice they received | Everything else |
 | An admin | Nothing | The advice they wrote stays (the author becomes empty) |
 | A goal | Its `goal_skills`, `user_goals` and `goal_mentors` rows | Skills and their questions |
-| A mentor account | Their `goal_mentors` links | The goals |
+| A mentor account | Their `goal_mentors` links | The goals, and the projects shared with them (their `mentor_id` becomes empty, signed recommendations stay) |
+| A learner | Their `project_shares` and the recommendations of those projects | The mentors |
 | A skill | Its concepts, questions, options, goal links, prerequisites, user progress, assessments | Goals |
 | A question | Its options and the answers to it | The skill |
 | A concept | Nothing | Its questions stay with `concept_id` empty |
@@ -138,10 +144,11 @@ The runner records every applied file in the `schema_migrations` table, so each 
 | `004_remove_arabic_text` | Removes Arabic text that older versions stored in goal and skill descriptions (`English / Arabic`), keeping the English part |
 | `005_user_advice` | Adds the `user_advice` table and its index |
 | `006_mentors` | Adds the role `MENTOR` to `user_role` and the `goal_mentors` table with its index |
+| `007_project_shares` | Adds the `project_shares` and `recommendations` tables with their indexes |
 
 Rules for a new migration:
 
-1. Add a file with the next number, for example `007_name.sql`.
+1. Add a file with the next number, for example `008_name.sql`.
 2. Make it safe to read twice (`IF NOT EXISTS`) where PostgreSQL allows it.
 3. Never edit a migration that was already merged. Add a new one instead.
 4. Run `npm run migrate`, then `npm run test:db`.
@@ -156,4 +163,4 @@ Rules for a new migration:
 
 `npm run check:seed` verifies the result: every skill has at least 10 active questions, the standard bank is 5 easy, 5 medium and 5 hard, the graph has no cycles, and every goal is reachable.
 
-`npm run seed:demo` creates the demo accounts used in the presentation (including a demo mentor).
+`npm run seed:demo` creates the demo accounts used in the presentation.

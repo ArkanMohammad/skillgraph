@@ -16,6 +16,8 @@ export const PATHS = {
   mySkills: `${USER}/my-skills`,
   progress: `${USER}/progress`,
   myProfile: `${USER}/my-profile`,
+  projects: `${USER}/projects`,
+  mentorDesk: `${USER}/mentor-desk`,
   admin: `${USER}/admin`,
 
   assessmentQuiz: (skillId: number | string) => `${USER}/assessment/skill/${skillId}`,

@@ -18,6 +18,8 @@ import adminRoutes from './routes/adminRoutes';
 import adviceRoutes from './routes/adviceRoutes';
 import reviewRoutes from './routes/reviewRoutes';
 import mentorRoutes from './routes/mentorRoutes';
+import projectRoutes from './routes/projectRoutes';
+import mentorDeskRoutes from './routes/mentorDeskRoutes';
 import { errorHandler, notFound } from './middleware';
 import { ensureAssessmentSchema } from './config/ensureSchema';
 import { runMigrations } from './config/migrate';
@@ -53,6 +55,8 @@ app.use('/api/progress', progressRoutes); // Progress of the current goal and of
 app.use('/api/advice', adviceRoutes); // Advice written for the logged-in user
 app.use('/api/review', reviewRoutes); // Knowledge decay: which mastered skills need a review
 app.use('/api/mentors', mentorRoutes); // The mentors of the goal the user follows
+app.use('/api/projects', projectRoutes); // Projects a learner shares with a mentor
+app.use('/api/mentor', mentorDeskRoutes); // The desk of a mentor: requests and signed recommendations
 app.use('/api/admin', adminRoutes); // Admin only (RBAC)
 
 app.use(notFound);
