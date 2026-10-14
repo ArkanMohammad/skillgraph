@@ -3,10 +3,12 @@ import { NavLink, Outlet } from 'react-router-dom'
 import {
   Activity,
   ClipboardList,
+  FolderOpen,
   LayoutGrid,
   LogOut,
   PanelLeftClose,
   PanelLeftOpen,
+  PenLine,
   Share2,
   ShieldCheck,
   Star,
@@ -29,8 +31,12 @@ const NAV_ITEMS: { to: string; label: string; icon: LucideIcon }[] = [
   { to: PATHS.assessments, label: 'Assessments', icon: ClipboardList },
   { to: PATHS.mySkills, label: 'My Skills', icon: Star },
   { to: PATHS.progress, label: 'Progress', icon: Activity },
+  { to: PATHS.projects, label: 'Projects', icon: FolderOpen },
   { to: PATHS.myProfile, label: 'My Profile', icon: User },
 ]
+
+// Only mentors see this item (the server checks the role again on every request)
+const MENTOR_ITEM = { to: PATHS.mentorDesk, label: 'Mentor Desk', icon: PenLine }
 
 // Only admins see this item (the server checks the role again on every request)
 const ADMIN_ITEM = { to: PATHS.admin, label: 'Admin', icon: ShieldCheck }
@@ -39,13 +45,13 @@ const ADMIN_ITEM = { to: PATHS.admin, label: 'Admin', icon: ShieldCheck }
 function AppLayout() {
   const [collapsed, setCollapsed] = useState(false)
   const signOut = useSignOut()
-  const isAdmin = useAppSelector((state) => state.auth.user?.role) === 'ADMIN'
-  const navItems = isAdmin ? [...NAV_ITEMS, ADMIN_ITEM] : NAV_ITEMS
+  const role = useAppSelector((state) => state.auth.user?.role)
+  const navItems = [...NAV_ITEMS, ...(role === 'MENTOR' ? [MENTOR_ITEM] : []), ...(role === 'ADMIN' ? [ADMIN_ITEM] : [])]
 
   return (
     <div className={`app ${collapsed ? 'app-collapsed' : ''}`}>
-      {/* Admins have one more button, so the sidebar gets a slightly smaller size */}
-      <aside className={`sidebar ${isAdmin ? 'sidebar-compact' : ''}`}>
+      {/* There are eight buttons (nine for mentors and admins), so the sidebar gets a slightly smaller size */}
+      <aside className="sidebar sidebar-compact">
         <div>
           <div className="sidebar-top">
             <Logo />
