@@ -99,8 +99,9 @@ export const clearMentorAssignments = async (userId: string): Promise<void> => {
 };
 
 /**
- * Changes the role of a user. A user who is not a MENTOR any more loses their goals,
- * so a learner never sees someone who is no longer a mentor. Returns null when the user does not exist.
+ * Changes the role of a user. A user who is not a MENTOR any more loses their goals and the
+ * projects that were still waiting for them, so a learner never waits for someone who cannot answer.
+ * Returns null when the user does not exist.
  */
 export const setUserRole = async (
   userId: string,
@@ -113,7 +114,10 @@ export const setUserRole = async (
     [role, userId]
   );
   if (updated.rowCount === 0) return null;
-  if (role !== 'MENTOR') await clearMentorAssignments(userId);
+  if (role !== 'MENTOR') {
+    await clearMentorAssignments(userId);
+    await query(`UPDATE project_shares SET mentor_id = NULL WHERE mentor_id = $1 AND status = 'PENDING'`, [userId]);
+  }
   return updated.rows[0];
 };
 
