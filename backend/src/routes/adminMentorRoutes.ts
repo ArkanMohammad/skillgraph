@@ -1,12 +1,20 @@
 /**
  * Admin mentor routes (mounted inside adminRoutes, so every route is already ADMIN only).
  *   GET    /mentors                        every mentor with the goals they look after
+ *   POST   /mentors                        create a new account with the role MENTOR
  *   PUT    /goals/:goalId/mentors/:mentorId  assign a mentor to a goal
  *   DELETE /goals/:goalId/mentors/:mentorId  remove a mentor from a goal
  */
 import { Router, Request, Response } from 'express';
 import { positiveIntParam, uuidParam } from '../middleware/validate';
-import { MentorError, assignMentor, listMentors, removeMentor } from '../services/mentorService';
+import {
+  MentorError,
+  assignMentor,
+  createMentorAccount,
+  listMentors,
+  parseNewMentorInput,
+  removeMentor,
+} from '../services/mentorService';
 
 const router = Router();
 
@@ -22,6 +30,15 @@ const fail = (err: unknown, res: Response): void => {
 router.get('/mentors', async (_req: Request, res: Response): Promise<void> => {
   try {
     res.status(200).json({ mentors: await listMentors() });
+  } catch (err) {
+    fail(err, res);
+  }
+});
+
+router.post('/mentors', async (req: Request, res: Response): Promise<void> => {
+  try {
+    const mentor = await createMentorAccount(parseNewMentorInput(req.body));
+    res.status(201).json({ mentor });
   } catch (err) {
     fail(err, res);
   }

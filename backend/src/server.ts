@@ -20,6 +20,7 @@ import reviewRoutes from './routes/reviewRoutes';
 import mentorRoutes from './routes/mentorRoutes';
 import projectRoutes from './routes/projectRoutes';
 import mentorDeskRoutes from './routes/mentorDeskRoutes';
+import verifyRoutes from './routes/verifyRoutes';
 import { errorHandler, notFound } from './middleware';
 import { ensureAssessmentSchema } from './config/ensureSchema';
 import { runMigrations } from './config/migrate';
@@ -57,6 +58,7 @@ app.use('/api/review', reviewRoutes); // Knowledge decay: which mastered skills 
 app.use('/api/mentors', mentorRoutes); // The mentors of the goal the user follows
 app.use('/api/projects', projectRoutes); // Projects a learner shares with a mentor
 app.use('/api/mentor', mentorDeskRoutes); // The desk of a mentor: requests and signed recommendations
+app.use('/api/verify', verifyRoutes); // Public: check a recommendation by its code
 app.use('/api/admin', adminRoutes); // Admin only (RBAC)
 
 app.use(notFound);
