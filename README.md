@@ -26,6 +26,8 @@ The user picks a goal, takes short adaptive assessments, and the system recommen
 - **Changing the goal keeps your progress**: mastery is stored per user and skill, so shared skills are reused and never copied.
 - **Memory check (knowledge decay)**: a forgetting curve shows how well you still remember each mastered skill (fresh, fading or due). The skills you forget the most come first, and a review is a normal retake. See [docs/review.md](docs/review.md).
 - **Your mentor**: the Dashboard shows the mentors who look after your goal. See [docs/mentors.md](docs/mentors.md).
+- **Projects and recommendations**: share a project with a mentor of your goal. The mentor writes a personal recommendation and signs it by drawing the signature. It is the opinion of one person, not an official certificate.
+- **Mentor desk**: mentors see the projects shared with them and write a signed recommendation or decline.
 - **Profile**: name, email, password, weekly learning hours and account deletion.
 - **Advice from admin**: a message icon with an unread counter, and a window to read and mark messages as read.
 - **Light and dark theme**, a landing page, and error states on every page with a global error boundary.
@@ -41,7 +43,7 @@ The user picks a goal, takes short adaptive assessments, and the system recommen
 
 ### Quality
 
-- 210 automated checks: unit tests, real PostgreSQL tests, HTTP tests and a live smoke test ([docs/testing.md](docs/testing.md)).
+- 237 automated checks: unit tests, real PostgreSQL tests, HTTP tests and a live smoke test ([docs/testing.md](docs/testing.md)).
 - `check:seed` and `check:deploy` scripts before every release.
 - Numbered database migrations, constraints on every table and indexes for the main queries ([docs/database.md](docs/database.md)).
 
@@ -62,7 +64,7 @@ backend/
   src/
     config/             env, database pool, migration runner
     middleware/         auth, role check, request validation
-    routes/             auth, goals, graph, assessments, recommendations, progress, review, mentors, account, advice, admin, health
+    routes/             auth, goals, graph, assessments, recommendations, progress, review, mentors, projects, mentor desk, account, advice, admin, health
     services/algorithm/ pure algorithm code (scoring, adaptive questions, recommendation, explanations, knowledge decay)
     seed/               goals, skills, prerequisites and the question bank
     tests/              unit tests and database tests
@@ -72,7 +74,7 @@ frontend/
 docs/
   algorithm.md          how the recommendation algorithm works
   review.md             knowledge decay and the review queue
-  mentors.md            mentors, goals and the planned signed recommendation
+  mentors.md            mentors, goals, projects and signed recommendations
   database.md           tables, constraints, indexes, migrations, seed
   admin.md              admin content management and API
   testing.md            every test file and what it covers
@@ -136,7 +138,7 @@ From the `backend` folder:
 
 ```bash
 npm run test:unit     # algorithm, explanations, progress, goal change, knowledge decay (no database needed)
-npm run test:db       # recommendation flow + constraints, foreign keys, joins, cascades, admin rules, review queue, mentors (needs the migrated database)
+npm run test:db       # recommendation flow + constraints, foreign keys, joins, cascades, admin rules, review queue, mentors, project shares (needs the migrated database)
 npm run test:api      # HTTP tests: auth, 401/403, validation, ownership, assessment flow (the server must be running)
 npm test              # test:unit and test:db
 ```
@@ -146,7 +148,7 @@ What each group covers:
 | Group | Covers |
 |-------|--------|
 | `test:unit` | mastered skills are excluded, unmet prerequisites block a skill, unlock comparisons, goal complete, goal change reuses mastery, the recommendation changes after mastery updates, the forgetting curve |
-| `test:db` | UNIQUE, FOREIGN KEY, CHECK and enum constraints, ON DELETE CASCADE, the key joins (graph, per-user progress, progress of all goals), admin content and user rules, the review queue, mentors |
+| `test:db` | UNIQUE, FOREIGN KEY, CHECK and enum constraints, ON DELETE CASCADE, the key joins (graph, per-user progress, progress of all goals), admin content and user rules, the review queue, mentors, project shares |
 | `test:api` | register/login, invalid credentials, missing or invalid JWT (401), USER on admin routes (403), validation (400/404), another user's assessment (ownership), assessment completion updates `user_skills`, structured recommendation explanation, account deletion |
 
 The database and API tests create their own users (`d12test_*`, `apitest_*`) and remove them at the end.
@@ -182,6 +184,11 @@ All routes are under `/api`. Everything except `auth` and `health` needs the log
 | GET | `/progress/goals` | Progress in every goal (a new goal starts with the skills you already know) |
 | GET | `/review` | Memory health of the mastered skills of the current goal (knowledge decay) |
 | GET | `/mentors/mine` | The mentors of the goal the user follows (names only) |
+| POST | `/projects` | Share a project with a mentor of the current goal |
+| GET | `/projects/mine` | My shared projects, with the signed recommendation when there is one |
+| DELETE | `/projects/:shareId` | Take back a project that is waiting or was declined |
+| GET | `/mentor/requests` | Mentor only: the projects shared with me |
+| POST | `/mentor/requests/:shareId/recommendation`, `/decline` | Mentor only: sign a recommendation, or decline with an optional note |
 | GET | `/advice` | The advice an admin wrote for the logged-in user, with the unread counter |
 | PATCH | `/advice/:adviceId/read`, `/advice/read-all` | Mark advice as read |
 | GET, PUT | `/account/profile` | Name, email and weekly learning hours |
@@ -230,7 +237,7 @@ The algorithm is explained in [docs/algorithm.md](docs/algorithm.md).
 
 Ideas for the next versions, roughly in the order we would build them:
 
-1. **Signed recommendation from a mentor**: a learner shares a project, the mentor writes a personal recommendation and signs it by drawing the signature. The learner downloads it as a PDF with the SkillGraph header and seal, and anyone can check it with a code. See [docs/mentors.md](docs/mentors.md).
+1. **Recommendation as a PDF, and a page that checks it**: the learner downloads the signed recommendation as a PDF with the SkillGraph header and seal, and anyone can check it with its code. See [docs/mentors.md](docs/mentors.md).
 2. **Code review and practical exercises**: the mentor reviews code a learner sends and writes hands-on exercises for a skill (not multiple choice).
 3. **What-if simulator**: "what happens to my plan if I master this skill next?" Show the new recommendation and the new goal percent before the user studies.
 4. **Smart study plan**: turn the weekly learning hours of the profile into a week-by-week plan that follows the recommendation order.

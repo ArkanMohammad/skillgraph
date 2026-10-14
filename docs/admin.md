@@ -51,6 +51,7 @@ A mentor is a person from the field who helps the learners of a goal (see [mento
 An admin changes the role of a user to **MENTOR** in the Overview tab, then opens the **Mentors** tab and chooses
 the goals that mentor looks after. A goal can have several mentors and a mentor can look after several goals.
 Learners see the mentors of their goal on the Dashboard (names only, never the email).
+When a user stops being a mentor, the projects that were still waiting for them are released and the learners can take them back.
 
 | Rule | Why |
 | --- | --- |
@@ -126,5 +127,5 @@ Errors use `{ message }` with 400 (invalid input or a rule above), 404 (not foun
 ## Tests
 
 ```bash
-npm run test:db     # includes adminContent.test.ts (39), adminUsers.test.ts (19) and mentors.test.ts (17)
+npm run test:db     # includes adminContent.test.ts (39), adminUsers.test.ts (19), mentors.test.ts (17) and projectShares.test.ts (27)
 ```
