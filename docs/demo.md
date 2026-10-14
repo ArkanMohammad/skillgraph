@@ -16,6 +16,7 @@ The numbers below come from the real algorithm on the seeded data.
 | `demo.switcher@skillgraph.dev` | Frontend Developer | HTML, CSS, JavaScript and Git mastered |
 | `demo.finisher@skillgraph.dev` | Frontend Developer | every Frontend skill mastered |
 | `demo.admin@skillgraph.dev` | Full Stack Developer | role ADMIN |
+| `demo.mentor@skillgraph.dev` | Frontend Developer | role MENTOR, looks after the Frontend and Full Stack goals (the other demo users see "Your mentor" on the dashboard) |
 
 ## Scenario 1: a beginner gets a clear first step (1 min)
 

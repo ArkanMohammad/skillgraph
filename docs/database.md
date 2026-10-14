@@ -24,6 +24,8 @@ erDiagram
     questions ||--o{ assessment_answers : "answered in"
     users ||--o{ skill_events : logs
     users ||--o{ user_advice : "receives"
+    goals ||--o{ goal_mentors : "has mentors"
+    users ||--o{ goal_mentors : "mentors"
 ```
 
 ## Tables
@@ -32,7 +34,7 @@ erDiagram
 
 | Table | Purpose | Notes |
 | --- | --- | --- |
-| `users` | Accounts | `email` is unique, password is stored only as a bcrypt hash, `role` is `USER` or `ADMIN`, `weekly_hours` is 1 to 80 (migration 001) |
+| `users` | Accounts | `email` is unique, password is stored only as a bcrypt hash, `role` is `USER`, `MENTOR` or `ADMIN` (`MENTOR` was added by migration 006), `weekly_hours` is 1 to 80 (migration 001) |
 | `goals` | The 7 career goals | `name` is unique |
 | `user_goals` | The goal a user follows | One row per user and goal. A partial unique index (`one_current_goal_per_user`) allows only one current goal per user |
 
@@ -61,6 +63,12 @@ Progress is stored per skill, not per goal. When a user changes goal, skills the
 | --- | --- | --- |
 | `user_advice` | A message an admin writes for a user (shown on the dashboard) | `message` is 1 to 1000 characters, `read_at` is empty until the user marks it as read. `admin_id` becomes empty if the admin account is deleted, the advice stays (migration 005) |
 
+### Mentors
+
+| Table | Purpose | Notes |
+| --- | --- | --- |
+| `goal_mentors` | Which mentors look after which goal | Primary key `(goal_id, mentor_id)`, so a link exists once. A goal can have several mentors and a mentor can have several goals. Only users with the role `MENTOR` are assigned (enforced by the mentor service). Deleted with the goal or with the mentor account (migration 006) |
+
 ### Assessments and questions
 
 | Table | Purpose | Notes |
@@ -81,7 +89,8 @@ Foreign keys decide what happens to related rows:
 | --- | --- | --- |
 | A user | Their goals, skill progress, assessments, answers, events, advice they received | Everything else |
 | An admin | Nothing | The advice they wrote stays (the author becomes empty) |
-| A goal | Its `goal_skills` and `user_goals` rows | Skills and their questions |
+| A goal | Its `goal_skills`, `user_goals` and `goal_mentors` rows | Skills and their questions |
+| A mentor account | Their `goal_mentors` links | The goals |
 | A skill | Its concepts, questions, options, goal links, prerequisites, user progress, assessments | Goals |
 | A question | Its options and the answers to it | The skill |
 | A concept | Nothing | Its questions stay with `concept_id` empty |
@@ -128,10 +137,11 @@ The runner records every applied file in the `schema_migrations` table, so each 
 | `003_admin_content` | Adds `questions.is_active` and its index |
 | `004_remove_arabic_text` | Removes Arabic text that older versions stored in goal and skill descriptions (`English / Arabic`), keeping the English part |
 | `005_user_advice` | Adds the `user_advice` table and its index |
+| `006_mentors` | Adds the role `MENTOR` to `user_role` and the `goal_mentors` table with its index |
 
 Rules for a new migration:
 
-1. Add a file with the next number, for example `006_name.sql`.
+1. Add a file with the next number, for example `007_name.sql`.
 2. Make it safe to read twice (`IF NOT EXISTS`) where PostgreSQL allows it.
 3. Never edit a migration that was already merged. Add a new one instead.
 4. Run `npm run migrate`, then `npm run test:db`.
@@ -146,4 +156,4 @@ Rules for a new migration:
 
 `npm run check:seed` verifies the result: every skill has at least 10 active questions, the standard bank is 5 easy, 5 medium and 5 hard, the graph has no cycles, and every goal is reachable.
 
-`npm run seed:demo` creates the demo accounts used in the presentation.
+`npm run seed:demo` creates the demo accounts used in the presentation (including a demo mentor).

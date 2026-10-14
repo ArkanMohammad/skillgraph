@@ -16,8 +16,10 @@ const DEFAULT_REQUIRED = 0.75;
 interface DemoUser {
   email: string;
   name: string;
-  role: 'USER' | 'ADMIN';
+  role: 'USER' | 'MENTOR' | 'ADMIN';
   goal: string | null;
+  /** Goals this account looks after as a mentor (only for the role MENTOR) */
+  mentorOf?: string[];
   /** [skill name, mastery 0-1, confidence 0-1] */
   progress: [string, number, number][];
   story: string;
@@ -83,6 +85,15 @@ const DEMO_USERS: DemoUser[] = [
     progress: [],
     story: 'Role ADMIN: shows the Admin page (overview and role control).',
   },
+  {
+    email: 'demo.mentor@skillgraph.dev',
+    name: 'Demo Mentor',
+    role: 'MENTOR',
+    goal: 'Frontend Developer',
+    mentorOf: ['Frontend Developer', 'Full Stack Developer'],
+    progress: [],
+    story: 'Role MENTOR: looks after the Frontend and Full Stack goals, so the other demo users see "Your mentor" on the dashboard.',
+  },
 ];
 
 async function main(): Promise<void> {
@@ -136,6 +147,14 @@ async function main(): Promise<void> {
            VALUES ($1, $2, $3, $4, $5, NOW())`,
           [userId, skill.rows[0].id, mastery, confidence, state]
         );
+      }
+
+      // 5) The goals this mentor looks after (reset every time, like the rest of the account)
+      await client.query('DELETE FROM goal_mentors WHERE mentor_id = $1', [userId]);
+      for (const goalName of demo.mentorOf ?? []) {
+        const mentorGoal = await client.query<{ id: number }>('SELECT id FROM goals WHERE name = $1', [goalName]);
+        if (mentorGoal.rowCount === 0) throw new Error(`Goal "${goalName}" not found. Run the main seed first.`);
+        await client.query('INSERT INTO goal_mentors (goal_id, mentor_id) VALUES ($1, $2)', [mentorGoal.rows[0].id, userId]);
       }
     }
 

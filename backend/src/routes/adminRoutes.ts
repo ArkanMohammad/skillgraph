@@ -8,20 +8,23 @@
  *   PUT /users/:userId/role     change a role (an admin cannot change their own role)
  *   ...user routes              one user's progress, delete a user, write advice (see adminUserRoutes.ts)
  *   ...content routes           skills, questions and goal skills (see adminContentRoutes.ts)
+ *   ...mentor routes            mentors and their goals (see adminMentorRoutes.ts)
  */
 import { Router, Request, Response } from 'express';
 import { query } from '../config/db';
 import { authenticateJWT, requireRole } from '../middleware/authMiddleware';
 import { isPositiveInt, uuidParam } from '../middleware/validate';
 import adminContentRoutes from './adminContentRoutes';
+import adminMentorRoutes from './adminMentorRoutes';
 import adminUserRoutes from './adminUserRoutes';
+import { setUserRole } from '../services/mentorService';
 
 const router = Router();
 router.use(authenticateJWT, requireRole('ADMIN'));
 
 const DEFAULT_LIMIT = 50;
 const MAX_LIMIT = 200;
-const ROLES = ['USER', 'ADMIN'];
+const ROLES = ['USER', 'MENTOR', 'ADMIN'];
 
 /** GET /stats: counters and the number of users per goal */
 router.get('/stats', async (_req: Request, res: Response): Promise<void> => {
@@ -135,17 +138,13 @@ router.put('/users/:userId/role', uuidParam('userId'), async (req: Request, res:
   }
 
   try {
-    const updated = await query<{ id: string; name: string; email: string; role: string }>(
-      `UPDATE users SET role = $1, updated_at = NOW()
-       WHERE id = $2
-       RETURNING id, name, email, role`,
-      [role, userId]
-    );
-    if (updated.rowCount === 0) {
+    // A user who stops being a MENTOR also loses the goals they looked after
+    const updated = await setUserRole(userId, role);
+    if (!updated) {
       res.status(404).json({ message: 'User not found' });
       return;
     }
-    res.status(200).json(updated.rows[0]);
+    res.status(200).json(updated);
   } catch (err) {
     console.error(err);
     res.status(500).json({ message: 'Server error' });
@@ -154,5 +153,6 @@ router.put('/users/:userId/role', uuidParam('userId'), async (req: Request, res:
 
 router.use(adminUserRoutes); // One user: progress, delete, advice (ADMIN only, same guards)
 router.use(adminContentRoutes); // Skills, questions and goal skills (ADMIN only, same guards)
+router.use(adminMentorRoutes); // Mentors and the goals they look after (ADMIN only, same guards)
 
 export default router;
