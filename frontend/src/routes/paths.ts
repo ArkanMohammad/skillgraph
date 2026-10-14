@@ -6,6 +6,7 @@ export const PATHS = {
   home: '/',
   login: '/login',
   register: '/register',
+  verify: '/verify',
 
   selectGoal: `${USER}/select-goal`,
   dashboard: `${USER}/dashboard`,
@@ -21,4 +22,5 @@ export const PATHS = {
   admin: `${USER}/admin`,
 
   assessmentQuiz: (skillId: number | string) => `${USER}/assessment/skill/${skillId}`,
+  verifyCode: (code: string) => `/verify/${encodeURIComponent(code)}`,
 }

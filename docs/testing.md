@@ -1,6 +1,6 @@
 # Testing
 
-All tests live in `backend/src/tests/`. There are 237 checks in total. They are plain TypeScript files that print `ok` or `FAIL` for every check and exit with an error code when something fails, so they also work in CI.
+All tests live in `backend/src/tests/`. There are 255 checks in total. They are plain TypeScript files that print `ok` or `FAIL` for every check and exit with an error code when something fails, so they also work in CI.
 
 ## Quick start
 
@@ -18,9 +18,9 @@ The API tests need a running server, so they are started separately (see below).
 | Command | Needs | Checks | What it covers |
 | --- | --- | --- | --- |
 | `npm run test:unit` | Nothing | 66 | Pure logic, no database |
-| `npm run test:db` | PostgreSQL after `migrate` and `seed` | 146 | Real database and real services |
+| `npm run test:db` | PostgreSQL after `migrate` and `seed` | 164 | Real database and real services |
 | `npm run test:api` | Running backend (`npm run dev`) | 25 | HTTP level: auth, roles, validation, main flow |
-| `npm test` | PostgreSQL | 212 | `test:unit` and `test:db` together |
+| `npm test` | PostgreSQL | 230 | `test:unit` and `test:db` together |
 | `npm run smoke` | Running site | 15 | A live check of a deployed or local site |
 
 ### Unit tests (66)
@@ -33,7 +33,7 @@ The API tests need a running server, so they are started separately (see below).
 | `goalChange.test.ts` | 10 | Changing the goal: shared skills keep their mastery, the recommendation follows the new goal |
 | `knowledgeDecay.test.ts` | 14 | The forgetting curve: half-life from confidence, retention over time, fresh / fading / due thresholds, review date |
 
-### Database tests (146)
+### Database tests (164)
 
 | File | Checks | Covers |
 | --- | --- | --- |
@@ -43,9 +43,11 @@ The API tests need a running server, so they are started separately (see below).
 | `adminUsers.test.ts` | 19 | Advice input rules, saving and reading advice, unread counter, mark all as read, one user cannot touch another user's advice, the progress detail of a user, deleting a user removes all their data, an admin cannot delete themselves or another admin, advice stays when its author is deleted |
 | `mentors.test.ts` | 17 | The role MENTOR, assigning mentors to goals (only mentors, no duplicates, several per goal), what a learner sees (names only), a user who stops being a mentor loses the goals, cascade deletes |
 | `projectShares.test.ts` | 27 | Project shares and signed recommendations: form rules, the signature (only a PNG of a sane size), who can share with whom (a mentor of the learner's goal, at most 5 waiting), the mentor desk (only the mentor of the project, only once), decline notes, a mentor who stops being a mentor releases waiting projects, a deleted mentor keeps the signed recommendation, a deleted learner removes theirs |
+| `mentorAccounts.test.ts` | 10 | An admin creates a mentor: form rules (name, email, password length, goal list), the new user has the role MENTOR and a bcrypt hash (never the plain password), it starts with the chosen goals, a used email gives 409 and an unknown goal gives 404 without leaving an account behind |
+| `verifyRecommendation.test.ts` | 8 | The public check of a code: a code that cannot exist gives 400, an unknown one 404, lower case and spaces are accepted, a visitor sees the text and signature but never an email or the project description, the code survives a deleted mentor and stops with a deleted learner |
 | `reviewDb.test.ts` | 11 | The review queue: only mastered skills of the current goal, order (most forgotten first), counters, next review date, stored mastery never changes, a new test restarts the curve |
 
-These tests create their own fixture rows (names start with `d12test_`, `d15test_`, `d16test_`, `d17test_` or `d18test_`) and delete them at the end, so the seeded content is not touched. If a run is killed in the middle, the leftover rows can be removed by running the test again.
+These tests create their own fixture rows (names start with `d12test_`, `d15test_`, `d16test_`, `d17test_`, `d18test_`, `d19test_` or `d19vtest_`) and delete them at the end, so the seeded content is not touched. If a run is killed in the middle, the leftover rows can be removed by running the test again.
 
 ### API tests (25)
 

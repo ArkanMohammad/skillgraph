@@ -14,9 +14,11 @@ import {
 import { ApiError } from '../services/apiClient'
 import ErrorState from '../components/ErrorState'
 import Modal from '../components/Modal'
+import RecommendationActions from '../components/RecommendationActions'
 import RecommendationView from '../components/RecommendationView'
 import { PATHS } from '../routes/paths'
 import { formatDate } from '../utils/formatDate'
+import { buildVerifyUrl } from '../utils/verifyUrl'
 import '../styles/pages.css'
 import '../styles/admin.css'
 import '../styles/projects.css'
@@ -268,12 +270,27 @@ function ProjectsPage() {
       )}
 
       {viewing && viewing.recommendation && (
-        <Modal title="Recommendation" size="lg" dismissOnOverlay onClose={() => setViewing(null)}>
+        <Modal
+          title="Recommendation"
+          size="lg"
+          dismissOnOverlay
+          onClose={() => setViewing(null)}
+          footer={
+            <RecommendationActions
+              recommendation={viewing.recommendation}
+              projectTitle={viewing.title}
+              learnerName={user?.name ?? ''}
+              goalName={viewing.goalName}
+              verifyUrl={buildVerifyUrl(viewing.recommendation.code)}
+            />
+          }
+        >
           <RecommendationView
             recommendation={viewing.recommendation}
             projectTitle={viewing.title}
             learnerName={user?.name ?? ''}
             goalName={viewing.goalName}
+            verifyUrl={buildVerifyUrl(viewing.recommendation.code)}
           />
         </Modal>
       )}

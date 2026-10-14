@@ -1,0 +1,68 @@
+/* Verification line under the seal, and the A4 page used for "Download PDF" */
+
+.recommendation-verify {
+  color: #6b7280;
+  font-size: 12px;
+  word-break: break-all;
+  text-decoration: none;
+}
+
+.recommendation-verify:hover {
+  text-decoration: underline;
+}
+
+/* The print sheet only exists while the print window is open: it is never shown on the screen */
+.print-sheet {
+  display: none;
+}
+
+@media print {
+  @page {
+    size: A4;
+    margin: 0;
+  }
+
+  /* Hide the whole app (and every window of it) and show only the sheet */
+  body > #root {
+    display: none !important;
+  }
+
+  html,
+  body {
+    height: auto !important;
+    overflow: visible !important;
+    background: #fff !important;
+  }
+
+  * {
+    -webkit-print-color-adjust: exact;
+    print-color-adjust: exact;
+  }
+
+  .print-sheet {
+    display: block;
+    width: 210mm;
+  }
+
+  /* One A4 page: the SkillGraph name on top, the seal and the signature pinned to the bottom */
+  .print-sheet .recommendation {
+    display: flex;
+    flex-direction: column;
+    box-sizing: border-box;
+    width: 210mm;
+    min-height: 296mm;
+    padding: 18mm;
+    border: none;
+    border-radius: 0;
+  }
+
+  .print-sheet .recommendation-body {
+    flex: 1;
+    font-size: 13pt;
+  }
+
+  .print-sheet .recommendation-footer {
+    margin-top: auto;
+    flex-wrap: nowrap;
+  }
+}

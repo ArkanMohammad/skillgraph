@@ -26,7 +26,8 @@ The user picks a goal, takes short adaptive assessments, and the system recommen
 - **Changing the goal keeps your progress**: mastery is stored per user and skill, so shared skills are reused and never copied.
 - **Memory check (knowledge decay)**: a forgetting curve shows how well you still remember each mastered skill (fresh, fading or due). The skills you forget the most come first, and a review is a normal retake. See [docs/review.md](docs/review.md).
 - **Your mentor**: the Dashboard shows the mentors who look after your goal. See [docs/mentors.md](docs/mentors.md).
-- **Projects and recommendations**: share a project with a mentor of your goal. The mentor writes a personal recommendation and signs it by drawing the signature. It is the opinion of one person, not an official certificate.
+- **Projects and recommendations**: share a project with a mentor of your goal. The mentor writes a personal recommendation and signs it by drawing the signature. It is the opinion of one person, not an official certificate. You can download it as a PDF.
+- **Verify a recommendation**: every recommendation has a code such as `SG-7KQ2-M9XD-4TPA`. Anybody can type it on the public page `/verify` (no login) to see the original text and signature.
 - **Mentor desk**: mentors see the projects shared with them and write a signed recommendation or decline.
 - **Profile**: name, email, password, weekly learning hours and account deletion.
 - **Advice from admin**: a message icon with an unread counter, and a window to read and mark messages as read.
@@ -38,12 +39,12 @@ The user picks a goal, takes short adaptive assessments, and the system recommen
 - **Users**: search, view the progress of one user (skills, mastery, recent tests), change a role, write advice, delete a user (with safety rules).
 - **Questions**: create skills, add and edit questions (4 options, exactly one correct), hide and show questions. A skill always keeps at least 10 active questions.
 - **Goal skills**: add or remove a skill in a goal, change its required mastery, importance and hours, and edit prerequisites. Cycles are refused.
-- **Mentors**: give a user the role MENTOR and choose the goals each mentor looks after.
+- **Mentors**: add a new mentor account (name, email, first password, optional goals) or give an existing user the role MENTOR, and choose the goals each mentor looks after.
 - Full rules and API: [docs/admin.md](docs/admin.md).
 
 ### Quality
 
-- 237 automated checks: unit tests, real PostgreSQL tests, HTTP tests and a live smoke test ([docs/testing.md](docs/testing.md)).
+- 255 automated checks: unit tests, real PostgreSQL tests, HTTP tests and a live smoke test ([docs/testing.md](docs/testing.md)).
 - `check:seed` and `check:deploy` scripts before every release.
 - Numbered database migrations, constraints on every table and indexes for the main queries ([docs/database.md](docs/database.md)).
 
@@ -138,7 +139,7 @@ From the `backend` folder:
 
 ```bash
 npm run test:unit     # algorithm, explanations, progress, goal change, knowledge decay (no database needed)
-npm run test:db       # recommendation flow + constraints, foreign keys, joins, cascades, admin rules, review queue, mentors, project shares (needs the migrated database)
+npm run test:db       # recommendation flow + constraints, foreign keys, joins, cascades, admin rules, review queue, mentors, mentor accounts, project shares, public verification (needs the migrated database)
 npm run test:api      # HTTP tests: auth, 401/403, validation, ownership, assessment flow (the server must be running)
 npm test              # test:unit and test:db
 ```
@@ -148,7 +149,7 @@ What each group covers:
 | Group | Covers |
 |-------|--------|
 | `test:unit` | mastered skills are excluded, unmet prerequisites block a skill, unlock comparisons, goal complete, goal change reuses mastery, the recommendation changes after mastery updates, the forgetting curve |
-| `test:db` | UNIQUE, FOREIGN KEY, CHECK and enum constraints, ON DELETE CASCADE, the key joins (graph, per-user progress, progress of all goals), admin content and user rules, the review queue, mentors, project shares |
+| `test:db` | UNIQUE, FOREIGN KEY, CHECK and enum constraints, ON DELETE CASCADE, the key joins (graph, per-user progress, progress of all goals), admin content and user rules, the review queue, mentors, mentor accounts, project shares, public verification |
 | `test:api` | register/login, invalid credentials, missing or invalid JWT (401), USER on admin routes (403), validation (400/404), another user's assessment (ownership), assessment completion updates `user_skills`, structured recommendation explanation, account deletion |
 
 The database and API tests create their own users (`d12test_*`, `apitest_*`) and remove them at the end.
@@ -167,7 +168,7 @@ Full deployment guide: [docs/deployment.md](docs/deployment.md).
 
 ## API overview
 
-All routes are under `/api`. Everything except `auth` and `health` needs the login cookie.
+All routes are under `/api`. Everything except `auth`, `health` and `verify` needs the login cookie.
 
 | Method | Route | What it does |
 | --- | --- | --- |
@@ -184,6 +185,7 @@ All routes are under `/api`. Everything except `auth` and `health` needs the log
 | GET | `/progress/goals` | Progress in every goal (a new goal starts with the skills you already know) |
 | GET | `/review` | Memory health of the mastered skills of the current goal (knowledge decay) |
 | GET | `/mentors/mine` | The mentors of the goal the user follows (names only) |
+| GET | `/verify/:code` | Public (no login): the recommendation behind a code, to check that it is real |
 | POST | `/projects` | Share a project with a mentor of the current goal |
 | GET | `/projects/mine` | My shared projects, with the signed recommendation when there is one |
 | DELETE | `/projects/:shareId` | Take back a project that is waiting or was declined |
@@ -198,6 +200,7 @@ All routes are under `/api`. Everything except `auth` and `health` needs the log
 | GET | `/admin/stats` | Admin only: totals and users per goal |
 | GET | `/admin/users` | Admin only: users with their goal (`?limit=&offset=`) |
 | PUT | `/admin/users/:userId/role` | Admin only: change a role to `USER`, `MENTOR` or `ADMIN` (not your own) |
+| POST | `/admin/mentors` | Admin only: create a new account with the role `MENTOR` |
 | | `/admin/skills`, `/admin/questions`, `/admin/goals`, `/admin/mentors`, `/admin/users/:userId` | Admin only: content, mentor and user management, listed in [docs/admin.md](docs/admin.md) |
 
 The algorithm is explained in [docs/algorithm.md](docs/algorithm.md).
@@ -237,17 +240,16 @@ The algorithm is explained in [docs/algorithm.md](docs/algorithm.md).
 
 Ideas for the next versions, roughly in the order we would build them:
 
-1. **Recommendation as a PDF, and a page that checks it**: the learner downloads the signed recommendation as a PDF with the SkillGraph header and seal, and anyone can check it with its code. See [docs/mentors.md](docs/mentors.md).
-2. **Code review and practical exercises**: the mentor reviews code a learner sends and writes hands-on exercises for a skill (not multiple choice).
-3. **What-if simulator**: "what happens to my plan if I master this skill next?" Show the new recommendation and the new goal percent before the user studies.
-4. **Smart study plan**: turn the weekly learning hours of the profile into a week-by-week plan that follows the recommendation order.
-5. **Weak concepts**: show the concepts inside a skill where the user answered wrong most often, and suggest what to revise.
-6. **Goal match**: compare the user's current skills with all 7 goals and suggest the goal that is closest to them.
-7. **Review reminders**: email or in-app reminders when a mastered skill becomes due in the Memory check.
-8. **Learning resources**: links to a course, an article or an exercise for every skill, chosen by admins.
-9. **Admin analytics**: the hardest and the most skipped questions, the skills where users get stuck, and the average time per test.
-10. **Question import**: upload many questions at once from a CSV file in the admin page.
-11. **AI layer (optional)**: a plain-language explanation or a study tip written by a language model. The decision always stays with the transparent formula.
-12. **Achievements and streaks**: small rewards for finishing assessments and reviews on time.
-13. **Automated frontend tests and CI**: component and end-to-end tests, and a GitHub Actions run of `npm test` and `npm run build` on every pull request.
-14. **More goals and skills**: new careers and deeper skill trees, added from the admin page without code changes.
+1. **Code review and practical exercises**: the mentor reviews code a learner sends and writes hands-on exercises for a skill (not multiple choice).
+2. **What-if simulator**: "what happens to my plan if I master this skill next?" Show the new recommendation and the new goal percent before the user studies.
+3. **Smart study plan**: turn the weekly learning hours of the profile into a week-by-week plan that follows the recommendation order.
+4. **Weak concepts**: show the concepts inside a skill where the user answered wrong most often, and suggest what to revise.
+5. **Goal match**: compare the user's current skills with all 7 goals and suggest the goal that is closest to them.
+6. **Review reminders**: email or in-app reminders when a mastered skill becomes due in the Memory check.
+7. **Learning resources**: links to a course, an article or an exercise for every skill, chosen by admins.
+8. **Admin analytics**: the hardest and the most skipped questions, the skills where users get stuck, and the average time per test.
+9. **Question import**: upload many questions at once from a CSV file in the admin page.
+10. **AI layer (optional)**: a plain-language explanation or a study tip written by a language model. The decision always stays with the transparent formula.
+11. **Achievements and streaks**: small rewards for finishing assessments and reviews on time.
+12. **Automated frontend tests and CI**: component and end-to-end tests, and a GitHub Actions run of `npm test` and `npm run build` on every pull request.
+13. **More goals and skills**: new careers and deeper skill trees, added from the admin page without code changes.

@@ -14,6 +14,7 @@ import ProgressPage from '../pages/ProgressPage'
 import MyProfilePage from '../pages/MyProfilePage'
 import ProjectsPage from '../pages/ProjectsPage'
 import MentorDeskPage from '../pages/MentorDeskPage'
+import VerifyPage from '../pages/VerifyPage'
 import AdminPage from '../pages/AdminPage'
 import AppLayout from '../components/AppLayout'
 import ProtectedRoute from './ProtectedRoute'
@@ -28,6 +29,10 @@ export default function AppRoutes() {
       <Route path="/" element={<LandingPage />} />
       <Route path="/login" element={<LoginPage />} />
       <Route path="/register" element={<RegisterPage />} />
+
+      {/* Public: anybody can check a recommendation code */}
+      <Route path="/verify" element={<VerifyPage />} />
+      <Route path="/verify/:code" element={<VerifyPage />} />
 
       {/* Everything for logged-in users lives under /user */}
       <Route path="/user" element={<ProtectedRoute />}>
