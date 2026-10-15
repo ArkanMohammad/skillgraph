@@ -116,18 +116,20 @@ async function main(): Promise<void> {
         mentorId: mentorOne,
         title: '  My portfolio  ',
         description: `  ${GOOD_DESCRIPTION}  `,
-        projectUrl: '',
+        projectUrl: '  https://github.com/example/portfolio  ',
       });
       assert.strictEqual(parsed.title, 'My portfolio');
       assert.strictEqual(parsed.description, GOOD_DESCRIPTION);
-      assert.strictEqual(parsed.projectUrl, null);
+      assert.strictEqual(parsed.projectUrl, 'https://github.com/example/portfolio');
     });
 
-    await test('parseShareInput refuses a missing mentor, short texts and a bad link (400)', async () => {
+    await test('parseShareInput refuses a missing mentor, short texts and a missing or bad link (400)', async () => {
       await rejectsWith(400, () => parseShareInput({ ...share(mentorOne), mentorId: '' }));
       await rejectsWith(400, () => parseShareInput({ ...share(mentorOne), title: 'ab' }));
       await rejectsWith(400, () => parseShareInput({ ...share(mentorOne), title: 'x'.repeat(121) }));
       await rejectsWith(400, () => parseShareInput({ ...share(mentorOne), description: 'too short' }));
+      await rejectsWith(400, () => parseShareInput({ ...share(mentorOne), projectUrl: '' }));
+      await rejectsWith(400, () => parseShareInput({ ...share(mentorOne), projectUrl: '   ' }));
       await rejectsWith(400, () => parseShareInput({ ...share(mentorOne), projectUrl: 'javascript:alert(1)' }));
       await rejectsWith(400, () => parseShareInput({ ...share(mentorOne), projectUrl: 'not a link' }));
       await rejectsWith(400, () => parseShareInput(null));

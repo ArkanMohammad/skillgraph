@@ -1,6 +1,6 @@
 /**
  * Tests for the public check of a recommendation code (src/services/verifyService.ts)
- * against PostgreSQL: the code format, what a visitor may see and what stays private.
+ * against PostgreSQL: the code format, what a visitor may see (the paper) and what stays private (emails).
  * Every record it creates starts with "d19vtest_" and is removed at the end.
  * Run after `npm run migrate`, from the backend folder:
  *   npx ts-node --transpile-only src/tests/verifyRecommendation.test.ts
@@ -38,6 +38,7 @@ const rejectsWith = async (status: number, work: () => Promise<unknown>): Promis
 
 const PNG_HEAD = Buffer.from([0x89, 0x50, 0x4e, 0x47, 0x0d, 0x0a, 0x1a, 0x0a]);
 const SIGNATURE = `data:image/png;base64,${Buffer.concat([PNG_HEAD, Buffer.alloc(200, 7)]).toString('base64')}`;
+const PROJECT_DESCRIPTION = 'A small portfolio website built with React and TypeScript, with three pages.';
 const BODY = 'Sara built a clean, well structured project and explained every decision clearly. I recommend her.';
 
 async function main(): Promise<void> {
@@ -59,7 +60,7 @@ async function main(): Promise<void> {
   const shareId = await createShare(learner, {
     mentorId: mentor,
     title: 'Personal portfolio',
-    description: 'A small portfolio website built with React and TypeScript, with three pages.',
+    description: PROJECT_DESCRIPTION,
     projectUrl: null,
   });
   const code = await writeRecommendation(mentor, shareId, { body: BODY, mentorTitle: 'Senior Engineer', signature: SIGNATURE });
@@ -92,6 +93,7 @@ async function main(): Promise<void> {
       const result = await verifyRecommendation(code);
       assert.strictEqual(result.code, code);
       assert.strictEqual(result.projectTitle, 'Personal portfolio');
+      assert.strictEqual(result.projectDescription, PROJECT_DESCRIPTION);
       assert.strictEqual(result.learnerName, 'd19vtest_learner');
       assert.strictEqual(result.goalName, `d19vtest_goal_${stamp}`);
       assert.strictEqual(result.mentorName, 'd19vtest_mentor');
@@ -106,10 +108,10 @@ async function main(): Promise<void> {
       assert.strictEqual(result.code, code);
     });
 
-    await test('no email and no project description are given away', async () => {
+    await test('no email is given away, and no project link', async () => {
       const text = JSON.stringify(await verifyRecommendation(code));
       assert.ok(!text.includes('@example.com'));
-      assert.ok(!text.includes('small portfolio website'));
+      assert.ok(!text.includes('github.com'));
     });
 
     console.log('\n--- Lifetime ---');

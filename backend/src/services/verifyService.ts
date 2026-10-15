@@ -1,8 +1,8 @@
 /**
  * Public check of a recommendation code (PostgreSQL).
  * Anybody who has a code can see the recommendation behind it, so an employer can check that a
- * recommendation is real. Only what is printed on the paper is returned: no email and no
- * description of the project.
+ * recommendation is real. Only what is printed on the paper is returned (the text, the project
+ * title and description, the signature). Emails are never returned.
  */
 import { query } from '../config/db';
 import { ProjectShareError } from './projectShareService';
@@ -12,6 +12,7 @@ const CODE_PATTERN = /^SG-[A-Z0-9]{4}-[A-Z0-9]{4}-[A-Z0-9]{4}$/;
 export interface VerifiedRecommendation {
   code: string;
   projectTitle: string;
+  projectDescription: string;
   learnerName: string;
   goalName: string;
   mentorName: string;
@@ -39,6 +40,7 @@ export const verifyRecommendation = async (rawCode: unknown): Promise<VerifiedRe
   const found = await query<{
     code: string;
     title: string;
+    description: string;
     learner_name: string;
     goal_name: string;
     mentor_name: string;
@@ -47,7 +49,7 @@ export const verifyRecommendation = async (rawCode: unknown): Promise<VerifiedRe
     signature: string;
     issued_at: Date | string;
   }>(
-    `SELECT r.code, s.title, l.name AS learner_name, g.name AS goal_name,
+    `SELECT r.code, s.title, s.description, l.name AS learner_name, g.name AS goal_name,
             r.mentor_name, r.mentor_title, r.body, r.signature, r.issued_at
      FROM recommendations r
      JOIN project_shares s ON s.id = r.share_id
@@ -62,6 +64,7 @@ export const verifyRecommendation = async (rawCode: unknown): Promise<VerifiedRe
   return {
     code: row.code,
     projectTitle: row.title,
+    projectDescription: row.description,
     learnerName: row.learner_name,
     goalName: row.goal_name,
     mentorName: row.mentor_name,

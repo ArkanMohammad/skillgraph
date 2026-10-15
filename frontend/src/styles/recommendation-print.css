@@ -1,14 +1,60 @@
-/* Verification line under the seal, and the A4 page used for "Download PDF" */
+/* The recommendation paper (extra rules on top of projects.css) and the A4 page used for "Download PDF" */
 
-.recommendation-verify {
-  color: #6b7280;
-  font-size: 12px;
-  word-break: break-all;
-  text-decoration: none;
+.recommendation-title {
+  margin: 24px 0 10px;
+  font-size: 22px;
+  line-height: 1.25;
 }
 
-.recommendation-verify:hover {
-  text-decoration: underline;
+.recommendation-from,
+.recommendation-for {
+  margin: 0 0 4px;
+  color: #374151;
+}
+
+.recommendation-section {
+  margin-top: 24px;
+}
+
+.recommendation-label {
+  margin: 0 0 6px;
+  color: #6366f1;
+  font-size: 12px;
+  font-weight: 600;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+
+.recommendation-project-title {
+  margin: 0 0 4px;
+  font-weight: 600;
+}
+
+.recommendation-text,
+.recommendation-body {
+  margin: 0;
+  line-height: 1.7;
+  white-space: pre-wrap;
+}
+
+.recommendation-footer {
+  margin-top: 32px;
+}
+
+.recommendation-issued {
+  display: grid;
+  gap: 8px;
+  justify-items: start;
+}
+
+.recommendation-issued strong {
+  color: #4f46e5;
+  font-size: 13px;
+}
+
+.recommendation-seal-link {
+  display: inline-block;
+  line-height: 0;
 }
 
 /* The print sheet only exists while the print window is open: it is never shown on the screen */
@@ -44,7 +90,7 @@
     width: 210mm;
   }
 
-  /* One A4 page: the SkillGraph name on top, the seal and the signature pinned to the bottom */
+  /* One A4 page: the recommendation takes the free space, the seal and the signature stay at the bottom */
   .print-sheet .recommendation {
     display: flex;
     flex-direction: column;
@@ -56,13 +102,21 @@
     border-radius: 0;
   }
 
+  .print-sheet .recommendation-text {
+    font-size: 11.5pt;
+  }
+
   .print-sheet .recommendation-body {
+    font-size: 12.5pt;
+  }
+
+  .print-sheet .recommendation-section-grow {
     flex: 1;
-    font-size: 13pt;
   }
 
   .print-sheet .recommendation-footer {
     margin-top: auto;
     flex-wrap: nowrap;
+    break-inside: avoid;
   }
 }

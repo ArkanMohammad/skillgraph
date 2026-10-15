@@ -1,5 +1,5 @@
-import { ShieldCheck } from 'lucide-react'
 import Logo from './Logo'
+import SkillGraphSeal from './SkillGraphSeal'
 import type { Recommendation } from '../services/projectService'
 import { formatDate } from '../utils/formatDate'
 import '../styles/projects.css'
@@ -8,17 +8,18 @@ import '../styles/recommendation-print.css'
 export type RecommendationViewProps = {
   recommendation: Recommendation
   projectTitle: string
+  projectDescription: string
   learnerName: string
   goalName: string
-  verifyUrl?: string // where anybody can check the code, printed under the seal
+  verifyUrl?: string // the seal becomes a link to the page that checks the recommendation
 }
 
 // A recommendation laid out like the paper it will become:
-// the SkillGraph name on top, the mentor's own words in the middle,
-// the fixed SkillGraph seal at the bottom left and the mentor's signature at the bottom right.
+// the title and who wrote it for whom, the project, the mentor's own words,
+// the SkillGraph seal at the bottom left and the mentor's signature at the bottom right.
 // dir="auto" lets texts written in Arabic (or any right-to-left language) read the right way.
 function RecommendationView(props: RecommendationViewProps) {
-  const { recommendation, projectTitle, learnerName, goalName, verifyUrl } = props
+  const { recommendation, projectTitle, projectDescription, learnerName, goalName, verifyUrl } = props
 
   return (
     <article className="recommendation">
@@ -26,30 +27,46 @@ function RecommendationView(props: RecommendationViewProps) {
         <Logo />
       </header>
 
-      <p className="recommendation-eyebrow">Personal recommendation</p>
-      <h3 className="recommendation-title" dir="auto">
-        {projectTitle}
-      </h3>
-      <p className="muted" dir="auto">
+      <h3 className="recommendation-title">Feedback Project and Personal Recommendation</h3>
+      <p className="recommendation-from" dir="auto">
+        From the mentor <strong>{recommendation.mentorName}</strong>
+      </p>
+      <p className="recommendation-for" dir="auto">
         For <strong>{learnerName}</strong> · {goalName}
       </p>
 
-      <p className="recommendation-body" dir="auto">
-        {recommendation.body}
-      </p>
+      <section className="recommendation-section">
+        <p className="recommendation-label">Project description</p>
+        <p className="recommendation-project-title" dir="auto">
+          {projectTitle}
+        </p>
+        <p className="recommendation-text" dir="auto">
+          {projectDescription}
+        </p>
+      </section>
+
+      <section className="recommendation-section recommendation-section-grow">
+        <p className="recommendation-label">Recommendation</p>
+        <p className="recommendation-body" dir="auto">
+          {recommendation.body}
+        </p>
+      </section>
 
       <footer className="recommendation-footer">
-        <div className="recommendation-seal">
-          <ShieldCheck size={28} />
-          <div>
-            <strong>Issued via SkillGraph</strong>
-            <span>Code {recommendation.code}</span>
-            {verifyUrl && (
-              <a className="recommendation-verify" href={verifyUrl}>
-                Verify: {verifyUrl.replace(/^https?:\/\//, '')}
-              </a>
-            )}
-          </div>
+        <div className="recommendation-issued">
+          <strong>Issued via SkillGraph</strong>
+          {verifyUrl ? (
+            <a
+              className="recommendation-seal-link"
+              href={verifyUrl}
+              title="Verify this recommendation"
+              aria-label="Verify this recommendation on SkillGraph"
+            >
+              <SkillGraphSeal />
+            </a>
+          ) : (
+            <SkillGraphSeal />
+          )}
         </div>
 
         <div className="recommendation-signature">
@@ -59,10 +76,6 @@ function RecommendationView(props: RecommendationViewProps) {
           <span>{formatDate(recommendation.issuedAt)}</span>
         </div>
       </footer>
-
-      <p className="recommendation-note">
-        This is the personal opinion of one mentor about one project. It is not an official certificate.
-      </p>
     </article>
   )
 }

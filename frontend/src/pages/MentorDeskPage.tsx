@@ -105,7 +105,7 @@ function MentorDeskPage() {
     if (!writing) return
     const cleanBody = body.trim()
     const cleanTitle = mentorTitle.trim()
-    if (cleanTitle.length < LIMITS.titleMin) return setModalError('Write your title, for example "Senior Frontend Engineer"')
+    if (cleanTitle.length < LIMITS.titleMin) return setModalError('Write your profession, for example "Software Engineer"')
     if (cleanBody.length < LIMITS.bodyMin) return setModalError(`The recommendation needs at least ${LIMITS.bodyMin} characters`)
     if (!signature) return setModalError('Draw your signature first')
     if (signature.length > LIMITS.signatureMax) {
@@ -244,12 +244,13 @@ function MentorDeskPage() {
           <ProjectSummary request={writing} />
 
           <label className="field">
-            <span>Your title</span>
+            <span>Your profession</span>
             <input
               className="input"
               value={mentorTitle}
               maxLength={LIMITS.titleMax}
-              placeholder="For example: Senior Frontend Engineer at Acme"
+              placeholder="For example: Software Engineer"
+              dir="auto"
               onChange={(e) => setMentorTitle(e.target.value)}
             />
           </label>

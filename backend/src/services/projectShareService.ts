@@ -114,7 +114,7 @@ const isWebUrl = (value: string): boolean => {
   }
 };
 
-/** Checks the form of a new share. Returns the cleaned values. */
+/** Checks the form of a new share. Returns the cleaned values. The link to the project is required. */
 export const parseShareInput = (body: unknown): ShareInput => {
   const mentorId = textField(body, 'mentorId');
   const title = textField(body, 'title');
@@ -128,10 +128,11 @@ export const parseShareInput = (body: unknown): ShareInput => {
   if (description.length < MIN_DESCRIPTION || description.length > MAX_DESCRIPTION) {
     throw new ProjectShareError(400, `The description must be ${MIN_DESCRIPTION} to ${MAX_DESCRIPTION} characters`);
   }
-  if (projectUrl && (projectUrl.length > MAX_URL || !isWebUrl(projectUrl))) {
+  if (!projectUrl) throw new ProjectShareError(400, 'Add a link to the project');
+  if (projectUrl.length > MAX_URL || !isWebUrl(projectUrl)) {
     throw new ProjectShareError(400, 'The project link must be a web address that starts with http:// or https://');
   }
-  return { mentorId, title, description, projectUrl: projectUrl || null };
+  return { mentorId, title, description, projectUrl };
 };
 
 /** Checks the signature: a PNG data URL of a reasonable size */
