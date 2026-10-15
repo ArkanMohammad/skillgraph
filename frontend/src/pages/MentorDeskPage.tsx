@@ -115,8 +115,8 @@ function MentorDeskPage() {
     setBusy(true)
     setModalError(null)
     try {
-      const result = await sendRecommendation(writing.id, { body: cleanBody, mentorTitle: cleanTitle, signature })
-      setNotice({ type: 'ok', text: `The recommendation for ${writing.learnerName} was signed. Its code is ${result.code}.` })
+      await sendRecommendation(writing.id, { body: cleanBody, mentorTitle: cleanTitle, signature })
+      setNotice({ type: 'ok', text: `The recommendation for ${writing.learnerName} was signed and sent.` })
       setWriting(null)
       reload()
     } catch (err) {
@@ -207,7 +207,7 @@ function MentorDeskPage() {
                         <td>{request.learnerName}</td>
                         <td>
                           {request.status === 'RECOMMENDED' ? (
-                            <span className="badge badge-mastered">Signed {request.code}</span>
+                            <span className="badge badge-mastered">Recommended</span>
                           ) : (
                             <span className="badge badge-locked">Declined</span>
                           )}
