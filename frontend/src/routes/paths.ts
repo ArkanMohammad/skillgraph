@@ -6,6 +6,7 @@ export const PATHS = {
   home: '/',
   login: '/login',
   register: '/register',
+  plans: '/plans',
   verify: '/verify',
 
   selectGoal: `${USER}/select-goal`,

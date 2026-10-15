@@ -3,8 +3,8 @@ import Logo from '../components/Logo'
 import ThemeToggle from '../components/ThemeToggle'
 import './LandingPage.css'
 
-// Every call-to-action on this page leads to the register page
-const REGISTER = '/register'
+// Every call-to-action on this page leads to the plans page (the visitor picks a plan, then registers)
+const PLANS = '/plans'
 
 // Numbers shown under the hero buttons
 const STATS = [
@@ -64,7 +64,7 @@ function LandingPage() {
           <Link to="/login" className="land-signin">
             Sign in
           </Link>
-          <Link to={REGISTER} className="btn btn-primary land-nav-btn">
+          <Link to={PLANS} className="btn btn-primary land-nav-btn">
             Get started
           </Link>
         </div>
@@ -89,7 +89,7 @@ function LandingPage() {
           </p>
 
           <div className="land-cta">
-            <Link to={REGISTER} className="btn btn-primary land-btn-lg">
+            <Link to={PLANS} className="btn btn-primary land-btn-lg">
               Start Your SkillGraph
             </Link>
             <button type="button" className="btn btn-outline land-btn-lg" onClick={scrollToHow}>
@@ -178,7 +178,7 @@ function LandingPage() {
 
           <div className="land-goals">
             {GOALS.map((goal) => (
-              <Link key={goal.name} to={REGISTER} className="card land-goal">
+              <Link key={goal.name} to={PLANS} className="card land-goal">
                 <span className="land-goal-icon" style={{ background: goal.tint }}>
                   {goal.icon}
                 </span>
@@ -187,7 +187,7 @@ function LandingPage() {
               </Link>
             ))}
 
-            <Link to={REGISTER} className="land-goal land-goal-cta">
+            <Link to={PLANS} className="land-goal land-goal-cta">
               <small>Ready to start?</small>
               <strong>Begin your journey →</strong>
             </Link>

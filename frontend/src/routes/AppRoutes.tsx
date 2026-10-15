@@ -2,6 +2,7 @@ import { Navigate, Route, Routes } from 'react-router-dom'
 import LandingPage from '../pages/LandingPage'
 import LoginPage from '../pages/LoginPage'
 import RegisterPage from '../pages/RegisterPage'
+import PlansPage from '../pages/PlansPage'
 import SelectGoalPage from '../pages/SelectGoalPage'
 import AssessmentPage from '../pages/AssessmentPage'
 import AssessmentQuizPage from '../pages/AssessmentQuizPage'
@@ -29,6 +30,7 @@ export default function AppRoutes() {
       <Route path="/" element={<LandingPage />} />
       <Route path="/login" element={<LoginPage />} />
       <Route path="/register" element={<RegisterPage />} />
+      <Route path="/plans" element={<PlansPage />} />
 
       {/* Public: anybody can check a recommendation code */}
       <Route path="/verify" element={<VerifyPage />} />
