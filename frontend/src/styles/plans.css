@@ -1,0 +1,165 @@
+/* Plans page: three tall cards side by side (free trial, monthly, yearly) */
+
+.plans-main {
+  max-width: 1100px;
+  margin: 0 auto;
+  padding: 64px 24px 80px;
+  text-align: center;
+}
+
+.plans-title {
+  margin: 0 0 12px;
+  font-size: 44px;
+  line-height: 1.15;
+  letter-spacing: -0.02em;
+}
+
+.plans-lead {
+  margin: 0 auto 48px;
+  max-width: 640px;
+  color: var(--text-muted);
+  font-size: 18px;
+}
+
+.plans-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 24px;
+  align-items: stretch;
+  text-align: left;
+}
+
+.plan {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  padding: 32px 28px 28px;
+  border: 2px solid var(--border);
+  color: var(--text);
+  transition: transform 0.15s ease, border-color 0.15s ease, box-shadow 0.15s ease;
+}
+
+.plan:hover {
+  transform: translateY(-4px);
+  border-color: var(--primary);
+}
+
+.plan-featured {
+  border-color: var(--primary);
+  box-shadow: 0 14px 40px rgba(99, 102, 241, 0.18);
+}
+
+.plan-badge {
+  position: absolute;
+  top: -14px;
+  left: 50%;
+  transform: translateX(-50%);
+  padding: 6px 16px;
+  border-radius: 999px;
+  background: var(--primary);
+  color: #fff;
+  font-size: 13px;
+  font-weight: 600;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  white-space: nowrap;
+}
+
+.plan-name {
+  margin: 0 0 16px;
+  font-size: 22px;
+}
+
+.plan-price {
+  display: flex;
+  align-items: baseline;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin: 0;
+}
+
+.plan-price strong {
+  font-family: var(--font-heading);
+  font-size: 44px;
+  line-height: 1;
+}
+
+.plan-price span {
+  color: var(--text-muted);
+  font-size: 16px;
+}
+
+.plan-note {
+  min-height: 44px;
+  margin: 8px 0 24px;
+  color: var(--primary);
+  font-size: 14px;
+  font-weight: 600;
+}
+
+.plan-features {
+  display: grid;
+  gap: 14px;
+  flex: 1;
+  margin: 0 0 28px;
+  padding: 24px 0 0;
+  border-top: 1px solid var(--border);
+  list-style: none;
+}
+
+.plan-features li {
+  display: flex;
+  align-items: flex-start;
+  gap: 10px;
+  font-size: 15px;
+  line-height: 1.4;
+}
+
+.plan-features svg {
+  flex: none;
+  margin-top: 1px;
+  color: var(--mastered-text);
+}
+
+.plan-feature-off {
+  color: var(--text-muted);
+}
+
+.plan-feature-off svg {
+  color: var(--locked);
+}
+
+.plan-button {
+  display: block;
+  width: 100%;
+  box-sizing: border-box;
+  padding: 14px 20px;
+  font-size: 16px;
+  text-align: center;
+}
+
+.plans-footnote {
+  margin: 28px 0 0;
+  color: var(--text-muted);
+  font-size: 14px;
+}
+
+.plans-footnote + .plans-footnote {
+  margin-top: 8px;
+}
+
+@media (max-width: 900px) {
+  .plans-grid {
+    grid-template-columns: 1fr;
+    max-width: 440px;
+    margin: 0 auto;
+  }
+
+  .plans-title {
+    font-size: 32px;
+  }
+
+  .plan-note {
+    min-height: 0;
+  }
+}
