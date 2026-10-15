@@ -28,6 +28,7 @@ Code: `backend/src/services/mentorService.ts`, `backend/src/routes/mentorRoutes.
 - The mentor opens **Mentor Desk** (only visible for the role MENTOR). For every waiting project the mentor can:
   - **Write a recommendation**: their own profession (for example "Software Engineer"), their own words (50 to 2000 characters) and a signature drawn on the signature pad (mouse, finger or pen). The signature is stored as a transparent PNG.
   - **Decline**, with an optional note (up to 300 characters) that the learner reads.
+- The answered projects are listed on the desk as "Recommended" or "Declined". The code is never shown there.
 - A project is answered once. A recommendation gets a unique code such as `SG-7KQ2-M9XD-4TPA`.
 - The learner reads the recommendation in the **View recommendation** window. It is laid out like the paper it will become in step 3: the SkillGraph name on top, the title "Feedback Project and Personal Recommendation", who wrote it and for whom, the project description, the mentor's words, the SkillGraph seal "Issued via SkillGraph" at the bottom left, and the mentor's signature, name, profession and date at the bottom right.
 - A learner can take back a project that is waiting or declined. A project with a recommendation stays.
@@ -41,8 +42,7 @@ Frontend: `ProjectsPage`, `MentorDeskPage`, `SignaturePad`, `RecommendationView`
 ## Step 3: PDF, public check and "Add mentor"
 
 - **Download PDF**: in the **View recommendation** window the learner presses **Download PDF**. The browser opens its print window with the recommendation alone on one A4 page, and the learner chooses **Save as PDF**. The page has the SkillGraph logo and name on top, then the title "Feedback Project and Personal Recommendation", who wrote it ("From the mentor …") and for whom ("For … · goal"), the project description, the mentor's recommendation, the SkillGraph seal under "Issued via SkillGraph" at the bottom left, and the mentor's drawn signature, profession and date at the bottom right. The code is not printed; the seal is a link to the verification page. The page is drawn by the browser, so names and texts in Arabic (or any other language) come out right, and no extra library is needed.
-- **Copy verification link**: copies `/verify/<code>` of the site, to put in a CV or an email.
-- **Public check**: `/verify` has a field for the code, and `/verify/SG-7KQ2-M9XD-4TPA` opens the answer directly. No login is needed. It shows the project description, the text, the signature, the mentor and the learner name. It never shows an email. A code that cannot exist gives 400 and an unknown code gives 404. A code can be typed in lower case or with spaces.
+- **Public check**: `/verify` has a field for the code, and `/verify/SG-7KQ2-M9XD-4TPA` opens the answer directly. No login is needed. It shows the project description, the text, the signature, the mentor and the learner name. It never shows an email. A code that cannot exist gives 400 and an unknown code gives 404. A code can be typed in lower case or with spaces. The way to reach it from a recommendation is the seal in the PDF.
 - The recommendation stays valid if the mentor account is deleted (the signed name is kept). It stops working if the learner deletes their account.
 - **Add mentor** (admin, Mentors tab): creates a new account with the role MENTOR. See [admin.md](admin.md).
 
@@ -84,7 +84,7 @@ To try the admin steps yourself:
 
 1. Log in as a demo learner who follows Frontend Developer. Open **Projects**, choose the mentor, fill the form (the link to the project is required: leave it empty once to see "Add a link to the project") and press **Send to the mentor**. The project shows "Waiting for the mentor".
 2. Log in as `demo.mentor@skillgraph.dev`. Open **Mentor Desk**. The project is under "Waiting for you".
-3. Press **Write a recommendation**. Fill your profession and text, draw a signature, then press **Sign and send**. A message shows the code.
+3. Press **Write a recommendation**. Fill your profession and text, draw a signature, then press **Sign and send**. The project moves to "Answered" with the badge "Recommended".
 4. Log in as the learner again. The project says "Recommended". Press **View recommendation** to see the project description, the text, the SkillGraph seal and the signature.
 5. Send another project and press **Decline** with a note as the mentor. The learner sees the note and can remove the project.
 
@@ -93,9 +93,9 @@ To try the admin steps yourself:
 1. Log in as `demo.admin@skillgraph.dev`. Open **Admin > Mentors** and press **Add mentor**. Type a name and an email, keep the generated password (or press **Generate**), tick a goal and press **Create mentor**. The window shows the email and the password. Press **Done**. The mentor is in the table with the goal.
 2. Log in as that new mentor with the shown details. **Mentor Desk** is in the menu.
 3. As a learner of that goal, share a project. As the mentor, write and sign a recommendation (see step 2). Write the text in Arabic once to see that it is shown right to left.
-4. As the learner, press **View recommendation**, then **Download PDF**. In the print window choose **Save as PDF**. Open the file: one A4 page, logo on top, seal and signature at the bottom. Click the seal: it opens the verification page.
-5. Press **Copy verification link**, open it in a private window (not logged in). The page says "This recommendation is real" and shows the same text.
-6. Open `/verify` and type the code in lower case. It works. Type `SG-AAAA-AAAA-AAAA`: "This code could not be verified".
+4. As the learner, press **View recommendation**, then **Download PDF**. In the print window choose **Save as PDF**. Open the file: one A4 page, logo on top, seal and signature at the bottom.
+5. Click the seal in the PDF. It opens the verification page in a private window or browser (not logged in). The page says "This recommendation is real" and shows the same text.
+6. Open `/verify` and type the code (read it from the address of the page you just opened) in lower case. It works. Type `SG-AAAA-AAAA-AAAA`: "This code could not be verified".
 
 ## Rules for the next steps
 

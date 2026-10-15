@@ -1,5 +1,9 @@
 /* The recommendation paper (extra rules on top of projects.css) and the A4 page used for "Download PDF" */
 
+.recommendation {
+  overflow-wrap: anywhere;
+}
+
 .recommendation-title {
   margin: 24px 0 10px;
   font-size: 22px;
