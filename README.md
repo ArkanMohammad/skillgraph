@@ -26,7 +26,7 @@ The user picks a goal, takes short adaptive assessments, and the system recommen
 - **Changing the goal keeps your progress**: mastery is stored per user and skill, so shared skills are reused and never copied.
 - **Memory check (knowledge decay)**: a forgetting curve shows how well you still remember each mastered skill (fresh, fading or due). The skills you forget the most come first, and a review is a normal retake. See [docs/review.md](docs/review.md).
 - **Your mentor**: the Dashboard shows the mentors who look after your goal. See [docs/mentors.md](docs/mentors.md).
-- **Projects and recommendations**: share a project with a mentor of your goal. The mentor writes a personal recommendation and signs it by drawing the signature. It is the opinion of one person, not an official certificate. You can download it as a PDF.
+- **Projects and recommendations**: share a project with a mentor of your goal. The mentor writes a personal recommendation and signs it by drawing the signature. It is the opinion of one person. You can download it as a PDF.
 - **Verify a recommendation**: every recommendation has a code such as `SG-7KQ2-M9XD-4TPA`. Anybody can type it on the public page `/verify` (no login) to see the original text and signature.
 - **Mentor desk**: mentors see the projects shared with them and write a signed recommendation or decline.
 - **Profile**: name, email, password, weekly learning hours and account deletion.
@@ -168,7 +168,7 @@ Full deployment guide: [docs/deployment.md](docs/deployment.md).
 
 ## API overview
 
-All routes are under `/api`. Everything except `auth`, `health` and `verify` needs the login cookie.
+All routes are under `/api`. Everything except `auth` and `health` needs the login cookie.
 
 | Method | Route | What it does |
 | --- | --- | --- |
