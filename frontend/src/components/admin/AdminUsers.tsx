@@ -123,7 +123,7 @@ function AdminUsers() {
         {shown.length === 0 ? (
           <p className="muted admin-flush-message">No user matches your search.</p>
         ) : (
-          <table className="table">
+          <table className="table admin-users-table">
             <thead>
               <tr>
                 <th>Name</th>

@@ -227,3 +227,27 @@ textarea.input {
 .admin-advice-list span {
   font-size: 13px;
 }
+
+/* Admin tables (users, mentors, questions, goal skills): less empty space on the sides,
+   so the first column sits close to the left edge and the buttons on the right are not cut off */
+.admin-page .card-flush .table th,
+.admin-page .card-flush .table td {
+  padding-left: 10px;
+  padding-right: 10px;
+}
+
+.admin-page .card-flush .table th:first-child,
+.admin-page .card-flush .table td:first-child {
+  padding-left: 8px;
+}
+
+.admin-page .card-flush .table th:last-child,
+.admin-page .card-flush .table td:last-child {
+  padding-right: 8px;
+}
+
+/* The card title lines up with the first column */
+.admin-page .card-flush h3 {
+  padding-left: 8px;
+  padding-right: 8px;
+}
