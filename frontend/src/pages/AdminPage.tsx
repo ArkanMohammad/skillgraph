@@ -24,7 +24,7 @@ function AdminPage() {
   const current = TABS.find((item) => item.id === tab) ?? TABS[0]
 
   return (
-    <div>
+    <div className="admin-page">
       <p className="page-eyebrow">Admin</p>
       <h1 className="page-title">{current.title}</h1>
 
