@@ -1,9 +1,10 @@
 import { apiRequest } from './apiClient'
 
-// What anybody with the code may see (no email, no project description)
+// What anybody with the code may see (no email)
 export type VerifiedRecommendation = {
   code: string
   projectTitle: string
+  projectDescription: string
   learnerName: string
   goalName: string
   mentorName: string

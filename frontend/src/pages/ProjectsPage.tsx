@@ -92,11 +92,13 @@ function ProjectsPage() {
 
     const cleanTitle = title.trim()
     const cleanDescription = description.trim()
+    const cleanUrl = projectUrl.trim()
     if (!chosenMentor) return setFormError('Choose a mentor')
     if (cleanTitle.length < LIMITS.titleMin) return setFormError(`The title needs at least ${LIMITS.titleMin} characters`)
     if (cleanDescription.length < LIMITS.descriptionMin) {
       return setFormError(`Describe the project in at least ${LIMITS.descriptionMin} characters`)
     }
+    if (!cleanUrl) return setFormError('Add a link to the project')
 
     setSending(true)
     try {
@@ -104,7 +106,7 @@ function ProjectsPage() {
         mentorId: chosenMentor,
         title: cleanTitle,
         description: cleanDescription,
-        projectUrl: projectUrl.trim(),
+        projectUrl: cleanUrl,
       })
       setTitle('')
       setDescription('')
@@ -194,7 +196,7 @@ function ProjectsPage() {
             </label>
 
             <label className="field">
-              <span>Link to the project (optional)</span>
+              <span>Link to the project</span>
               <input
                 className="input"
                 value={projectUrl}
@@ -279,6 +281,7 @@ function ProjectsPage() {
             <RecommendationActions
               recommendation={viewing.recommendation}
               projectTitle={viewing.title}
+              projectDescription={viewing.description}
               learnerName={user?.name ?? ''}
               goalName={viewing.goalName}
               verifyUrl={buildVerifyUrl(viewing.recommendation.code)}
@@ -288,6 +291,7 @@ function ProjectsPage() {
           <RecommendationView
             recommendation={viewing.recommendation}
             projectTitle={viewing.title}
+            projectDescription={viewing.description}
             learnerName={user?.name ?? ''}
             goalName={viewing.goalName}
             verifyUrl={buildVerifyUrl(viewing.recommendation.code)}

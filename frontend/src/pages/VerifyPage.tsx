@@ -64,6 +64,7 @@ function VerifyResult(props: { code: string }) {
       issuedAt: result.issuedAt,
     },
     projectTitle: result.projectTitle,
+    projectDescription: result.projectDescription,
     learnerName: result.learnerName,
     goalName: result.goalName,
     verifyUrl: buildVerifyUrl(result.code),
@@ -75,10 +76,7 @@ function VerifyResult(props: { code: string }) {
         <ShieldCheck size={22} />
         <div>
           <strong>This recommendation is real</strong>
-          <span>
-            It was written and signed on SkillGraph by {result.mentorName}. It is one person's opinion about one
-            project, not an official certificate.
-          </span>
+          <span>It was written and signed on SkillGraph by {result.mentorName}.</span>
         </div>
       </div>
 
