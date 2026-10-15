@@ -8,8 +8,9 @@ The user picks a goal, takes short adaptive assessments, and the system recommen
 
 ![Dashboard](docs/screenshots/dashboard.png)
 ![Skill graph](docs/screenshots/skill-graph.png)
+![My skills](docs/screenshots/my-skills.png)
 ![Progress](docs/screenshots/progress.png)
-![Assessment](docs/screenshots/assessment.png)
+![Assessment](docs/screenshots/assessments.png)
 
 ## Features
 
@@ -26,12 +27,23 @@ The user picks a goal, takes short adaptive assessments, and the system recommen
 - **Changing the goal keeps your progress**: mastery is stored per user and skill, so shared skills are reused and never copied.
 - **Memory check (knowledge decay)**: a forgetting curve shows how well you still remember each mastered skill (fresh, fading or due). The skills you forget the most come first, and a review is a normal retake. See [docs/review.md](docs/review.md).
 - **Your mentor**: the Dashboard shows the mentors who look after your goal. See [docs/mentors.md](docs/mentors.md).
-- **Projects and recommendations**: share a project with a mentor of your goal. The mentor writes a personal recommendation and signs it by drawing the signature. It is the opinion of one person. You can download it as a PDF.
-- **Verify a recommendation**: every recommendation has a code such as `SG-7KQ2-M9XD-4TPA`. Anybody can type it on the public page `/verify` (no login) to see the original text and signature.
+- **Projects and recommendations**: share a project with a mentor of your goal (a title, a description and a link to the project are required). The mentor writes a personal recommendation and signs it by drawing the signature, or declines with a note, for example when the repository is private. It is the opinion of one person. You can download it as a PDF.
+- **Verify a recommendation**: the SkillGraph seal on the PDF is a link to the public page `/verify` (no login), which shows the original project description, text and signature. A recommendation can also be checked by typing its code on `/verify`.
+- **Plans page**: before login, every call to action on the landing page leads to a page with three plans (7 days free, monthly and yearly) and then to sign in or register. The page is information only, there is no payment.
 - **Mentor desk**: mentors see the projects shared with them and write a signed recommendation or decline.
 - **Profile**: name, email, password, weekly learning hours and account deletion.
 - **Advice from admin**: a message icon with an unread counter, and a window to read and mark messages as read.
 - **Light and dark theme**, a landing page, and error states on every page with a global error boundary.
+
+**Project page**
+
+![Projects](docs/screenshots/Projects.png)
+
+**Mentor desk and signed recommendation**
+
+![Mentor desk](docs/screenshots/mentor-desk.png)
+![Signed recommendation](docs/screenshots/recommendation1.png)
+![Signed recommendation](docs/screenshots/recommendation2.png)
 
 ### For admins
 
@@ -41,6 +53,11 @@ The user picks a goal, takes short adaptive assessments, and the system recommen
 - **Goal skills**: add or remove a skill in a goal, change its required mastery, importance and hours, and edit prerequisites. Cycles are refused.
 - **Mentors**: add a new mentor account (name, email, first password, optional goals) or give an existing user the role MENTOR, and choose the goals each mentor looks after.
 - Full rules and API: [docs/admin.md](docs/admin.md).
+
+**Users page**
+
+![Admin users](docs/screenshots/admin-users.png)
+![Admin users](docs/screenshots/admin-users1.png)
 
 ### Quality
 
@@ -168,7 +185,7 @@ Full deployment guide: [docs/deployment.md](docs/deployment.md).
 
 ## API overview
 
-All routes are under `/api`. Everything except `auth` and `health` needs the login cookie.
+All routes are under `/api`. Everything except `auth`, `verify` and `health` needs the login cookie.
 
 | Method | Route | What it does |
 | --- | --- | --- |
@@ -211,9 +228,10 @@ The algorithm is explained in [docs/algorithm.md](docs/algorithm.md).
 
 **Frontend**
 - Built the React and TypeScript app: routing with protected pages, the Redux slices and typed hooks, the API service layer, the design tokens and the light and dark theme.
-- Built the pages: landing, login and register, goal selection, dashboard, skill graph, assessment (start, quiz, results), progress, my skills, my goal and profile.
+- Built the pages: landing, plans, login and register, goal selection, dashboard, skill graph, assessment (start, quiz, results), progress, my skills, my goal and profile.
 - Built the skill graph with React Flow: node states, the detail panel and the layout.
 - Built the admin screens: questions, goal skills, users, and the modals for editing, viewing a user and writing advice.
+- Built the signed recommendation sheet (print layout for one A4 page) and the SkillGraph seal.
 - Built the advice icon and window for learners, and the error states and error boundary.
 
 **Algorithm and assessment**
@@ -235,6 +253,10 @@ The algorithm is explained in [docs/algorithm.md](docs/algorithm.md).
 - Wired the routes of the API and the request validation.
 - Prepared the deployment of the backend and the frontend, the production scripts and the deploy checks.
 - Reviewed every pull request before it was merged into `main`.
+
+### Dania Hih: mentor
+
+- Our mentor. Guided the team during the project.
 
 ## Roadmap
 
