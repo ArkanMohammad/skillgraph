@@ -19,12 +19,57 @@ The login is kept in a browser cookie, so open each account in a different brows
 
 ## Screenshots
 
+### Learner
+
+#### Dashboard
+Your goal, progress and the Next Best Skill with its explanation.
+
 ![Dashboard](docs/screenshots/dashboard.png)
+
+#### Skill graph
+Skills are nodes and prerequisites are arrows. The color shows the state of each skill.
+
 ![Skill graph](docs/screenshots/skill-graph.png)
-![My skills](docs/screenshots/my-skills.png)
-![Progress](docs/screenshots/progress.png)
+
+#### Adaptive assessment
+Ten questions per test. The difficulty follows your answers.
+
 ![Assessment](docs/screenshots/assessments.png)
-![Signed recommendation](docs/screenshots/recommendation-signed.png)
+
+#### My skills
+Mastery and confidence for every skill of your goal.
+
+![My skills](docs/screenshots/my-skills.png)
+
+#### Progress
+Percent of the goal, hours remaining and recent tests.
+
+![Progress](docs/screenshots/progress.png)
+
+### Projects and recommendations
+
+#### Projects
+Share a project with a mentor of your goal.
+
+![Projects](docs/screenshots/Projects.png)
+
+#### Mentor desk
+The mentor sees the shared projects and writes a signed recommendation or declines.
+
+![Mentor desk](docs/screenshots/mentor-desk.png)
+
+#### Signed recommendation
+The SkillGraph seal with the verification code, and the mentor's drawn signature.
+
+![Signed recommendation](docs/screenshots/recommendation1.png)
+![Signed recommendation, second example](docs/screenshots/recommendation2.png)
+
+### Admin
+
+#### Users
+Search users, see their progress, change roles and write advice.
+
+![Admin users](docs/screenshots/admin-users.png)
 
 ## Features
 
