@@ -4,6 +4,19 @@ SkillGraph turns a career goal into a graph of skills and tells the learner what
 The user picks a goal, takes short adaptive assessments, and the system recommends the
 **Next Best Skill** with a clear explanation. After every assessment the plan is recalculated.
 
+## Live demo
+
+**https://skillgraph-arkan.netlify.app**
+
+| Role | Email | Password |
+| --- | --- | --- |
+| Learner | fihmiabader@gmail.com | 123456 |
+| Mentor | daniahih@gmail.com | 123456 |
+| Admin | demo.admin@skillgraph.dev | 123456 |
+
+The backend runs on a free host, so the first page can take about a minute to wake up.
+The login is kept in a browser cookie, so open each account in a different browser or an Incognito window.
+
 ## Screenshots
 
 ![Dashboard](docs/screenshots/dashboard.png)
