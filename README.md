@@ -24,6 +24,7 @@ The login is kept in a browser cookie, so open each account in a different brows
 ![My skills](docs/screenshots/my-skills.png)
 ![Progress](docs/screenshots/progress.png)
 ![Assessment](docs/screenshots/assessments.png)
+![Signed recommendation](docs/screenshots/recommendation-signed.png)
 
 ## Features
 
